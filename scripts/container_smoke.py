@@ -2,6 +2,8 @@
 
 import json
 import os
+import re
+import shutil
 import secrets
 import socket
 from urllib.parse import urlsplit
@@ -32,7 +34,16 @@ def main():
         "BOOTSTRAP_EMAIL": "demo@example.com",
         "BOOTSTRAP_PASSWORD": password,
     }
+    remote_ref = os.environ.get("SUT_SMOKE_REMOTE_REF")
+    if remote_ref:
+        if not re.fullmatch(r"[0-9a-f]{40}", remote_ref):
+            raise ValueError("SUT_SMOKE_REMOTE_REF must be a full commit SHA")
+        environment["SUT_GIT_REF"] = remote_ref
     with tempfile.TemporaryDirectory(prefix="sut-compose-") as temp:
+        working_directory = Path(temp) if remote_ref else ROOT
+        if remote_ref:
+            # Only Compose and host-managed build settings exist here; no source checkout.
+            shutil.copyfile(ROOT / "compose.yaml", working_directory / "compose.yaml")
         overrides = Path(temp) / "build.json"
         build = {"args": ["HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY"]}
         if os.environ.get("SUT_BUILD_NETWORK"):
@@ -52,16 +63,20 @@ def main():
             "-p",
             project,
             "-f",
-            str(ROOT / "compose.yaml"),
-            "-f",
-            str(ROOT / "compose.local.yaml"),
+            str(working_directory / "compose.yaml"),
+            *([] if remote_ref else ["-f", str(ROOT / "compose.local.yaml")]),
             "-f",
             str(overrides),
         ]
 
         def run(*args, capture=False):
             return subprocess.run(
-                [*compose, *args], cwd=ROOT, env=environment, text=True, capture_output=capture, check=True
+                [*compose, *args],
+                cwd=working_directory,
+                env=environment,
+                text=True,
+                capture_output=capture,
+                check=True,
             )
 
         def ready():
@@ -93,7 +108,7 @@ def main():
                     "DATABASE_URL=sqlite:////app/missing/sut.db",
                     "sut-management",
                 ],
-                cwd=ROOT,
+                cwd=working_directory,
                 env=environment,
                 text=True,
                 capture_output=True,
@@ -179,13 +194,21 @@ def main():
                     capture=True,
                 )
                 print(check.stdout.strip())
+            if remote_ref:
+                print(
+                    f"Remote-context deployment verified at {remote_ref} with only Compose/settings in working directory"
+                )
             print(
                 "PASS: Compose build, migrations, :5088 health/login, authenticated inventory, named-volume and session persistence across down/rebuild/recreate"
             )
         finally:
             # Only the random isolated test project is removed, never deployment volumes.
             subprocess.run(
-                [*compose, "down", "-v"], cwd=ROOT, env=environment, check=False, stdout=subprocess.DEVNULL
+                [*compose, "down", "-v"],
+                cwd=working_directory,
+                env=environment,
+                check=False,
+                stdout=subprocess.DEVNULL,
             )
 
 

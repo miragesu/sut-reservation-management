@@ -1,6 +1,6 @@
 # Implementation Status
 
-2026-10-15 (Asia/Taipei). **Day 1 implemented and locally validated; full MVP NOT DONE.** Production remote-build/LAN acceptance and hosted CI remain separate gates.
+2026-10-15 (Asia/Taipei). **Day 1 implemented; local and source-free remote-context Compose checks pass. Full MVP NOT DONE.** Actual LAN acceptance and hosted CI remain separate gates.
 
 ## Delivered Day 1 scope
 
@@ -27,6 +27,8 @@ Commands from repository root unless stated otherwise:
 | `.venv/bin/python scripts/browser_smoke.py` | PASS: actual Chromium login/mandatory password change, 2 labs/20 synthetic SUTs, both layouts, shared filters/sort, real 30-second polling, unchanged controls, stale/retry, detail and profile; no page script errors |
 | `DOCKER_CONFIG=/tmp/sut-docker-config SUT_BUILD_NETWORK=host SUT_BUILD_CA=/etc/ssl/certs/ca-certificates.crt .venv/bin/python scripts/container_smoke.py` | PASS: Compose syntax/build/up, migration-before-listen, 5088 health/login, forced password change, inventory operations, non-root UID 10001, SQLite integrity, migration check and data/session persistence across down + rebuild/recreate. Broken migration prevents startup. Disposable project/volume cleaned up. |
 
+Public GitHub remote build and source-free Compose deployment also PASS at application commit `ee2118e2f22f4cbef80b1b991c5163b3edd0fa46`. Reproduce with the container-smoke command above plus `SUT_SMOKE_REMOTE_REF=ee2118e2f22f4cbef80b1b991c5163b3edd0fa46`. The runner copies only Compose into an empty temporary working directory, fetches source/Dockerfile from the pinned public commit during build (no GitHub token supplied), and repeats health/login, failed-migration, database integrity and down/rebuild/recreate persistence checks. This used the existing cloud Docker daemon, not the actual internal Linux server or a newly provisioned OS.
+
 The container builder initially could not resolve the inherited proxy and then lacked its trusted CA. The smoke resolves inherited proxy names and supplies the existing host-approved CA bundle as an ephemeral BuildKit secret; neither the CA nor proxy credentials are copied into the runtime image. TLS and package hash verification were retained. Browser runner CSP-sensitive JavaScript predicates were replaced with locator assertions; application CSP was preserved. One runner warning remains: Starlette deprecates its httpx TestClient integration; it does not skip or fail these tests.
 
 ## Unimplemented / unverified gates
@@ -35,8 +37,8 @@ The container builder initially could not resolve the inherited proxy and then l
 - BR-017's queue pause/resume, new coordination-action guards and notices displayed to recipients await Day 2/3 integration. Day 1 persists notices and preserves activity; it does not claim the complete maintenance coordination workflow passes.
 - Day 3 full notification/read/desktop opt-in UI, Dashboard Claim/Queue/Reserve modals, SUT Detail polling, Calendar/History screens and broader end-to-end/accessibility acceptance. The initial Dashboard's projections are tested using synthetic domain records; full MVP UI is not complete.
 - SUT HTML inventory list has pagination; search/filter controls are on Dashboard and JSON inventory. The combined SUT-list acceptance item remains unchecked.
-- Production clean-host public GitHub Remote Build from a published application commit is not yet verified. Set `SUT_GIT_REF` to the reviewed full application SHA; never use the original planning-only commit or `main` as a production pin. Local Compose build is verified independently.
+- Public pinned-ref Remote Build and source-free Compose deployment are verified at the SHA above. A newly provisioned production host is still unverified. Set `SUT_GIT_REF` to a reviewed full application SHA; never use the original planning-only commit or `main` as a production pin.
 - Actual internal Linux host/firewall, two LAN clients, backup/restore rehearsal and hosted GitHub Actions are unverified. Agent-local checks do not establish these outcomes.
-- Git read access works via the platform HTTPS proxy. GitHub API requests currently return `Forbidden`; PR creation must be confirmed separately. No token values were inspected or copied.
+- Branch `feat/day1-foundation` is pushed. `gh pr create --repo miragesu/sut-reservation-management --base main --head feat/day1-foundation ...` failed with `Post "https://api.github.com/graphql": Forbidden`; **PR not created**. REST metadata access is also forbidden, while Git read/push works through existing platform authentication. The complete PR description and retry command are saved in `docs/day1-pr.md`. No token values were inspected or copied.
 
 Only specifically verified task items are checked in `TASKS.md`; mixed Day 2/3 items remain unchecked. No full-MVP or production-readiness claim is made.

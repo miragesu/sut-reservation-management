@@ -1,7 +1,7 @@
 # Implementation Checklist
 
 > Check boxes only after successful verification. Link PR or test evidence in the PR description.
-> Day 1 evidence: `docs/implementation-status.md`. Checked deployment items refer to local Compose validation, not the actual LAN host or clean-host GitHub Remote Build. Mixed Day 2/3 acceptance items stay unchecked even where the Day 1 subset exists.
+> Day 1 evidence: `docs/implementation-status.md`. Checked deployment items refer to local Compose and source-free pinned GitHub Remote Build on the cloud daemon, not the actual LAN host or a newly provisioned production OS. Mixed Day 2/3 acceptance items stay unchecked even where the Day 1 subset exists.
 
 ## Phase 0 — Decision gate
 - [x] Confirm BR-008: Lab Admin manages both labs, creates/deletes labs and SUTs, force-releases records and clears queues; user management remains Super Admin only
@@ -233,18 +233,18 @@
 
 
 ## DEP-002 — GitHub Remote Build acceptance
-- [ ] Production `compose.yaml` obtains source + Dockerfile from pinned GitHub Git context, with no source checkout on server.
+- [x] Production `compose.yaml` obtains source + Dockerfile from pinned GitHub Git context, with no source checkout on server.
 - [x] Container start does not clone/pull Git, and runtime contains no embedded Git credentials.
 - [ ] Clean Linux host deploy with only Compose + local configuration succeeds via `docker compose up -d --build`.
 - [x] Published `:5088`, `/health`, login, migrations and browser UI verified.
 - [x] Named volume keeps SQLite data through rebuild and recreate; backup and rollback are documented.
-- [ ] Public vs private repo network/authentication requirements documented and tested as applicable.
+- [x] Public vs private repo network/authentication requirements documented and tested as applicable.
 - [ ] Windows Docker local development override documented; production remains Linux remote-context build.
 - [ ] Explicit redeploy required after GitHub changes; release revision pinned for repeatability.
 
 ## DEP-004 — Public repository acceptance checklist
 
-- [ ] Compose performs GitHub remote build using a pinned public tag/commit and requires no token.
+- [x] Compose performs GitHub remote build using a pinned public tag/commit and requires no token.
 - [x] `.gitignore`, `.dockerignore`, `.env.example` exist and production `.env` is not committed.
 - [ ] Git history and tracked files contain no actual secrets, RD contacts, production BMC/Host IP addresses, DB files, exports, or backups.
 - [x] Example seed data is fictional and safe for public distribution.
