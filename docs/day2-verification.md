@@ -18,7 +18,7 @@ Scope: https://github.com/miragesu/sut-reservation-management/issues/2 — “Da
 
 ## Commands and observed results
 
-Final full-suite result is recorded in `docs/implementation-status.md` after completion. Commands executed from the repository root:
+**Observed result: 98 pytest cases passed; lint/format/compile passed; baseline and Day 2 Chromium runners passed; local and public pinned-ref Remote Build/Compose deadline/persistence runners passed.** The additional Maintenance/Out of Service Leave Queue assertions were rerun separately: 2 passed. Full command evidence and the PR API blocker are recorded in `docs/implementation-status.md`. Commands executed from the repository root:
 
 ```bash
 .venv/bin/ruff check backend scripts
@@ -52,4 +52,4 @@ Actual internal Linux server, firewall/two LAN clients, backup/restore rehearsal
 
 Day 3 remains: Dashboard quick-action modals, complete notification bell/desktop opt-in behavior, broader UI/accessibility acceptance and final full-MVP sign-off. In-app recipient notices, SUT Detail polling, Calendar and History are implemented for the Day 2 workflow; the entire MVP is not declared complete.
 
-PR creation is attempted after pushing the branch. If the GitHub API remains forbidden, the exact failure and manual creation link are recorded with the final delivery; a pushed branch is not described as a created PR.
+Application branch is pushed at `344d305cdc0945a1d76ca95b393fd77d5d53b596`. Public Remote Build and the full Day 2 source-free Compose runner pass at that SHA (same cloud Docker daemon, not a newly provisioned production OS). Actual PR creation failed with `Post "https://api.github.com/graphql": Forbidden`. No PR is claimed. Reviewable body: `docs/day2-pr.md`; manual creation: https://github.com/miragesu/sut-reservation-management/pull/new/feat/day2-coordination .

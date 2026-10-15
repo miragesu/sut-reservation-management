@@ -20,6 +20,7 @@ Adds Claim/Release/force-release/expected-end, Queue join/leave/clear, reservati
 - `pytest -q`: **98 passed**, including retained Day 1 tests, microsecond deadline/booking boundaries, permissions, conflict acknowledgement, real parallel HTTP clients, stable-key retries, populated migration backfill, interrupted-transaction rollback, overlapping processors and restart recovery.
 - Chromium baseline and multi-user Day 2 flows pass, including actual 30-second Detail polling retaining unsaved input.
 - Docker smoke passes migration-before-startup, rejected broken migration, :5088 health/login, UID 10001, named-volume down/rebuild/recreate persistence, real no-browser background expiry and restart-idempotent notifications.
+- Public pinned-ref Remote Build/source-free Compose smoke also passes at application commit `344d305cdc0945a1d76ca95b393fd77d5d53b596`, including the complete Day 2 deadline/restart assertions.
 - Full acceptance mapping and exact commands: `docs/day2-verification.md` and `docs/implementation-status.md`.
 
 ## Manual QA

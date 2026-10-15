@@ -259,7 +259,8 @@
 - [x] Reservation create/view/edit/cancel, 24-hour/30-day boundaries, no-show/check-in and Calendar.
 - [x] Background startup catch-up, periodic processing without HTTP/browser, interruption rollback and overlapping-worker deduplication.
 - [x] Local lint/format/compile, 98 pytest cases, baseline and Day 2 Chromium flows, Docker migration/persistence/deadline smoke pass (details in evidence).
-- [ ] Day 2 branch pushed and PR to main confirmed (delivery status in implementation-status).
+- [x] Day 2 implementation branch pushed; public pinned-ref Remote Build and source-free Compose deadline/persistence smoke pass at `344d305`.
+- [ ] PR to main confirmed — actual `gh pr create` rejected by GitHub GraphQL (`Forbidden`); reviewable body and manual link are saved in delivery evidence.
 
 Day 2 code acceptance does not complete Day 3 or full MVP. Hosted CI and actual LAN/production-host checks remain unverified.
 

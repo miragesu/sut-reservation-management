@@ -1,6 +1,6 @@
 # Implementation Status
 
-2026-10-15 (Asia/Taipei). **Day 2 code/behavior acceptance checks PASS; branch/PR delivery is tracked below. Full MVP NOT DONE.** Day 3, hosted CI and real production/LAN acceptance remain separate gates.
+2026-10-15 (Asia/Taipei). **Day 2 code/behavior acceptance checks PASS; implementation branch pushed; PR creation blocked by GitHub API. Full MVP NOT DONE.** Day 3, hosted CI and real production/LAN acceptance remain separate gates.
 
 ## Baseline and scope
 
@@ -47,7 +47,20 @@ Migration tests execute fresh `upgrade head`, `alembic check`, initial down/up, 
 
 ## Delivery
 
-Implementation is being prepared for push and an actual PR creation attempt; no PR is claimed before confirmation. Public pinned-ref Remote Build on the final Day 2 application commit will be tested after push. Exact outcomes and any external API failure are recorded here before handoff. PR description: `docs/day2-pr.md`.
+Branch `feat/day2-coordination` is pushed. Application commit: `344d305cdc0945a1d76ca95b393fd77d5d53b596` (subsequent commit records delivery evidence only). PR description: `docs/day2-pr.md`.
+
+Public pinned-ref Remote Build **PASS** at that SHA, including the complete disposable Day 2 Compose workflow from a temporary directory holding only Compose/build settings, without a source checkout. This used the existing cloud Docker daemon. Actual output: `Restart catch-up: one timeout, one no-show, no automatic usage`; `Live deadline processing without HTTP/browser: OK`; `PASS: Day 2 Docker Claim/Release/FIFO/history, offline deadline catch-up, live background no-show and restart-idempotent notifications`; and named-volume/session persistence after down/rebuild/recreate. Reproduce by adding `SUT_SMOKE_REMOTE_REF=344d305cdc0945a1d76ca95b393fd77d5d53b596` to the Docker smoke command above.
+
+An actual creation attempt was made:
+
+```bash
+gh pr create --repo miragesu/sut-reservation-management --base main \
+  --head feat/day2-coordination \
+  --title 'Day 2: coordination workflows and background deadlines' \
+  --body-file docs/day2-pr.md
+```
+
+It failed with **`Post "https://api.github.com/graphql": Forbidden`**. **No PR was created** by this command. Git read/push works; GitHub API access remains unavailable. As permitted by Issue #2, the complete implementation branch and reviewable PR body are left pushed for creation through ChatGPT/GitHub. Manual creation: https://github.com/miragesu/sut-reservation-management/pull/new/feat/day2-coordination . No credential values were inspected or copied.
 
 ## Remaining full-MVP / external gates
 
