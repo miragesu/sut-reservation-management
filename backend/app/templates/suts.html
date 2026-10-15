@@ -9,7 +9,7 @@
 <th>Name</th>
 <th>Platform</th>
 <th>Status</th>
-<th>Reason</th>
+<th>Current holder</th><th>Reason</th>
 </tr>
 </thead>
 <tbody>{% for sut in data['items'] %}<tr>
@@ -18,8 +18,8 @@
 <a href="/suts/{{ sut.id }}">{{ sut.name }}</a>
 </td>
 <td>{{ sut.platform }}</td>
-<td>{{ 'Archived' if sut.is_archived else sut.status }}</td>
+<td>{{ 'Archived' if sut.is_archived else sut.status }}{% if sut.in_use and sut.status != 'In Use' %} · In Use{% endif %}{% if sut.overdue %} · Overdue{% endif %}</td><td>{% if sut.holder %}{{ sut.holder.display_name }} · {{ sut.holder.team }} · <a href="mailto:{{ sut.holder.email }}">{{ sut.holder.email }}</a>{% else %}—{% endif %}</td>
 <td>{{ sut.operational_reason or '' }}</td>
-</tr>{% endfor %}</tbody>
+</tr>{% else %}<tr><td colspan="6">No matching SUTs.</td></tr>{% endfor %}</tbody>
 </table>
 </div>{% if page > 1 %}<a href="{{ request.url.include_query_params(page=page-1) }}">Previous</a>{% endif %} {% if page*25 < data.total %}<a href="{{ request.url.include_query_params(page=page+1) }}">Next</a>{% endif %}{% endblock %}

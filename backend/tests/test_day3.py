@@ -177,6 +177,8 @@ def test_all_status_sort_ranks_natural_ties_lab_groups_and_archive(arena, applic
     assert filtered.count("data-sut-id=") == 2
     assert "repair" in filtered and "SUT-10" not in filtered
     assert users["rd"].get("/suts?search=repair").text.count('href="/suts/') == 1
+    assert "No matching SUTs." in users["rd"].get("/suts?lab_id=&search=missing-device").text
+    assert users["rd"].get("/suts?lab_id=-1").status_code == 422
     assert users["rd"].get("/api/v1/dashboard?sort=status").json()["items"][-1]["id"] == second
 
 
