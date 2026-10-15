@@ -1,6 +1,4 @@
-{% extends 'base.html' %}{% block content %}<h1>Administration</h1>
-<p>
-<a href="/labs">Manage all labs</a> · <a href="/suts?include_archived=true">Manage all SUTs, including archives</a>
-</p>{% if user.role == 'super_admin' %}<p>
-<a href="/admin/users">Accounts and Needs attention</a>
-</p>{% endif %}{% endblock %}
+{% extends 'base.html' %}{% block content %}<h1>Administration</h1><p>Manage your labs, systems and team from one place.</p>
+<div class="admin-grid"><a class="admin-entry" href="/labs"><span class="admin-entry-icon">01</span><h2>Labs</h2><p>Manage lab names, locations and descriptions.</p><span>Manage labs →</span></a>
+<a class="admin-entry" href="/suts?include_archived=true"><span class="admin-entry-icon">02</span><h2>Inventory</h2><p>Register and maintain SUTs, including archived systems.</p><span>Manage inventory →</span></a>
+{% if user.role == 'super_admin' %}<a class="admin-entry" href="/admin/users"><span class="admin-entry-icon">03</span><h2>Accounts and Needs attention</h2><p>Manage accounts and review outstanding activity.</p><span>Manage accounts →</span></a>{% endif %}</div>{% endblock %}

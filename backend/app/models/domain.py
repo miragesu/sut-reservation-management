@@ -96,6 +96,9 @@ class Reservation(Created, Base):
     checked_in_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
     claimed_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
     no_show_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    ready_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    start_deadline: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    start_remaining_microseconds: Mapped[int | None] = mapped_column(Integer)
 
 
 class CurrentUsage(Created, Base):

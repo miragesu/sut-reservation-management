@@ -8,6 +8,15 @@ from datetime import UTC, datetime, timedelta
 import httpx
 
 
+def expire_window(identity):
+    """Age an already-issued window only in the disposable smoke database."""
+    return (
+        "import sqlite3; from datetime import datetime,UTC,timedelta; "
+        "c=sqlite3.connect('/app/data/sut.db'); n=datetime.now(UTC).replace(tzinfo=None); "
+        f"c.execute('UPDATE reservations SET ready_at=?,start_deadline=? WHERE id=?',((n-timedelta(minutes=16)).isoformat(' '),(n-timedelta(minutes=1)).isoformat(' '),{identity})); c.commit()"
+    )
+
+
 def check_coordination(client, mutation, run, ready, lab):
     with ExitStack() as stack:
         users = {}
@@ -105,6 +114,20 @@ def check_coordination(client, mutation, run, ready, lab):
         run("run", "--rm", "--no-deps", "--entrypoint", "python", "-T", "sut-management", "-c", shift)
         run("start", "sut-management")
         ready()
+        available = (
+            "import sqlite3; c=sqlite3.connect('/app/data/sut.db'); "
+            f"r=c.execute('SELECT status,ready_at,start_deadline FROM reservations WHERE id=?',({booking_id},)).fetchone(); "
+            "assert r[0]=='confirmed' and r[1] and r[2]; "
+            f"assert c.execute('SELECT count(*) FROM notifications WHERE event_key LIKE ?',('auto-ready:{booking_id}:%',)).fetchone()[0]==1; "
+            "assert c.execute(\"SELECT count(*) FROM audit_events WHERE event_type='reservation_no_show'\").fetchone()[0]==0; "
+            "print('Late startup grants a notified availability window, not an immediate no-show')"
+        )
+        run("exec", "-T", "sut-management", "python", "-c", available)
+        run("stop", "sut-management")
+        expire = expire_window(booking_id)
+        run("run", "--rm", "--no-deps", "--entrypoint", "python", "-T", "sut-management", "-c", expire)
+        run("start", "sut-management")
+        ready()
         verify = (
             "import sqlite3; c=sqlite3.connect('/app/data/sut.db'); "
             f"assert c.execute('SELECT status FROM reservations WHERE id=?',({booking_id},)).fetchone()[0]=='no_show'; "
@@ -149,6 +172,16 @@ def check_coordination(client, mutation, run, ready, lab):
             f"c.execute('UPDATE reservations SET start_time=?,end_time=? WHERE id=?',((n-timedelta(minutes=20)).isoformat(' '),(n+timedelta(hours=2)).isoformat(' '),{live_id})); c.commit()"
         )
         run("exec", "-T", "sut-management", "python", "-c", shift_live)
+        time.sleep(2)
+        live_ready = (
+            "import sqlite3; c=sqlite3.connect('/app/data/sut.db'); "
+            f"r=c.execute('SELECT status,start_deadline FROM reservations WHERE id=?',({live_id},)).fetchone(); "
+            "assert r[0]=='confirmed' and r[1]; "
+            f"assert c.execute('SELECT count(*) FROM notifications WHERE event_key LIKE ?',('auto-ready:{live_id}:%',)).fetchone()[0]==1"
+        )
+        run("exec", "-T", "sut-management", "python", "-c", live_ready)
+        expire_live = expire_window(live_id)
+        run("exec", "-T", "sut-management", "python", "-c", expire_live)
         time.sleep(2)
         direct = (
             "import sqlite3; c=sqlite3.connect('/app/data/sut.db'); "

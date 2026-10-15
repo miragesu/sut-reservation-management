@@ -22,6 +22,7 @@ from app.schemas.coordination import (
     ReservationUpdate,
 )
 from app.services import coordination as c, coordination_queries as q
+from app.services import calendar as calendar_service
 from app.services.common import get_or_404
 
 router = APIRouter(dependencies=[Depends(check_csrf)], include_in_schema=False)
@@ -203,9 +204,23 @@ def activity(identity: int, request: Request, db: DB, actor: Actor):
 
 @router.get("/my-usage")
 def my_usage(request: Request, db: DB, actor: Actor):
+    return redirect("/my-suts")
+
+
+@router.get("/my-suts")
+def my_suts(request: Request, db: DB, actor: Actor, page: int = Query(1, ge=1)):
     rows = db.scalars(select(CurrentUsage).where(CurrentUsage.user_id == actor.id).order_by(CurrentUsage.id))
     return render(
-        request, "my_usage.html", actor, usages=[q.usage_view(db, u, request.app.state.clock()) for u in rows]
+        request,
+        "my_suts.html",
+        actor,
+        usages=[q.usage_view(db, u, request.app.state.clock()) for u in rows],
+        data=q.reservation_page(
+            db, user_id=actor.id, page=page, now=request.app.state.clock(), exclude_cancelled=True
+        ),
+        page=page,
+        filters={},
+        now=request.app.state.clock(),
     )
 
 
@@ -218,18 +233,7 @@ def reservations(
     user_id: str = "",
     page: int = Query(1, ge=1),
 ):
-    data = q.reservation_page(
-        db, sut_id=optional_id(sut_id), user_id=optional_id(user_id), page=page, now=request.app.state.clock()
-    )
-    return render(
-        request,
-        "reservations.html",
-        actor,
-        data=data,
-        page=page,
-        filters={"sut_id": sut_id, "user_id": user_id},
-        title="Reservations",
-    )
+    return redirect(f"/my-suts?page={page}#my-reservations")
 
 
 @router.get("/reservations/new")
@@ -354,14 +358,8 @@ def calendar(
         start, end = start.astimezone(UTC), end.astimezone(UTC)
     except (ValueError, OverflowError):
         raise HTTPException(422, "Calendar date is outside the supported range") from None
-    data = q.reservation_page(
-        db,
-        sut_id=optional_id(sut_id),
-        start=start.astimezone(UTC),
-        end=end.astimezone(UTC),
-        page=page,
-        now=request.app.state.clock(),
-    )
+    data = calendar_service.schedule(db, start, end, optional_id(sut_id), request.app.state.clock())
+    suts = list(db.scalars(select(SUT).order_by(SUT.lab_id, SUT.normalized_name)))
     return render(
         request,
         "calendar.html",
@@ -371,6 +369,11 @@ def calendar(
         view=view,
         page=page,
         filters={"day": day.isoformat(), "view": view, "sut_id": sut_id},
+        suts=suts,
+        previous_day=(start.astimezone(TAIPEI) - timedelta(days=7 if view == "week" else 1)).date(),
+        next_day=end.astimezone(TAIPEI).date(),
+        last_day=(end.astimezone(TAIPEI) - timedelta(days=1)).date(),
+        today=request.app.state.clock().astimezone(TAIPEI).date(),
     )
 
 

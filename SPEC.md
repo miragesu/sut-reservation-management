@@ -1,3 +1,5 @@
+> **Effective owner-confirmed update (2026-10-16):** the approved Demo integration supersedes earlier manual Check in / reservation no-show timing and Dashboard filtering requirements in this document. Start using is explicit; availability notification starts a persisted 15-minute window capped at booking end; waiting for release does not consume it. My SUTs is own-only, Calendar is the shared timeline, and navigation/design follow `docs/demo-integration.md`. Earlier conflicting descriptions are historical; use that document and the updated tests for current acceptance. Production deployment constraints remain unchanged.
+
 # SUT Reservation & Queue Management System — Product Specification
 
 Version: 1.5-draft | Scope: MVP | Source: user-provided v1.0 requirements

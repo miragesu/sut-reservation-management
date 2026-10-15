@@ -9,7 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from contextlib import ExitStack
+from contextlib import ExitStack, closing
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -155,7 +155,7 @@ def main():
                         "Expected duration (minutes; custom multi-day estimates allowed)", exact=True
                     ).fill(str(minutes))
                     page.get_by_label("Purpose (optional)", exact=True).fill(purpose)
-                    page.get_by_role("button", name="Claim", exact=True).click()
+                    page.get_by_role("button", name="Start using", exact=True).click()
 
                 def join_ui(page):
                     page.get_by_label("Requested duration (minutes)", exact=True).fill("30")
@@ -172,8 +172,8 @@ def main():
                 visit(rd)
                 claim_ui(rd, 30, "Browser RD usage")
                 original = api["rd"].get("/api/v1/suts/1/coordination").json()["usage"]
-                rd.get_by_label("Expected end (Asia/Taipei)", exact=True).fill(
-                    (datetime.now(TAIPEI) + timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%S")
+                rd.get_by_label("Expected end", exact=True).fill(
+                    (datetime.now(TAIPEI) + timedelta(days=2)).strftime("%Y-%m-%dT%H:%M")
                 )
                 rd.get_by_role("button", name="Update expected end", exact=True).click()
                 assert (
@@ -197,11 +197,9 @@ def main():
                 def reserve_ui(page, sut, purpose):
                     page.goto(base + f"/reservations/new?sut_id={sut}")
                     start = datetime.now(TAIPEI) + timedelta(hours=1)
-                    page.get_by_label("Start (Asia/Taipei)", exact=True).fill(
-                        start.strftime("%Y-%m-%dT%H:%M:%S")
-                    )
-                    page.get_by_label("End (Asia/Taipei)", exact=True).fill(
-                        (start + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S")
+                    page.get_by_label("Start", exact=True).fill(start.strftime("%Y-%m-%dT%H:%M"))
+                    page.get_by_label("End", exact=True).fill(
+                        (start + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
                     )
                     page.get_by_label("Purpose", exact=True).fill(purpose)
                     page.get_by_role("button", name="Save reservation", exact=True).click()
@@ -241,7 +239,7 @@ def main():
                 join_ui(lab)
                 attended = reserve_ui(rd, 1, "Browser check-in booking")
                 now = datetime.now(UTC)
-                with sqlite3.connect(database) as db:
+                with closing(sqlite3.connect(database)) as db, db:
                     db.execute(
                         "UPDATE reservations SET start_time=?,end_time=? WHERE id=?",
                         (
@@ -251,7 +249,10 @@ def main():
                         ),
                     )
                 rd.goto(base + f"/reservations/{attended}")
-                rd.get_by_role("button", name="I'm here / Check in", exact=True).click()
+                rd.wait_for_timeout(1500)
+                rd.reload()
+                expect(rd.locator("main")).to_contain_text("Waiting for release")
+                expect(rd.locator('form[action$="/check-in"]')).to_have_count(0)
                 assert (
                     api["rd"].get(f"/api/v1/reservations/{attended}").json()["status"]
                     == "waiting_for_release"
@@ -302,7 +303,7 @@ def main():
                     ).input_value()
                     == "720"
                 )
-                expect(lab.get_by_role("button", name="Claim", exact=True)).to_be_disabled()
+                expect(lab.get_by_role("button", name="Start using", exact=True)).to_be_disabled()
                 assert (
                     mutate(
                         api["demo"], "PATCH", "/api/v1/suts/1/operational-state", {"state": "normal"}
@@ -314,10 +315,18 @@ def main():
                 assert errors == [], errors
                 browser.close()
             print(
-                "PASS: Chromium multi-user Claim/Release/FIFO, force-release, estimate update, reservation create/edit/cancel/calendar, explicit overlap acknowledgement, checked-in priority/manual handoff, history/inbox and real 30s Detail polling preserving input"
+                "PASS: Chromium multi-user Claim/Release/FIFO, force-release, estimate update, reservation create/edit/cancel/calendar, explicit overlap acknowledgement, availability-based priority/manual start, history/inbox and real 30s Detail polling preserving input"
             )
         finally:
-            process.terminate()
+            if os.name == "nt":
+                subprocess.run(
+                    ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                    check=False,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            else:
+                process.terminate()
             process.wait(timeout=10)
 
 

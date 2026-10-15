@@ -12,6 +12,7 @@ from app.models.domain import (
     User,
 )
 from app.services.common import get_or_404
+from app.services.notification_text import chinese_message
 from app.services.coordination import current_usage, queue_entries, protected
 from app.services.inventory import contact, effective_status, ACTIVE_RESERVATIONS
 
@@ -70,6 +71,22 @@ def reservation_view(db, booking, now=None):
     now = now or utcnow()
     sut = db.get(SUT, booking.sut_id)
     usage = current_usage(db, sut.id)
+    if booking.status in ("cancelled", "completed", "no_show"):
+        display_status = {"cancelled": "Cancelled", "completed": "Completed", "no_show": "No show"}[
+            booking.status
+        ]
+    elif booking.status == "claimed":
+        display_status = "In use"
+    elif now < booking.start_time:
+        display_status = "Upcoming"
+    elif usage is not None or sut.operational_state != "normal" or sut.is_archived:
+        display_status = "Waiting for release"
+    elif booking.start_deadline and now < booking.start_deadline:
+        display_status = "Ready to start"
+    elif booking.start_deadline:
+        display_status = "No show"
+    else:
+        display_status = "Preparing availability"
     booked_now = db.scalar(
         select(Reservation.id)
         .where(
@@ -114,13 +131,29 @@ def reservation_view(db, booking, now=None):
         "operational_reason": sut.operational_reason,
         "effective_status": effective_status(sut, usage, booked_now is not None),
         "in_use": usage is not None,
+        "display_status": display_status,
+        "ready_at": booking.ready_at,
+        "start_deadline": booking.start_deadline,
     }
 
 
-def reservation_page(db, *, sut_id=None, user_id=None, start=None, end=None, page=1, page_size=25, now=None):
+def reservation_page(
+    db,
+    *,
+    sut_id=None,
+    user_id=None,
+    start=None,
+    end=None,
+    page=1,
+    page_size=25,
+    now=None,
+    exclude_cancelled=False,
+):
     if start is not None and end is not None and end <= start:
         raise HTTPException(422, "End filter must be after start filter")
     conditions = []
+    if exclude_cancelled:
+        conditions.append(Reservation.status != "cancelled")
     if sut_id is not None:
         conditions.append(Reservation.sut_id == sut_id)
     if user_id is not None:
@@ -213,7 +246,10 @@ def coordination_view(db, sut_id, now):
 
 def notification_list(db, actor, *, limit=50, offset=0, after_id=None, through_id=None):
     return [
-        {k: getattr(n, k) for k in ("id", "sut_id", "message", "created_at", "read_at")}
+        {
+            **{k: getattr(n, k) for k in ("id", "sut_id", "created_at", "read_at")},
+            "message": chinese_message(n.message),
+        }
         for n in db.scalars(
             select(Notification)
             .where(
@@ -253,4 +289,7 @@ def mark_read(db, actor, identity, now):
         raise HTTPException(403, "Notification belongs to another user")
     if row.read_at is None:
         row.read_at = now
-    return {k: getattr(row, k) for k in ("id", "sut_id", "message", "created_at", "read_at")}
+    return {
+        **{k: getattr(row, k) for k in ("id", "sut_id", "created_at", "read_at")},
+        "message": chinese_message(row.message),
+    }

@@ -21,7 +21,7 @@
     form.reset();
     el('conflict').hidden = true;
     el('detail').replaceChildren();
-    el('title').textContent = `${action[0].toUpperCase() + action.slice(1)} · ${button.dataset.sutName}`;
+    el('title').textContent = `${action === 'claim' ? 'Start using' : action[0].toUpperCase() + action.slice(1)} · ${button.dataset.sutName}`;
     el('full-detail').href = `/suts/${identity}`;
     el('duration').hidden = !['claim', 'queue'].includes(action);
     el('minutes').required = ['claim', 'queue'].includes(action);
@@ -58,7 +58,7 @@
       const response = await fetch(`/suts/${identity}/activity`);
       if (!response.ok || response.redirected) throw new Error();
       const html = await response.text();
-      if (request === generation) { el('detail').innerHTML = html; updateEligibility(); el('state-status').textContent = 'State refreshed (Asia/Taipei): ' + new Date().toLocaleTimeString('en-GB', {timeZone:'Asia/Taipei'}); }
+      if (request === generation) { el('detail').innerHTML = html; updateEligibility(); el('state-status').textContent = 'State refreshed: ' + new Date().toLocaleTimeString('en-GB', {timeZone:'Asia/Taipei'}); }
     } catch { if (request === generation) el('state-status').textContent = 'State may be stale. Retrying in 30 seconds; your input is retained.'; }
   }, 30000);
   document.querySelectorAll('[data-duration-preset]').forEach(button => button.addEventListener('click', () => { el('minutes').value = button.dataset.durationPreset; }));
@@ -83,7 +83,7 @@
         const detail = result.detail;
         if (detail && detail.code === 'reservation_conflict_confirmation_required') {
           el('conflict').hidden = false;
-          el('conflicts').textContent = detail.conflicts.map(booking => `${booking.user.display_name} · ${booking.user.team} · ${booking.user.email} · ${new Date(booking.start_time).toLocaleString('en-GB', {timeZone:'Asia/Taipei'})}–${new Date(booking.end_time).toLocaleString('en-GB', {timeZone:'Asia/Taipei'})} (Asia/Taipei)`).join('; ');
+          el('conflicts').textContent = detail.conflicts.map(booking => `${booking.user.display_name} · ${booking.user.team} · ${booking.user.email} · ${new Date(booking.start_time).toLocaleString('en-GB', {timeZone:'Asia/Taipei'})}–${new Date(booking.end_time).toLocaleString('en-GB', {timeZone:'Asia/Taipei'})}`).join('; ');
           el('ack').checked = false;
           feedback(detail.message);
         } else feedback(typeof detail === 'string' ? detail : JSON.stringify(detail || result));

@@ -6,12 +6,12 @@
 <p>Started {{ coordination.usage.start_time|taipei }} · Expected end {{ coordination.usage.expected_end_time|taipei }} · {{ coordination.usage.purpose or '' }}</p>
 {% else %}<p>No recorded current usage. Reservation and notified-queue priority still apply.</p>{% endif %}
 <h2>Queue</h2>
-<ol>{% for entry in coordination.queue %}<li>{{ entry.user.display_name }} · {{ entry.user.team }} · <a href="mailto:{{ entry.user.email }}">{{ entry.user.email }}</a> · {{ entry.requested_duration_minutes }} minutes · {{ entry.offer_status }}{% if not entry.eligible %} (currently ineligible; record retained){% endif %}{% if entry.paused_at %} · Offer paused{% elif entry.offer_expires_at %} · Claim before {{ entry.offer_expires_at|taipei }}{% endif %}</li>{% else %}<li>No queue entries.</li>{% endfor %}</ol>
+<ol>{% for entry in coordination.queue %}<li>{{ entry.user.display_name }} · {{ entry.user.team }} · <a href="mailto:{{ entry.user.email }}">{{ entry.user.email }}</a> · {{ entry.requested_duration_minutes }} minutes · {{ entry.offer_status }}{% if not entry.eligible %} (currently ineligible; record retained){% endif %}{% if entry.paused_at %} · Offer paused{% elif entry.offer_expires_at %} · Start using before {{ entry.offer_expires_at|taipei }}{% endif %}</li>{% else %}<li>No queue entries.</li>{% endfor %}</ol>
 <h2>Current and upcoming reservations</h2>
 {% for booking in coordination.reservations %}<article class="border rounded p-2 mb-2">
 <a href="/reservations/{{ booking.id }}">{{ booking.user.display_name }} · {{ booking.start_time|taipei }}–{{ booking.end_time|taipei }}</a>
-<p>{{ booking.user.team }} · <a href="mailto:{{ booking.user.email }}">{{ booking.user.email }}</a> · {{ booking.purpose }} · {{ booking.status }}</p>
-{% if booking.checked_in_at %}<p>Checked in — {% if coordination.usage %}awaiting recorded Release{% else %}ready for a separate manual Claim{% endif %}. Priority ends at the booked end.</p>{% endif %}
+<p>{{ booking.user.team }} · <a href="mailto:{{ booking.user.email }}">{{ booking.user.email }}</a> · {{ booking.purpose }} · {{ booking.display_status }}</p>
+{% if booking.start_deadline and booking.display_status == 'Ready to start' %}<p>Start using by {{ booking.start_deadline|taipei }}.</p>{% endif %}
 {% if booking.at_risk %}<p class="text-danger">Scheduling conflict: recorded use may delay this booking. Coordinate manually.</p>{% endif %}
 </article>{% else %}<p>No current or upcoming reservations.</p>{% endfor %}
 </div>

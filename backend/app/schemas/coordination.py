@@ -107,6 +107,9 @@ class QueueView(Output):
 
 
 class ReservationView(Output):
+    display_status: str
+    ready_at: datetime | None
+    start_deadline: datetime | None
     id: int
     sut_id: int
     sut_name: str

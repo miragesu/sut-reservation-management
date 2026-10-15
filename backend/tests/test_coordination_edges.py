@@ -106,10 +106,10 @@ def test_reservation_pause_and_resume_queue_offer_after_checked_in_priority(aren
     users, sut, _, clock = arena
     holder = claim(users["root"], sut)
     join(users["lab"], sut)
-    booking = reserve(users["rd"], sut, clock, start=5, length=30)
+    reserve(users["rd"], sut, clock, start=5, length=30)
     assert release(users["root"], sut, holder).status_code == 200
     clock.advance(minutes=5)
-    assert mutate(users["rd"], "POST", f"/api/v1/reservations/{booking['id']}/check-in").status_code == 200
+    clock.sweep()  # Reservation availability now automatically pauses FIFO offers.
     rows = users["root"].get(f"/api/v1/suts/{sut}/queue").json()["items"]
     assert rows[0]["paused_at"] is not None
     assert (
@@ -157,7 +157,7 @@ def test_inactive_reservation_preserved_but_does_not_deadlock_queue(arena, appli
         == 200
     )
     stored = users["root"].get(f"/api/v1/reservations/{booking['id']}").json()
-    assert stored["status"] == "confirmed" and stored["cancelled_at"] is None
+    assert stored["status"] == "waiting_for_release" and stored["cancelled_at"] is None
     assert users["root"].get(f"/api/v1/suts/{sut}/queue").json()["items"][0]["offer_status"] == "notified"
     assert claim(users["lab"], sut, 1, acknowledge_reservation_conflict=True)["sut_id"] == sut
 
@@ -241,7 +241,7 @@ def test_web_forms_timezone_confirmation_history_and_blank_filters(arena, applic
         data={"csrf_token": csrf(users["rd"]), "duration_minutes": 180, "purpose": "<script>test</script>"},
         follow_redirects=False,
     )
-    assert response.status_code == 409 and "Asia/Taipei" in response.text
+    assert response.status_code == 409 and "Taipei time (UTC+8)" in response.text
     assert "&lt;script&gt;" in response.text and "<script>test</script>" not in response.text
     response = users["rd"].post(
         f"/suts/{sut}/claim",

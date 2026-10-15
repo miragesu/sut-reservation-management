@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Reservation overlap — confirmation required</h1>
-<p role="alert">{{ conflict.message }}</p><p>Recommended expected end: {{ conflict.suggested_expected_end_time|taipei }} (Asia/Taipei). Booked times below are also Asia/Taipei.</p>
+<p role="alert">{{ conflict.message }}</p><p>Recommended expected end: {{ conflict.suggested_expected_end_time|taipei }}.</p>
 <ul>{% for booking in conflict.conflicts %}<li>{{ booking.user.display_name }} · {{ booking.user.team }} · <a href="mailto:{{ booking.user.email }}">{{ booking.user.email }}</a> · {{ booking.start_time|taipei }}–{{ booking.end_time|taipei }}</li>{% endfor %}</ul>
 <form method="post" action="{{ path }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 {% for name,value in fields.items() %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}

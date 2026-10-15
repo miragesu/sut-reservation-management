@@ -1,9 +1,10 @@
 'use strict';
 (() => {
   const button = document.getElementById('desktop-opt-in');
-  if (!button) return;
   const status = document.getElementById('notification-status');
   const count = document.getElementById('unread-count');
+  if (!count) return;
+  const announce = message => { if (status) status.textContent = message; };
   const supported = window.isSecureContext && typeof window.Notification === 'function';
   const key = `sut-notifications-${document.body.dataset.userId}`;
   const delivered = new Set();
@@ -11,14 +12,15 @@
   try { cursor = Number(sessionStorage.getItem(key)) || null; enabled = sessionStorage.getItem(`${key}-enabled`) === 'yes'; } catch { /* Storage is optional. */ }
   const save = () => { try { sessionStorage.setItem(key, String(cursor)); sessionStorage.setItem(`${key}-enabled`, enabled ? 'yes' : 'no'); } catch { /* In-memory deduplication remains active. */ } };
   const describe = () => {
+    if (!button) return;
     button.disabled = !supported || Notification.permission === 'denied';
-    status.textContent = !supported ? 'Desktop notifications require a supported browser and HTTPS. In-app Inbox remains available.' : Notification.permission === 'denied' ? 'Desktop notifications are blocked. Use Inbox or change browser settings.' : enabled ? 'Desktop notifications enabled while this page is open.' : 'In-app notifications are available in Inbox.';
+    status.textContent = !supported ? 'Desktop notifications require a supported browser and HTTPS. Inbox remains available.' : Notification.permission === 'denied' ? 'Desktop notifications are blocked. Use Inbox or change browser settings.' : enabled ? 'Desktop notifications enabled while a SUT page is open.' : 'Enable optional desktop alerts or view messages in Inbox.';
   };
   describe();
-  button.addEventListener('click', async () => {
+  button?.addEventListener('click', async () => {
     if (!supported) return;
     try { enabled = (await Notification.requestPermission()) === 'granted'; save(); describe(); }
-    catch { status.textContent = 'Desktop permission unavailable. Use Inbox.'; }
+    catch { announce('Desktop permission unavailable. Use Inbox.'); }
   });
   const refresh = async () => {
     if (pending) { queued = true; return; }
@@ -28,18 +30,8 @@
       if (!response.ok || response.redirected) throw new Error();
       const data = await response.json();
       count.textContent = String(data.unread_count);
+      count.hidden = data.unread_count === 0;
       count.setAttribute('aria-label', `${data.unread_count} unread notifications`);
-      const preview = document.getElementById('notification-preview');
-      const rows = data.items.slice(0, 5).map(item => {
-        const row = document.createElement('p');
-        const link = document.createElement('a');
-        link.href = '/notifications';
-        link.textContent = item.message;
-        row.append(link, document.createTextNode(' · ' + new Date(item.created_at).toLocaleString('en-GB', {timeZone:'Asia/Taipei'}) + ' (Asia/Taipei) · ' + (item.read_at ? 'Read' : 'Unread')));
-        return row;
-      });
-      if (!rows.length) { const empty = document.createElement('p'); empty.textContent = 'No notifications.'; rows.push(empty); }
-      preview.replaceChildren(...rows);
       let desktopFailed = false;
       // First visit establishes a baseline; never replay historical notifications.
       if (cursor !== null && supported && enabled && Notification.permission === 'granted') {
@@ -58,10 +50,10 @@
         } while (items.length === 100);
       }
       describe();
-      if (desktopFailed) status.textContent = 'Desktop delivery unavailable. Use Inbox.';
+      if (desktopFailed) announce('Desktop delivery unavailable. Use Inbox.');
       cursor = Math.max(cursor || 0, data.latest_id);
       save();
-    } catch { status.textContent = 'Notifications may be stale. Retrying in 30 seconds; Inbox remains available.'; }
+    } catch { announce('Notifications may be stale. Retrying in 30 seconds; Inbox remains available.'); }
     finally { pending = false; if (queued) { queued = false; refresh(); } }
   };
   document.addEventListener('coordination:changed', refresh);
