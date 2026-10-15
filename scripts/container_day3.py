@@ -7,7 +7,12 @@ from pathlib import Path
 
 def check_restore(client, run, ready, compose, environment, cwd, temp, project):
     image = run("images", "-q", "sut-management", capture=True).stdout.strip()
-    source = project + "_sut-data"
+    container = run("ps", "-q", "sut-management", capture=True).stdout.strip()
+    mounts = json.loads(
+        subprocess.check_output(["docker", "inspect", container, "--format", "{{json .Mounts}}"], text=True)
+    )
+    mount = next(item for item in mounts if item["Destination"] == "/app/data")
+    source = mount["Name"] if mount["Type"] == "volume" else mount["Source"]
     restored = project + "-restored"
     before = client.get("/api/v1/history").json()
     notices = client.get("/api/v1/notifications").json()

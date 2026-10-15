@@ -1,4 +1,4 @@
-# Production DEP-007: image only; no source checkout or build tooling required.
+# Production DEP-008: image only; no source checkout or build tooling required.
 services:
   sut-management:
     # Pin a tested version tag or, preferably, its immutable Docker Hub digest.
@@ -16,7 +16,11 @@ services:
       DEADLINE_PROCESSOR_ENABLED: "true"
       DEADLINE_POLL_SECONDS: "${DEADLINE_POLL_SECONDS:-1}"
     volumes:
-      - sut-data:/app/data
+      - type: bind
+        source: /data/sut-reservation-data
+        target: /app/data
+        bind:
+          create_host_path: false
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
@@ -27,5 +31,3 @@ services:
     sysctls:
       net.ipv4.ip_unprivileged_port_start: "80"
     stop_grace_period: 15s
-volumes:
-  sut-data:
