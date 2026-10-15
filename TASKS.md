@@ -321,6 +321,6 @@ Delivery and precise verification evidence: docs/implementation-status.md, DEP-0
 - [x] Implement version-based image-only Compose and immutable local install lock; pinned/checksummed one-file installer, opt-in warning, preservation, cold-backup upgrade and deployment verification.
 - [x] Implement existing-explicit-tag refusal, post-registry-validation official latest promotion and separate protected/explicit stable approval flow. No publishing performed.
 - [x] Update administrator quick start, maintenance/backup/rollback/migration guide and confirmed requirements.
-- [ ] Final complete regression, native browsers, default source-image and low-mode image-only/installer lifecycle smoke accepted (record actual results below).
+- [x] Final197-case regression, three native browsers, default-mode final source-image and one-character low-mode image-only/installer fresh-rerun-backup-upgrade lifecycle all PASS; exact commands/limitations in implementation status.
 - [ ] Branch pushed and PR creation attempted.
 - [ ] Separately approved new image release (tentative1.0.1), hosted promotion/stable environment configuration and production LAN/boot/storage acceptance.

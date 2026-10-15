@@ -195,7 +195,7 @@ version/source/digest summary and serialized release concurrency remain in place
 
 | Check | Actual result |
 | --- | --- |
-| `.venv/bin/pytest -q` | **196 passed, 1 warning in 105.75s**. Existing Starlette/httpx TestClient deprecation warning only. Includes74 new cases for policy boundaries/roles/reset/change/bootstrap/secret/Boolean, registry tag refusal/error handling and real Bash function execution with disposable files/command doubles. |
+| `.venv/bin/pytest -q` | **197 passed, 1 warning in 88.25s**. Existing Starlette/httpx TestClient deprecation warning only. Includes75 new cases for policy boundaries/roles/reset/change/bootstrap/secret/Boolean, registry tag refusal/error handling and real Bash function execution with disposable files/command doubles. |
 | Ruff lint/format | PASS, 57 files. |
 | `bash -n setup.sh`, documentation Bash blocks/local links, `git diff --check` | PASS. |
 | `/tmp/actionlint-1.7.7 .github/workflows/release.yml .github/workflows/day1.yml` | PASS. Does not claim remote release jobs ran. |
@@ -205,8 +205,32 @@ version/source/digest summary and serialized release concurrency remain in place
 | Native Day3 Chromium | PASS: Card/Table actions, poll/input retention, conflicts, Taipei booking, keyboard/mobile and notification fallback/read. |
 | Final Docker source build/default-mode full smoke | PASS, exit0: `DOCKER_CONFIG=/tmp/sut-v1-release-anonymous SUT_BUILD_NETWORK=host SUT_BUILD_CA=/etc/ssl/certs/ca-certificates.crt SUT_SMOKE_EXPORT_IMAGE=mirage315/sut-reservation-management:ci-dep009 .venv/bin/python scripts/container_smoke.py`. Build TLS/hash checks retained;5088→80, UID10001,zero capabilities,NoNewPrivs,port79 denied, migration/bootstrap/login/Chromium, persisted sessions/data, live/offline deadlines, restart deduplication and independent cold recovery/integrity all passed. Local image only, no publication. |
 
-Final image-only low-mode and installer lifecycle results are recorded below when
-completed. Initial test-double/fixture failures were diagnosed rather than bypassed:
+Actual isolated installer lifecycle: **PASS**, exit0, using
+`DOCKER_CONFIG=/tmp/sut-v1-release-anonymous SUT_INSTALLER_TEST_IMAGE=mirage315/sut-reservation-management:ci-dep009 .venv/bin/python scripts/installer_smoke.py`.
+Runs real Bash main, image-only Compose, bootstrap, rerun, cold tar backup and upgrade,
+health/5088:80/bind/Alembic/integrity/record-ID verification, retains exact .env/secret
+and existing Super Admin/Lab, and asserts no secret/password in captured output.
+Uses a local test image with synthetic version1.0.1 identity, **not a published1.0.1**.
+Mount preflight/registry choice are simulated; transport is a local stand-in with
+real embedded checksum validation. Actual public HTTPS download of pinned Compose
+`bdf7ae4274893a3b5e2b4a7d0ee9135e06223c3c` independently matched the embedded SHA256.
+Daemon-namespace metadata helper accounts for cloud sandbox UID10001→65534 mapping;
+production host permissions and /data mount are not claimed tested. Temporary host
+paths and randomized Compose projects only; existing data/volumes are untouched.
+
+This end-to-end rehearsal caught an actual stdin-consumption bug in the snapshot
+helper. It now receives `/dev/null`, preserving later operator confirmations; a
+new regression case executes the backup and proves the next confirmation survives.
+All197 tests and the final full lifecycle passed after that correction.
+
+Final low-security image-only smoke: **PASS**, exit0:
+`DOCKER_CONFIG=/tmp/sut-v1-release-anonymous SUT_SMOKE_IMAGE=mirage315/sut-reservation-management:ci-dep009 SUT_SMOKE_LOW_SECURITY=1 .venv/bin/python scripts/container_smoke.py`.
+Uses one-character Unicode bootstrap and replacement passwords, actual migrated
+SQLite bind, required first-password change/session revocation and Chromium login,
+5088→80/non-root/capabilities/NoNewPrivs/privileged-port denial, persisted sessions,
+Claim/Release/FIFO/history, live/offline deadlines/restart deduplication and cold
+restore with schema/integrity/foreign-key checks. Locally loaded candidate only;
+**no registry pull/publication of1.0.1 is claimed**. Initial test-double/fixture failures were diagnosed rather than bypassed:
 upgrade mock lacked the new record snapshot; direct-SQL fictional Lab fixture lacked
 required description/created_at. Both fixtures were corrected without relaxing
 production checks. A dynamic HTML label was corrected and final runtime source was
