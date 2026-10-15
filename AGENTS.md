@@ -124,7 +124,7 @@ When asked to deliver in three days, read `SPRINT_3DAY.md`. Do not claim full MV
 Complete BR-001 through BR-028; see `SPRINT_3DAY.md` and `CODEX_START_PROMPT.md`. Three days is a target, not permission to ship partial functionality. Do not claim completion until every acceptance condition and command is verified. Maintain `docs/implementation-status.md` as evidence.
 
 ## Deployment constraint — DEP-001
-Deploy to a single internal Docker host via browser `http://<server-ip>:5088/` (example 10.88.26.99). Code and Compose must not embed the IP. Production deployment MUST use Compose remote Git build context: the server holds only compose.yaml plus local configuration; source/Dockerfile are fetched from GitHub during build. Do not git clone during entrypoint. Publish 5088:8000, persist SQLite outside image, support backups and one effective expiration scheduler. Do not claim LAN reachability was tested unless it actually was. Desktop notifications on LAN HTTP may be blocked; in-app notifications must remain usable. See SPEC.md DEP-001.
+Deploy to a single internal Docker host via browser `http://<server-ip>:5088/` (example 10.88.26.99). Code and Compose must not embed the IP. Production deployment MUST use Compose remote Git build context: the server holds only compose.yaml plus local configuration; source/Dockerfile are fetched from GitHub during build. Do not git clone during entrypoint. Publish 5088:80, persist SQLite outside image, support backups and one effective expiration scheduler. Do not claim LAN reachability was tested unless it actually was. Desktop notifications on LAN HTTP may be blocked; in-app notifications must remain usable. See SPEC.md DEP-001.
 
 
 

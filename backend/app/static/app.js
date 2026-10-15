@@ -30,8 +30,10 @@
       const html = await response.text();
       if (requested !== generation) return;
       // HTML is our authenticated, autoescaped Jinja fragment; never build markup from user data in JS.
+      const position = {left: window.scrollX, top: window.scrollY};
       content.innerHTML = html;
       applyView();
+      window.scrollTo(position);
       feedback.textContent = `Updated ${new Intl.DateTimeFormat('en-GB', {timeZone: 'Asia/Taipei', dateStyle: 'short', timeStyle: 'medium'}).format(new Date())} (Asia/Taipei) · Refreshes every 30 seconds`;
       feedback.classList.remove('text-danger');
     } catch {
@@ -45,6 +47,7 @@
   form.addEventListener('submit', event => { event.preventDefault(); generation++; history.replaceState(null, '', `/?${params()}`); refresh(); });
   // Cancel stale responses if the user has unsaved filter edits.
   form.addEventListener('input', () => { generation++; });
+  document.addEventListener("coordination:changed", () => { generation++; refresh(); });
   setInterval(refresh, 30000);
   if (initial.size) refresh();
 })();

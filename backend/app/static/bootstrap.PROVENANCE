@@ -1,3 +1,7 @@
 Bootstrap 5.3.8 from https://registry.npmjs.org/bootstrap/-/bootstrap-5.3.8.tgz
 Verified npm SHA-512 integrity: sha512-HP1SZDqaLDPwsNiqRqi5NcP0SSXciX2s9E+RyqJIIqGo+vJeN5AJVM98CXmW/Wux0nQ5L7jeWUdplCEf0Ee+tg==
 MIT license: bootstrap.LICENSE
+
+Day 3: bootstrap.bundle.min.js from the same Bootstrap 5.3.8 npm package, SHA-512 dist.integrity verified before extraction; includes Popper. Bootstrap MIT notice retained in bundle; Popper 2.11.8 MIT license is in popper.LICENSE (npm package SHA-512 verified before extraction).
+
+Bootstrap bundle SHA-256: e4fd49181388c48ec5040bd3fe66f57c29c8e67fcd8502b3354b96ec7ab47cc7

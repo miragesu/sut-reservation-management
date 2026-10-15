@@ -1,7 +1,7 @@
 # Implementation Checklist
 
 > Check boxes only after successful verification. Link PR or test evidence in the PR description.
-> Day 1/2 evidence: `docs/implementation-status.md` and `docs/day2-verification.md`. Checked deployment items refer to local Compose and source-free pinned GitHub Remote Build on the cloud daemon, not the actual LAN host or a newly provisioned production OS. Mixed Day 2/3 acceptance items stay unchecked even where the Day 1 subset exists.
+> Day 1/2/3 evidence: `docs/implementation-status.md`, `docs/day2-verification.md` and `docs/day3-verification.md`. Checked deployment items refer to local Compose and source-free pinned GitHub Remote Build on the cloud daemon, not the actual LAN host or a newly provisioned production OS. External/owner gates remain unchecked; local automated/browser/deployment evidence is distinguished in the status document.
 
 ## Phase 0 — Decision gate
 - [x] Confirm BR-008: Lab Admin manages both labs, creates/deletes labs and SUTs, force-releases records and clears queues; user management remains Super Admin only
@@ -33,14 +33,14 @@
 - [x] Dockerfile, compose, persistent SQLite data volume
 - [x] `.env.example`, `.gitignore`, README
 - [x] Pytest fixtures and local test/smoke runners (see Day 1 evidence)
-- [ ] Hosted GitHub Actions execution verified (workflow added; remote run not yet observed)
+- [x] Hosted GitHub Actions execution verified at final application `eb17c6f` — run 38736460114 succeeds.
 
 ## Phase 2 — Inventory
 - [x] Lab HTML and JSON CRUD with role-based all-lab access (BR-008)
 - [x] SUT HTML and JSON CRUD: archive-only DELETE, blocked-conflict 409, admin restore, include_archived admin filter, historical linkage preserved (BR-009)
 - [x] Test archive/restore role permissions, archive conflicts, history retention, exclusion from KPIs and inability to Claim/Queue/Reserve archived devices
 - [x] Dashboard KPIs and Lab-grouped Card default plus Table toggle (BR-025)
-- [ ] SUT list search/filter/pagination
+- [x] SUT list search/filter/pagination
 - [x] SUT detail basic information
 - [x] Test BR-010: create same name in different Labs succeeds; case-insensitive/trim-equivalent duplicate in same Lab returns 409 / user-friendly form error; rename conflict rejected; archived names remain reserved; DB uniqueness handles concurrent submissions; FK protections and missing resource 404
 - [x] Test Lab Admin editing/force-releasing/clearing queues in either lab; User denied; Super Admin user management only
@@ -80,13 +80,13 @@
 - [x] In-app warning to current user when reserved holder checks in
 
 ## Phase 5 — Release validation
-- [ ] `docker compose up --build` starts cleanly
-- [ ] Fresh DB `alembic upgrade head` works
-- [ ] Restart/recreate container preserves SQLite DB
-- [ ] `pytest` passes, CI green
-- [ ] End-to-end manual smoke walkthrough documented
-- [ ] README and API docs match actual behavior
-- [ ] No TODOs for MVP requirements, no exposed credentials
+- [x] `docker compose up --build` starts cleanly
+- [x] Fresh DB `alembic upgrade head` works
+- [x] Restart/recreate container preserves SQLite DB
+- [x] `pytest` passes, CI green for final application SHA `eb17c6f` (103 cases; hosted run 38736460114).
+- [x] End-to-end manual smoke walkthrough documented
+- [x] README and API docs match actual behavior
+- [x] No TODOs for MVP requirements, no exposed credentials
 - [ ] Final acceptance checklist signed off by project owner
 
 - [x] Confirm BR-014 business policy (implementation tracked below): owner can edit/cancel own upcoming confirmed reservation; admins can edit/cancel any; validate edited booking and audit changes
@@ -116,21 +116,21 @@
 ## BR-018 — Status / notification 30-second refresh (confirmed)
 - [x] Confirm BR-018: Option B — HTTP polling every 30 seconds on Dashboard, SUT Detail and notification area; no WebSocket/SSE in MVP.
 - [x] Authenticated read-only status and notification endpoints return current state without side effects.
-- [ ] Dashboard, SUT Detail and in-app notification UI update automatically every 30 seconds, preserving in-progress form entries and filters.
-- [ ] Successful actions trigger immediate relevant status refresh; polling handles changes by other users.
-- [ ] Network/API failure keeps prior values, shows stale/retry cue and retries; no duplicate notification display.
+- [x] Dashboard, SUT Detail and in-app notification UI update automatically every 30 seconds, preserving in-progress form entries and filters.
+- [x] Successful actions trigger immediate relevant status refresh; polling handles changes by other users.
+- [x] Network/API failure keeps prior values, shows stale/retry cue and retries; no duplicate notification display.
 - [x] Tests verify response authorization, 30-second client interval, external changes becoming visible, and no state mutation by polling.
 
 
 ## BR-019 — In-app + optional browser desktop notifications (confirmed)
 - [x] Confirm BR-019 Option B: in-app + opt-in browser desktop notifications; Email/Teams deferred.
 - [x] Create persisted, user-scoped notification records with event identifiers and `read_at`; deliver at most once per logical event/recipient despite retries.
-- [ ] Implement notification bell, unread count, notification list and explicit mark-read action.
-- [ ] Fetch new/unread notifications using existing 30-second read-only HTTP polling (BR-018).
-- [ ] Provide user-click permission opt-in; gracefully handle denied/unsupported/insecure contexts.
-- [ ] Show best-effort desktop alerts while site is open and avoid duplicate notifications across polls.
-- [ ] Cover permissions, recipient access, read semantics, dedupe, no GET side effects and failure fallback in tests.
-- [ ] Document limits (HTTPS/localhost; browser/OS permission; no notifications guaranteed when website is closed).
+- [x] Implement notification bell, unread count, notification list and explicit mark-read action.
+- [x] Fetch new/unread notifications using existing 30-second read-only HTTP polling (BR-018).
+- [x] Provide user-click permission opt-in; gracefully handle denied/unsupported/insecure contexts.
+- [x] Show best-effort desktop alerts while site is open and avoid duplicate notifications across polls.
+- [x] Cover permissions, recipient access, read semantics, dedupe, no GET side effects and failure fallback in tests.
+- [x] Document limits (HTTPS/localhost; browser/OS permission; no notifications guaranteed when website is closed).
 - [x] Do not implement Email, Teams, service-worker push or SMTP in MVP.
 
 ## BR-021 — Account deactivation with admin resource review (confirmed)
@@ -148,7 +148,7 @@
 - [x] Add `users.team` and optional `current_usages.purpose`, with Alembic upgrade/backfill strategy.
 - [x] Show name, team, email (`mailto:`), time, purpose on SUT detail/queue/reservation views where relevant.
 - [x] Authenticated API/polling includes only required coordination fields; no anonymous access, password hashes or session/security fields.
-- [ ] Tests cover permission boundaries, visibility, missing purpose, disabled-account history, and no email in desktop notification payloads.
+- [x] Tests cover permission boundaries, visibility, missing purpose, disabled-account history, and no email in desktop notification payloads.
 
 ## BR-023 — User profile self-service (Confirmed)
 - [x] Confirm Option B: RD can edit own display name, team, work email and password; no self-service username/role/permission change.
@@ -156,7 +156,7 @@
 - [x] Reuse secure password-change endpoint, require current password and invalidate other sessions where applicable.
 - [x] Validate required fields, work-email format and unique normalized email; show clear UI/API errors.
 - [x] Enforce first-login password-change gate and reject attempts to edit others or mass-assign username/role/status.
-- [ ] Audit safe field changes and verify SUT/Queue/Reservation contact info reflects updated profile without mutating historical user IDs.
+- [x] Audit safe field changes and verify SUT/Queue/Reservation contact info reflects updated profile without mutating historical user IDs.
 - [x] Tests for successful updates, invalid/duplicate email, forbidden fields, authentication, CSRF, and password changes.
 
 
@@ -171,32 +171,32 @@
 
 ## BR-025 — Dashboard layout switch acceptance (Confirmed: C)
 - [x] Confirm Card default + optional Table view; no separate datasets.
-- [ ] Default Dashboard groups cards by Lab with status, current user and next reservation context.
-- [ ] Accessible Card/Table toggle renders table columns for Lab/name/platform/status/current holder/expected end.
-- [ ] Search and filters are shared, and switching views preserves criteria and visible results.
-- [ ] BR-018 30-second polling updates cards/table and KPI from a single status source, without resetting the toggle or filters; stale-state warning on failure.
-- [ ] Automated tests cover both layouts, filter parity, archived exclusions, maintenance flags and polling refresh.
+- [x] Default Dashboard groups cards by Lab with status, current user and next reservation context.
+- [x] Accessible Card/Table toggle renders table columns for Lab/name/platform/status/current holder/expected end.
+- [x] Search and filters are shared, and switching views preserves criteria and visible results.
+- [x] BR-018 30-second polling updates cards/table and KPI from a single status source, without resetting the toggle or filters; stale-state warning on failure.
+- [x] Automated tests cover both layouts, filter parity, archived exclusions, maintenance flags and polling refresh.
 
 
 ## BR-026 — Dashboard reservation visibility (Confirmed: custom)
 - [x] Confirm Card = next upcoming reservation only; Table = all valid reservations in the rolling next 24h.
-- [ ] Implement server-side next-booking projection and per-SUT rolling-24h reservation lists, filtered to valid states.
-- [ ] Card shows at most one booking (name + TW start/end) or empty message.
-- [ ] Table shows every booking overlapping `[now, now+24h)` in chronological order, with clear multi-booking layout.
-- [ ] Include window-boundary overlapping bookings, omit expired/cancelled/no-show; respect timezone and status rules.
-- [ ] Preserve BR-025 shared SUT filters/view switch and BR-018 polling without interrupting input.
-- [ ] Test booking counts 0/1/multiple, boundaries, clock advancement, state updates, view switch, and polling.
+- [x] Implement server-side next-booking projection and per-SUT rolling-24h reservation lists, filtered to valid states.
+- [x] Card shows at most one booking (name + TW start/end) or empty message.
+- [x] Table shows every booking overlapping `[now, now+24h)` in chronological order, with clear multi-booking layout.
+- [x] Include window-boundary overlapping bookings, omit expired/cancelled/no-show; respect timezone and status rules.
+- [x] Preserve BR-025 shared SUT filters/view switch and BR-018 polling without interrupting input.
+- [x] Test booking counts 0/1/multiple, boundaries, clock advancement, state updates, view switch, and polling.
 
 ## BR-027 — Dashboard quick actions (Confirmed: B)
 - [x] Confirm Dashboard supports Claim, Join Queue and Reserve using Bootstrap modals in both Card and Table views.
-- [ ] Build reusable modal components prefilled with the selected SUT and accessible labels/focus management.
-- [ ] Claim modal: duration/custom time, optional purpose, upcoming reservation warning and confirmation where applicable; use shared Claim API/service.
-- [ ] Queue modal: display position/eligibility, prevent duplicate registration; use existing Queue service.
-- [ ] Reserve modal: start/end/purpose with Asia/Taipei formatting and BR-012/013 validation/conflict handling.
-- [ ] Enforce role/device/queue/reservation rules server-side and handle races/duplicate submissions.
-- [ ] Success closes modal and immediately refreshes affected SUT, stats and notices without losing search, filters, active view, or scroll.
-- [ ] Errors preserve modal inputs and explain corrective action; 30-second polling never resets an open modal or unsaved input.
-- [ ] Test both views, accessible modal interaction, validation, API authorization, success/failure, race cases and polling safety.
+- [x] Build reusable modal components prefilled with the selected SUT and accessible labels/focus management.
+- [x] Claim modal: duration/custom time, optional purpose, upcoming reservation warning and confirmation where applicable; use shared Claim API/service.
+- [x] Queue modal: display position/eligibility, prevent duplicate registration; use existing Queue service.
+- [x] Reserve modal: start/end/purpose with Asia/Taipei formatting and BR-012/013 validation/conflict handling.
+- [x] Enforce role/device/queue/reservation rules server-side and handle races/duplicate submissions.
+- [x] Success closes modal and immediately refreshes affected SUT, stats and notices without losing search, filters, active view, or scroll.
+- [x] Errors preserve modal inputs and explain corrective action; 30-second polling never resets an open modal or unsaved input.
+- [x] Test both views, accessible modal interaction, validation, API authorization, success/failure, race cases and polling safety.
 
 
 ## BR-028 — Dashboard sorting (Confirmed: customized C)
@@ -204,7 +204,7 @@
 - [x] Name uses case-insensitive natural ascending order within Lab; tie-break by SUT ID.
 - [x] Status uses Available → Reserved → In Use → Maintenance → Out of Service, then name/ID, within Lab.
 - [x] Card/Table, filtering and 30s polling retain the selected sort choice.
-- [ ] Cover Name/Status, cross-Lab groups, archived filtering, overdue indicator and stable ties with tests.
+- [x] Cover Name/Status, cross-Lab groups, archived filtering, overdue indicator and stable ties with tests.
 
 ## Three-day sprint checkpoint
 - [ ] Follow `SPRINT_3DAY.md`; capture actual command outputs and evidence for each day gate.
@@ -215,13 +215,13 @@
 - [ ] Every confirmed BR-001 to BR-028 has passing behavior tests and documented manual checks; no silent postponement.
 - [ ] Day 1, Day 2, Day 3 gates from `SPRINT_3DAY.md` each have recorded commands/outcomes.
 - [x] Concurrency and time-based reservation/queue expiry tests pass, including restart/idempotency.
-- [ ] Auth/RBAC, CSRF, DB migration, Docker persistence, Profile, notifications and dashboard checks pass.
-- [ ] `docs/implementation-status.md` shows PASS only with evidence.
+- [x] Auth/RBAC, CSRF, DB migration, Docker persistence, Profile, notifications and dashboard checks pass for application SHA `eb17c6f`; actual LAN/owner gates remain separate.
+- [x] `docs/implementation-status.md` shows PASS only with evidence.
 - [ ] If Day 3 is incomplete, retain NOT DONE and continue; do not recast full MVP as beta.
 
 ## DEP-001 — LAN deployment acceptance (all required)
-- [ ] Supply deployable Dockerfile + compose.yaml and complete repository/image prerequisites.
-- [x] Map host TCP 5088 to container 8000 (configurable without changing Python code).
+- [x] Supply deployable Dockerfile + compose.yaml and complete repository/image prerequisites.
+- [x] DEP-006: map host TCP 5088 to container 80; verify non-root listener, health and port-binding isolation.
 - [x] Serve login/root page and 200 `/health`; FastAPI binds 0.0.0.0 in container.
 - [x] Fresh Alembic migration succeeds and fails startup visibly on error.
 - [x] SQLite data persists across container restart and image rebuild, never stored only in writable container layer.
@@ -239,8 +239,8 @@
 - [x] Published `:5088`, `/health`, login, migrations and browser UI verified.
 - [x] Named volume keeps SQLite data through rebuild and recreate; backup and rollback are documented.
 - [x] Public vs private repo network/authentication requirements documented and tested as applicable.
-- [ ] Windows Docker local development override documented; production remains Linux remote-context build.
-- [ ] Explicit redeploy required after GitHub changes; release revision pinned for repeatability.
+- [x] Windows Docker local development override documented; production remains Linux remote-context build.
+- [x] Explicit redeploy required after GitHub changes; release revision pinned for repeatability.
 
 ## DEP-004 — Public repository acceptance checklist
 
@@ -260,8 +260,29 @@
 - [x] Background startup catch-up, periodic processing without HTTP/browser, interruption rollback and overlapping-worker deduplication.
 - [x] Local lint/format/compile, 98 pytest cases, baseline and Day 2 Chromium flows, Docker migration/persistence/deadline smoke pass (details in evidence).
 - [x] Day 2 implementation branch pushed; public pinned-ref Remote Build and source-free Compose deadline/persistence smoke pass at `344d305`.
-- [ ] PR to main confirmed — actual `gh pr create` rejected by GitHub GraphQL (`Forbidden`); reviewable body and manual link are saved in delivery evidence.
+- [x] Day 2 merged to main via PR #3 (confirmed by project owner); the original Day 2 agent API creation blocker is retained as historical evidence.
 
 Day 2 code acceptance does not complete Day 3 or full MVP. Hosted CI and actual LAN/production-host checks remain unverified.
 
-Day 2 Note: Detail/Inbox polling is implemented via one shared read-only controller; the complete Day 3 notification/modal refresh and failure/deduplication matrix remains unchecked above.
+Historical Day 2 note: Detail/Inbox polling supplied the shared read-only controller. Day 3 verification now covers the notification/modal refresh and failure/deduplication behavior checked above.
+
+## Issue #4 — Day 3 acceptance checkpoint
+- [x] Start from merged Day 1/2 main `719c32e`; branch `feat/day3-ui-acceptance`.
+- [x] Dashboard actions in Card/Table, shared state refresh, CSRF/conflict handling and retained modal input.
+- [x] Complete recipient notification history/unread counts, desktop opt-in/fallback/deduplication, authenticated contact visibility.
+- [x] Responsive navigation/calendar/history/detail, keyboard modal dismissal and fictional 2-lab/20-SUT browser fixtures.
+- [x] BR-001–BR-028 implementation/test map recorded in `docs/day3-verification.md`.
+- [x] Disposable local cold backup restored into a separate empty named volume, retaining sessions/history/notices and passing schema/integrity checks.
+- [x] Published final Day 3 SHA `eb17c6f` Remote Build and source-free Compose/deadline/backup-restore checks pass; implementation branch pushed.
+- [ ] Day 3 PR created — actual GitHub GraphQL creation returned Forbidden; pushed branch and reviewable PR body available for ChatGPT.
+- [x] Hosted Actions result verified at final DEP-006 application SHA `eb17c6f` (run 38736460114).
+- [ ] Actual production LAN host/firewall/two-client/backup rehearsal and project-owner acceptance.
+
+Day 3 application evidence is distinct from full MVP production acceptance. Full MVP remains NOT DONE until external gates pass.
+
+## DEP-006 — Updated deployment gate
+- [x] Dockerfile EXPOSE/healthcheck, entrypoint and Compose consistently use container port 80.
+- [x] UID 10001, all capabilities dropped, no-new-privileges; container-local binding permission verified without host changes.
+- [x] Host 5088 → container 80 health, login and actual Chromium workflow pass.
+- [x] Local build/Compose and published-SHA GitHub Remote Build pass; named-volume persistence and backup/restore retained.
+- [ ] Production LAN host/firewall/two-client acceptance (requires company access).

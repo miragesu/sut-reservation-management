@@ -186,6 +186,15 @@ def reconcile_sut(db, sut, now):
             f"{sut.name}: your usage estimate is overdue. Record Release when finished; no automatic release occurs.",
             now,
         )
+    if priority:
+        notice(
+            db,
+            priority.user_id,
+            sut.id,
+            f"booking-started:{priority.id}:{priority.start_time.isoformat()}",
+            f"{sut.name}: your reservation has started. Check in or manually Claim within the displayed attendance deadline; checked-in priority lasts until the booked end. Attendance never creates usage automatically.",
+            now,
+        )
     if usage and priority and priority.user_id != usage.user_id:
         notice(
             db,
@@ -620,6 +629,26 @@ def save_reservation(db, actor, data, *, identity=None, now=None):
         before=before,
         after={"start_time": start.isoformat(), "end_time": end.isoformat(), "purpose": booking.purpose},
     )
+    schedule_key = f"booking-scheduled:{booking.id}:{start.isoformat()}:{end.isoformat()}"
+    local_start = start.astimezone(ZoneInfo("Asia/Taipei")).strftime("%Y-%m-%d %H:%M Asia/Taipei")
+    notice(
+        db,
+        booking.user_id,
+        sut.id,
+        schedule_key,
+        f"{sut.name}: upcoming reservation scheduled for {local_start}. Manually check in or Claim when it starts.",
+        now,
+    )
+    holder = current_usage(db, sut.id)
+    if holder and holder.user_id != booking.user_id and holder.expected_end_time > start:
+        notice(
+            db,
+            holder.user_id,
+            sut.id,
+            f"{schedule_key}:{holder.usage_key}",
+            f"{sut.name}: an upcoming reservation at {local_start} overlaps your estimated usage. Coordinate a manual Release.",
+            now,
+        )
     reconcile_sut(db, sut, now)
     return booking
 

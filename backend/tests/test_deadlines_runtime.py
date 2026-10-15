@@ -91,6 +91,7 @@ def test_mid_transition_failure_rolls_back_notification_and_state_before_retry(
 
     users, sut, _, clock = arena
     booking = reserve(users["rd"], sut, clock, start=1, length=60)
+    baseline_notices = count(application, Notification)
     clock.advance(minutes=16)
     original = coordination.notice
 
@@ -104,9 +105,9 @@ def test_mid_transition_failure_rolls_back_notification_and_state_before_retry(
     with unit_of_work(application.state.engine) as db:
         assert db.get(Reservation, booking["id"]).status == "confirmed"
     assert count(application, AuditEvent, AuditEvent.event_type == "reservation_no_show") == 0
-    assert count(application, Notification) == 0
+    assert count(application, Notification) == baseline_notices
     monkeypatch.setattr(coordination, "notice", original)
     process_deadlines(application.state.engine, lambda: clock.now)
     process_deadlines(application.state.engine, lambda: clock.now)
     assert count(application, AuditEvent, AuditEvent.event_type == "reservation_no_show") == 1
-    assert count(application, Notification) == 1
+    assert count(application, Notification) == baseline_notices + 1

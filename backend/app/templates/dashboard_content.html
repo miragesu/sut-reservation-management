@@ -6,18 +6,18 @@
 <a href="/suts/{{ sut.id }}">{{ sut.name }}</a>
 </h3>
 <p>{{ sut.platform }} · {{ sut.owner_team }}</p>
-<p class="fw-bold">{{ sut.status }}{% if sut.in_use and sut.status != 'In Use' %} · In Use{% endif %}{% if sut.overdue %} · Overdue{% endif %}</p>{% if sut.operational_reason %}<p>{{ sut.operational_reason }}</p>{% endif %}<p>Holder: {{ sut.holder.display_name if sut.holder else '—' }} · Expected end {{ sut.expected_end_time|taipei }}</p>{% if sut.next_reservation %}<p>Next reservation: {{ sut.next_reservation.user.display_name }} · {{ sut.next_reservation.start_time|taipei }}–{{ sut.next_reservation.end_time|taipei }}</p>{% else %}<p>No upcoming reservation</p>{% endif %}</article>{% endfor %}</div>
+<p class="fw-bold">{{ sut.status }}{% if sut.in_use and sut.status != 'In Use' %} · In Use{% endif %}{% if sut.overdue %} · Overdue{% endif %}</p>{% if sut.operational_reason %}<p>{{ sut.operational_reason }}</p>{% endif %}<p>Holder: {% if sut.holder %}{{ sut.holder.display_name }} · {{ sut.holder.team }} · <a href="mailto:{{ sut.holder.email }}">{{ sut.holder.email }}</a>{% else %}—{% endif %} · Expected end {{ sut.expected_end_time|taipei }}</p>{% if sut.next_reservation %}<p>Next reservation: {{ sut.next_reservation.user.display_name }} · {{ sut.next_reservation.start_time|taipei }}–{{ sut.next_reservation.end_time|taipei }}</p>{% else %}<p>No upcoming reservation</p>{% endif %}{% include "quick_actions.html" %}</article>{% endfor %}</div>
 <div class="table-responsive table-layout" hidden>
 <table class="table table-striped">
 <thead>
 <tr>
-<th>Lab</th>
+<th scope="col">Lab</th>
 <th>SUT name</th>
 <th>Platform</th>
 <th>Status</th>
 <th>Current holder</th>
 <th>Expected end (Taipei)</th>
-<th>Reservations in next 24h (Taipei)</th>
+<th>Reservations in next 24h (Taipei)</th><th>Actions</th>
 </tr>
 </thead>
 <tbody>{% for sut in group.list %}<tr data-sut-id="{{ sut.id }}">
@@ -27,10 +27,10 @@
 </td>
 <td>{{ sut.platform }}</td>
 <td>{{ sut.status }}{% if sut.in_use and sut.status != 'In Use' %} · In Use{% endif %}{% if sut.overdue %} · Overdue{% endif %} {{ sut.operational_reason or '' }}</td>
-<td>{{ sut.holder.display_name if sut.holder else '—' }}</td>
+<td>{% if sut.holder %}{{ sut.holder.display_name }} · {{ sut.holder.team }} · <a href="mailto:{{ sut.holder.email }}">{{ sut.holder.email }}</a>{% else %}—{% endif %}</td>
 <td>{{ sut.expected_end_time|taipei }}</td>
 <td>{% for booking in sut.reservations_24h %}<p>{{ booking.user.display_name }} · {{ booking.start_time|taipei }}–{{ booking.end_time|taipei }}</p>{% else %}No reservations in next 24h{% endfor %}</td>
-</tr>{% endfor %}</tbody>
+<td>{% include "quick_actions.html" %}</td></tr>{% endfor %}</tbody>
 </table>
 </div>
 </section>{% else %}<p>No matching active SUTs.</p>{% endfor %}

@@ -137,12 +137,48 @@ def delete_lab(identity: int, db: DB, actor: Admin):
 
 
 @router.get("/suts")
-def suts(request: Request, db: DB, actor: Actor, include_archived: bool = False, page: int = 1):
+def suts(
+    request: Request,
+    db: DB,
+    actor: Actor,
+    include_archived: bool = False,
+    page: int = 1,
+    search: str = "",
+    lab_id: str = "",
+    platform: str = "",
+    owner_team: str = "",
+    status: str = "",
+    sort: str = "name",
+):
     if page < 1:
         raise HTTPException(422, "Page must be positive")
-    data = inventory.snapshot(db, actor, include_archived=include_archived)
+    try:
+        selected_lab = int(lab_id) if lab_id else None
+        if selected_lab is not None and selected_lab < 1:
+            raise ValueError
+    except ValueError:
+        raise HTTPException(422, "Lab must be a positive ID") from None
+    data = inventory.snapshot(
+        db,
+        actor,
+        include_archived=include_archived,
+        search=search,
+        lab_id=selected_lab,
+        platform=platform,
+        owner_team=owner_team,
+        status=status,
+        sort=sort,
+    )
     data["items"] = data["items"][(page - 1) * 25 : page * 25]
-    return render(request, "suts.html", actor, data=data, page=page, include_archived=include_archived)
+    return render(
+        request,
+        "suts.html",
+        actor,
+        data=data,
+        page=page,
+        include_archived=include_archived,
+        labs=db.scalars(select(Lab).order_by(Lab.name)).all(),
+    )
 
 
 @router.get("/suts/new")

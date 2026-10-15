@@ -1,7 +1,7 @@
 {% extends 'base.html' %}{% block content %}<h1>Inventory</h1>{% if user.role != 'user' %}<p>
 <a class="btn btn-primary" href="/suts/new">Register SUT</a> <a href="/suts?include_archived=true">Include archived</a> · <a href="/suts">Active inventory</a>
 </p>{% endif %}<p>{{ data.total }} SUTs · Use the <a href="/">Dashboard</a> to search and filter.</p>
-<div class="table-responsive">
+<form method="get" role="search" class="row g-2 mb-3"><div class="col-sm-4"><label for="inventory-search">SUT name</label><input id="inventory-search" name="search" type="search" class="form-control" value="{{ request.query_params.get('search', '') }}"></div><div class="col-sm-4"><label for="inventory-lab">Lab</label><select class="form-select" id="inventory-lab" name="lab_id"><option value="">All labs</option>{% for lab in labs %}<option value="{{ lab.id }}" {% if request.query_params.get('lab_id') == lab.id|string %}selected{% endif %}>{{ lab.name }}</option>{% endfor %}</select></div>{% for name,label in [('platform','Platform'),('owner_team','Owner team')] %}<div class="col-sm-4"><label for="inventory-{{ name }}">{{ label }}</label><input class="form-control" id="inventory-{{ name }}" name="{{ name }}" value="{{ request.query_params.get(name,'') }}"></div>{% endfor %}<div class="col-sm-4"><label for="inventory-status">Status</label><select class="form-select" id="inventory-status" name="status"><option value="">All statuses</option>{% for status in ['Available','Reserved','In Use','Maintenance','Out of Service'] %}<option {% if request.query_params.get('status') == status %}selected{% endif %}>{{ status }}</option>{% endfor %}</select></div><div class="col-sm-4"><label for="inventory-sort">Sort</label><select class="form-select" id="inventory-sort" name="sort">{% for sort in ['name','status'] %}<option value="{{ sort }}" {% if request.query_params.get('sort','name') == sort %}selected{% endif %}>{{ sort|capitalize }}</option>{% endfor %}</select></div><div class="col-sm-4 align-self-end"><input type="hidden" name="include_archived" value="{{ 'true' if include_archived else 'false' }}"><button class="btn btn-primary">Search</button></div></form><div class="table-responsive">
 <table class="table">
 <thead>
 <tr>
@@ -9,7 +9,7 @@
 <th>Name</th>
 <th>Platform</th>
 <th>Status</th>
-<th>Reason</th>
+<th>Current holder</th><th>Reason</th>
 </tr>
 </thead>
 <tbody>{% for sut in data['items'] %}<tr>
@@ -18,8 +18,8 @@
 <a href="/suts/{{ sut.id }}">{{ sut.name }}</a>
 </td>
 <td>{{ sut.platform }}</td>
-<td>{{ 'Archived' if sut.is_archived else sut.status }}</td>
+<td>{{ 'Archived' if sut.is_archived else sut.status }}{% if sut.in_use and sut.status != 'In Use' %} · In Use{% endif %}{% if sut.overdue %} · Overdue{% endif %}</td><td>{% if sut.holder %}{{ sut.holder.display_name }} · {{ sut.holder.team }} · <a href="mailto:{{ sut.holder.email }}">{{ sut.holder.email }}</a>{% else %}—{% endif %}</td>
 <td>{{ sut.operational_reason or '' }}</td>
-</tr>{% endfor %}</tbody>
+</tr>{% else %}<tr><td colspan="6">No matching SUTs.</td></tr>{% endfor %}</tbody>
 </table>
-</div>{% if page > 1 %}<a href="?page={{ page-1 }}&include_archived={{ 'true' if include_archived else 'false' }}">Previous</a>{% endif %} {% if page*25 < data.total %}<a href="?page={{ page+1 }}&include_archived={{ 'true' if include_archived else 'false' }}">Next</a>{% endif %}{% endblock %}
+</div>{% if page > 1 %}<a href="{{ request.url.include_query_params(page=page-1) }}">Previous</a>{% endif %} {% if page*25 < data.total %}<a href="{{ request.url.include_query_params(page=page+1) }}">Next</a>{% endif %}{% endblock %}

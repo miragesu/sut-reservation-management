@@ -1,69 +1,55 @@
-# Implementation Status
+# Implementation status — Issue #4 / Day 3
 
-2026-10-15 (Asia/Taipei). **Day 2 code/behavior acceptance checks PASS; implementation branch pushed; PR creation blocked by GitHub API. Full MVP NOT DONE.** Day 3, hosted CI and real production/LAN acceptance remain separate gates.
+**Full MVP production acceptance: NOT DONE.** Day 1 PR #1 and Day 2 PR #3 are merged (project owner confirmed). Day 3 started from latest main `719c32e47db148401ffdef2fb87ad11b6c2ac915` on `feat/day3-ui-acceptance`.
 
-## Baseline and scope
+## Implemented and verified locally
 
-Day 1 PR #1 was merged into `main`; this work starts at `489b18f` on `feat/day2-coordination`, without overwriting the baseline. Issue #2 was read in full via its public GitHub page after API access failed. Confirmed specifications, decisions and the domain map were read. The user explicitly confirmed that an Available SUT with no queue must be Claimed directly; Queue admission requires In Use, Reserved, or an existing queue. The confirmation is recorded in `docs/decisions.md` and SPEC.
+- Dashboard Card default/Table switch, lab grouping, natural Name/Status sort and shared filters; Card next booking, Table rolling-24h booking projection. Both layouts share Claim/Queue/Reserve/Detail Bootstrap modals, current coordination context, Taipei input, server-side service checks, CSRF, explicit conflict acknowledgement and duplicate-submit protection. Polls preserve modal/filter inputs; success refreshes state without resetting layout/scroll.
+- Persistent notification bell, recent-notice preview, complete paginated Inbox, full unread count and recipient-only explicit idempotent mark-read. Read-only 30s polling uses bounded ID windows and deduplicates desktop alerts. Permission is requested only by an explicit click; denied/unsupported/private-IP HTTP retain in-app notices. Desktop bodies omit contacts/purposes; no service worker or closed-site delivery promise.
+- Persisted scheduled/start reservation reminders and conflict notices reuse the existing transactional notification helper; existing expiry/offer/no-show/overdue/maintenance notices remain. No deadline, RBAC, history or SQLite concurrency guarantee was removed.
+- Responsive calendar/navigation, keyboard/focus handling, authenticated contact display, searchable/filterable/paginated inventory. Fixtures remain fictional two labs/20 SUTs. No production data, secrets or hardware control added.
+- Existing Day 1/2 tests retained, with five additional acceptance cases. The interruption test now accounts for the newly committed schedule notice while retaining its strict rollback/exactly-once assertions.
 
-Day 1 authentication/RBAC/inventory/archival and Docker persistence behavior remains implemented and regression-tested. The former Day 1 API blocker did not prevent the user subsequently creating and merging PR #1; that historical blocker is not a claim that PR #1 remains unmerged.
+Acceptance map and reproducible commands: [day3-verification.md](day3-verification.md). Previous Day 2 evidence remains in [day2-verification.md](day2-verification.md).
 
-## Delivered Day 2 behavior
+## Observed checks
 
-- Shared serialized coordination services for manual Claim/Release/admin force-release, one usage per SUT with multiple different SUTs per user, positive finite uncapped estimates and explicit reservation-overlap acknowledgement. Fractional minutes support short valid bookings; below-timestamp-precision/overflow inputs are rejected. Overdue is advisory, with persisted reminders and no automatic Release.
-- Stable usage/entry identities prevent stale retries from affecting replacement/rejoined records. Release writes exactly one retained history with actual interval, purpose, actor/reason and reservation attribution. No direct handover or hardware action exists.
-- FIFO Queue join/leave/admin clear with duplicate prevention, eligible-member notification followed by manual Claim, exact 15-minute expiry and next eligible offer. Disabled records remain, maintenance/usage/reservation protection pauses remaining offer time, and reactivation cannot steal a live offer.
-- Reservation API and HTML create/view/edit/cancel/check-in, UTC/Asia-Taipei boundaries, >0 and ≤24h elapsed duration, strictly future start ≤30 days inclusive, serialized half-open overlap checks and at-risk usage warning. Check-in while occupied preserves priority until booked end; no-show occurs at the deadline only without attendance. Handoff requires manual Release and separate Claim.
-- History, Calendar, My Usage, live SUT Detail and recipient-scoped Inbox. Contact projections exclude credentials/security fields; read endpoints never expire state or mark notices read. Calendar retains historical states and shows current SUT maintenance reason/In Use context. Detail polling preserves unsaved forms.
-- Startup catch-up plus periodic background deadline task, independent of browsers/HTTP. Transactional state/audit/notice effects are deduplicated across retry, interruption, overlapping processors and restart. Production Compose explicitly enables the processor with one worker, retaining the existing SQLite named volume.
-- Migration `b12d2c001001` backfills Day 1 usage/queue keys, preserves ownership/state/original timestamps, and adds offer pause and complete history metadata. No runtime `create_all`, data purge or unsafe cascade is introduced.
-
-Full acceptance mapping: `docs/day2-verification.md`. API payloads, operational semantics and reproducible commands: README and authenticated OpenAPI. Only verified Day 2 facts are checked in TASKS; mixed Day 3 criteria stay unchecked.
-
-## Observed validation
-
-| Command / check | Actual result |
+| Check | Result |
 | --- | --- |
-| `.venv/bin/ruff check backend scripts` | PASS |
-| `.venv/bin/ruff format --check backend scripts` | PASS |
-| `.venv/bin/python -m compileall -q backend/app backend/alembic scripts` | PASS |
-| `.venv/bin/pytest -q` | **98 passed**, one non-failing Starlette/httpx TestClient deprecation warning. Includes 39 retained Day 1 cases plus coordination, edge, race, runtime and populated migration tests. Latest full run: 70.25 seconds. |
-| Maintenance/archive targeted rerun after strengthening Leave Queue assertions | **2 passed**; both Maintenance and Out of Service permit explicit Release/Leave while blocking new registrations. |
-| `.venv/bin/python scripts/browser_smoke.py` | PASS: baseline actual Chromium login/mandatory password replacement, layout/filters/sort, real 30s polling, stale/retry, profile. |
-| `.venv/bin/python scripts/browser_day2.py` | PASS: three browser sessions exercising FIFO/manual handoff, force-release, estimate edits, booking create/edit/cancel/Calendar, overlap confirmation, checked-in priority, History/Inbox and real 30s Detail polling preserving inputs. |
-| Local disposable Compose smoke | PASS: build, migrations, rejected broken database, :5088 login/health/inventory, UID 10001, integrity/migration check and named-volume data/session retention through down/rebuild/recreate. Day 2 checks prove offline expiry/no-show catch-up, no automatic usage, live no-show without HTTP/browser, and notification idempotency across restart. |
+| Ruff lint/format, compileall, JavaScript syntax, whitespace checks | PASS |
+| Full pytest run | **103 passed** in 87.40 seconds; one non-failing Starlette/httpx TestClient deprecation warning. |
+| Baseline Chromium | PASS: login/mandatory password replacement, seed, filters/layout/sort, real 30s polling, stale/retry, profile. |
+| Day 2 multi-user Chromium | PASS: FIFO/manual handoff, force release, estimate change, booking edit/cancel/calendar, overlap acknowledgement, check-in priority, history and Detail polling. |
+| Day 3 Chromium | PASS: every action/layout combination, 72h custom estimate, duplicate-submit guard, current-state conflict retention, modal polling input safety, Taipei booking, Escape dismissal, mobile detail, Inbox/read and browser Notification API opt-in/denied/unsupported/insecure/dedupe tests, pending-poll/action refresh collision and granted-but-failed desktop delivery fallback. |
+| Disposable local Docker Compose (DEP-006) | **PASS — Host 5088 → Container 80**: build/migration/5088/login, non-root, named-volume/session persistence after rebuild/recreate, offline and live deadline checks and restart deduplication. Cold tar backup restored into a different empty volume; sessions/history/notices/schema/ownership/integrity/foreign keys preserved. |
+| Published Day 3 pinned GitHub Remote Build (DEP-006) | **PASS** at final application SHA `eb17c6f7dd4581caff9502e64701de6ab895fc62`: only Compose/settings in the empty working directory; full **5088→80** mapping/listener/health, PID 1 privilege assertions, Chromium login/UI, migrations, persistence, deadlines/restart and independent-volume restore runner passed. |
+| Hosted GitHub Actions | **PASS** for final DEP-006 application SHA `eb17c6f`: [run 38736460114](https://github.com/miragesu/sut-reservation-management/actions/runs/38736460114), public conclusion SUCCESS, **4m 51s**. Executes the full pytest, baseline/Day 2/Day 3 Chromium and updated port-80 Docker/backup/restore runner. Earlier `83a22d2` and `d0aa0c7` runs also passed. |
 
-Docker command used:
+The cloud build uses `DOCKER_CONFIG=/tmp/sut-docker-config SUT_BUILD_NETWORK=host SUT_BUILD_CA=/etc/ssl/certs/ca-certificates.crt`. Inherited proxy resolution and approved CA are ephemeral builder settings; TLS/package hashes are verified. Only randomly named synthetic test projects/volumes are removed. Deployment data is never removed.
 
-```bash
-DOCKER_CONFIG=/tmp/sut-docker-config SUT_BUILD_NETWORK=host \
-  SUT_BUILD_CA=/etc/ssl/certs/ca-certificates.crt \
-  .venv/bin/python scripts/container_smoke.py
-```
+## DEP-006: observed Host 5088 → Container 80 result
 
-This environment requires its inherited proxy resolved for the builder and its existing approved CA bundle passed as an ephemeral BuildKit secret. TLS/package-hash verification stays enabled; no proxy credentials or private CA are copied into the runtime image. Synthetic timeline shifts are restricted to the runners' disposable SQLite/Compose project. Test processes and volumes are cleaned up.
+**Local and public pinned-SHA Remote Build both PASS.** Actual Compose publishing resolves container 80 to 127.0.0.1:5088. Image metadata exposes 80 and defines a working :80 healthcheck; Uvicorn's socket is 0.0.0.0:80 with no :8000 listener. Actual Chromium reaches login/Dashboard/Table/Detail/My Usage through host 5088.
 
-Migration tests execute fresh `upgrade head`, `alembic check`, initial down/up, and populated Day 1 → Day 2 → Day 1 → Day 2 backfill checks. Race tests cover simultaneous Claim/Release/Queue/reservation writes, maintenance, exact deadline±1μs Claim/check-in vs workers, independent processor engines and rollback after flushed-but-uncommitted state/notice/audit.
+PID 1 is UID 10001, CapEff/CapPrm/CapBnd are zero and NoNewPrivs=1. The container-network namespace has unprivileged-port threshold 80, and an actual non-root bind to port 79 is denied. Compose keeps its private bridge network, all capabilities dropped and no-new-privileges; no host sysctl modification, NET_BIND_SERVICE or interpreter file capabilities are used. SQLite named-volume persistence and a cold restore into another empty volume pass with this mapping. Company LAN acceptance is separate and remains unverified.
+
+The previous `83a22d2`/`d0aa0c7` builds and CI were successful **before DEP-006**, using historical container port 8000. They are not substituted for the new port-80 checks above.
 
 ## Delivery
 
-Branch `feat/day2-coordination` is pushed. Application commit: `344d305cdc0945a1d76ca95b393fd77d5d53b596` (subsequent commit records delivery evidence only). PR description: `docs/day2-pr.md`.
+Branch `feat/day3-ui-acceptance` is pushed. Verified application SHA: `eb17c6f7dd4581caff9502e64701de6ab895fc62`. Subsequent delivery commit changes documentation only; the recorded application checks refer to this pinned SHA, not an assumed result for any later documentation-only workflow run. Public pinned-ref Remote Build passed at this application SHA, including backup/restore.
 
-Public pinned-ref Remote Build **PASS** at that SHA, including the complete disposable Day 2 Compose workflow from a temporary directory holding only Compose/build settings, without a source checkout. This used the existing cloud Docker daemon. Actual output: `Restart catch-up: one timeout, one no-show, no automatic usage`; `Live deadline processing without HTTP/browser: OK`; `PASS: Day 2 Docker Claim/Release/FIFO/history, offline deadline catch-up, live background no-show and restart-idempotent notifications`; and named-volume/session persistence after down/rebuild/recreate. Reproduce by adding `SUT_SMOKE_REMOTE_REF=344d305cdc0945a1d76ca95b393fd77d5d53b596` to the Docker smoke command above.
-
-An actual creation attempt was made:
+Actual PR creation command:
 
 ```bash
 gh pr create --repo miragesu/sut-reservation-management --base main \
-  --head feat/day2-coordination \
-  --title 'Day 2: coordination workflows and background deadlines' \
-  --body-file docs/day2-pr.md
+  --head feat/day3-ui-acceptance \
+  --title 'Day 3: Dashboard actions and notification acceptance' \
+  --body-file docs/day3-pr.md
 ```
 
-It failed with **`Post "https://api.github.com/graphql": Forbidden`**. **No PR was created** by this command. Git read/push works; GitHub API access remains unavailable. As permitted by Issue #2, the complete implementation branch and reviewable PR body are left pushed for creation through ChatGPT/GitHub. Manual creation: https://github.com/miragesu/sut-reservation-management/pull/new/feat/day2-coordination . No credential values were inspected or copied.
+It failed with **`Post "https://api.github.com/graphql": Forbidden`**. **No PR was created.** Git push and public-page reads work; GitHub API creation is blocked. As allowed by Issue #4, the implementation branch and reviewable [PR body](day3-pr.md) are left pushed for ChatGPT/GitHub to create the PR: https://github.com/miragesu/sut-reservation-management/pull/new/feat/day3-ui-acceptance . No credential values were inspected or copied.
 
-## Remaining full-MVP / external gates
+## Remaining external gates
 
-- Day 3 Dashboard Claim/Queue/Reserve modals, complete notification bell/desktop opt-in, broader UX/accessibility acceptance and final full-MVP sign-off are unimplemented/unverified. Complete notification/modal refresh criteria remain unchecked even though Day 2 supplies the shared live Detail/Inbox controller and recipient-scoped persistence.
-- Actual internal Linux host, trusted LAN firewall/two browser clients, production backup/restore rehearsal and hosted GitHub Actions are unverified. Local cloud tests do not establish those outcomes. A source-free remote-context smoke on the existing cloud daemon is distinct from a newly provisioned production OS.
-- Full MVP is **NOT DONE**. No production data/secrets or hardware access-control behavior is introduced.
+Actual company Linux host `10.88.26.99`, trusted firewall rules, two independent company LAN clients, production-host backup/restore rehearsal and project-owner sign-off are **unverified** from Codex Cloud. A source-free build on the existing Linux cloud daemon does not prove a clean company OS/network deployment. Hosted CI is reported separately. These gates prevent a full-MVP production-ready declaration even when local application checks pass.

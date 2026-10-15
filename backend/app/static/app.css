@@ -3,3 +3,13 @@ label { display: block; margin-top: .5rem; }
 [hidden] { display: none !important; }
 .sut-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 1rem; }
 .card { overflow-wrap: anywhere; }
+
+:focus-visible { outline: 3px solid #0a58ca; outline-offset: 3px; }
+.table th { white-space: nowrap; }
+.modal-body { overflow-wrap: anywhere; }
+@media (max-width: 575px) {
+  .sut-grid { grid-template-columns: minmax(0, 1fr); }
+  .navbar .container { gap: .75rem !important; }
+  main.container { padding-inline: .75rem; }
+  .table-responsive { max-width: 100%; }
+}

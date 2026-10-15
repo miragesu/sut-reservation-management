@@ -5,7 +5,7 @@ services:
       context: "https://github.com/miragesu/sut-reservation-management.git#${SUT_GIT_REF:?Set SUT_GIT_REF to a reviewed full commit SHA}"
       dockerfile: Dockerfile
     ports:
-      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-5088}:8000"
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-5088}:80"
     environment:
       APP_ENV: production
       SECRET_KEY: "${SECRET_KEY:?Generate a random SECRET_KEY locally}"
@@ -21,6 +21,10 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    # Namespaced to this container's private network; never change the host sysctl.
+    # Allows UID 10001 to bind 80 without NET_BIND_SERVICE or file capabilities.
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: "80"
     stop_grace_period: 15s
 volumes:
   sut-data:

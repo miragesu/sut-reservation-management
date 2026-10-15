@@ -18,4 +18,5 @@ jobs:
       - run: python -m playwright install --with-deps chromium
       - run: python scripts/browser_smoke.py
       - run: python scripts/browser_day2.py
+      - run: python scripts/browser_day3.py
       - run: python scripts/container_smoke.py

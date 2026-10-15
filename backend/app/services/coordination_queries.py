@@ -211,16 +211,40 @@ def coordination_view(db, sut_id, now):
     }
 
 
-def notification_list(db, actor, *, limit=50):
+def notification_list(db, actor, *, limit=50, offset=0, after_id=None, through_id=None):
     return [
         {k: getattr(n, k) for k in ("id", "sut_id", "message", "created_at", "read_at")}
         for n in db.scalars(
             select(Notification)
-            .where(Notification.user_id == actor.id)
+            .where(
+                Notification.user_id == actor.id,
+                *([Notification.id > after_id] if after_id is not None else []),
+                *([Notification.id <= through_id] if through_id is not None else []),
+            )
             .order_by(Notification.created_at.desc(), Notification.id.desc())
+            .offset(offset)
             .limit(limit)
         )
     ]
+
+
+def notification_page(db, actor, *, page=1, page_size=50, after_id=None, through_id=None):
+    own = Notification.user_id == actor.id
+    return {
+        "items": notification_list(
+            db,
+            actor,
+            limit=page_size,
+            offset=(page - 1) * page_size,
+            after_id=after_id,
+            through_id=through_id,
+        ),
+        "total": db.scalar(select(func.count()).select_from(Notification).where(own)),
+        "unread_count": db.scalar(
+            select(func.count()).select_from(Notification).where(own, Notification.read_at.is_(None))
+        ),
+        "latest_id": db.scalar(select(func.max(Notification.id)).where(own)) or 0,
+    }
 
 
 def mark_read(db, actor, identity, now):

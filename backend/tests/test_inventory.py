@@ -211,6 +211,9 @@ def test_operational_reason_acknowledgement_and_preservation(root, application, 
     assert result.json()["holder"]["email"] == "rd@example.com"
     assert "password_hash" not in result.text
     assert "Demo repair" in root.get("/").text and "Demo repair" in root.get(f"/suts/{sut}").text
+    listing = root.get("/suts").text
+    assert f"<td>{inventory.STATES[state]} · In Use · Overdue</td>" in listing
+    assert "rd@example.com" in listing and "Demo repair" in listing
     with unit_of_work(application.state.engine) as db:
         assert inventory.activity(db, sut) == {"usages": 1, "queues": 1, "reservations": 1}
         assert (
