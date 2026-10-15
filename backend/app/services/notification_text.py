@@ -1,5 +1,7 @@
 """Chinese notification presentation for both retained and newly created messages."""
 
+import re
+
 TRANSLATIONS = {
     "operational state changed to normal. Existing activity is retained.": "設備狀態已變更為正常，既有使用、排隊與預約紀錄均保留。",
     "operational state changed to maintenance. Existing activity is retained.": "設備狀態已變更為維護中，既有使用、排隊與預約紀錄均保留。",
@@ -25,9 +27,13 @@ TRANSLATIONS = {
 
 
 def chinese_message(message):
+    # Equipment names are user data, not translatable interface text.
+    match = re.match(r"^(.*?)(: |：)(.*)$", message, re.DOTALL)
+    prefix = match[1] + match[2] if match else ""
+    message = match[3] if match else message
     for source, translated in TRANSLATIONS.items():
         message = message.replace(source, translated)
-    return (
+    return prefix + (
         message.replace(" Asia/Taipei", "")
         .replace("預約開始後請手動報到或 Claim", "設備可用並通知後，請在期限內按 Start using")
         .replace("Claim", "Start using")

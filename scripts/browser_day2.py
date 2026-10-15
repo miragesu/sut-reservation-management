@@ -9,7 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from contextlib import ExitStack
+from contextlib import ExitStack, closing
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -239,7 +239,7 @@ def main():
                 join_ui(lab)
                 attended = reserve_ui(rd, 1, "Browser check-in booking")
                 now = datetime.now(UTC)
-                with sqlite3.connect(database) as db:
+                with closing(sqlite3.connect(database)) as db, db:
                     db.execute(
                         "UPDATE reservations SET start_time=?,end_time=? WHERE id=?",
                         (

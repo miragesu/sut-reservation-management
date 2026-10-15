@@ -3,6 +3,13 @@ from app.services.notification_text import chinese_message
 
 
 class NotificationTextTests(unittest.TestCase):
+    def test_equipment_name_is_not_translated(self):
+        result = chinese_message("Claim-Test：設備已可用，請按 Start using。")
+        self.assertTrue(result.startswith("Claim-Test："))
+        result = chinese_message("Claim-Test: usage was recorded as released.")
+        self.assertTrue(result.startswith("Claim-Test: "))
+        self.assertIn("已記錄使用結束", result)
+
     def test_retained_schedule_message_keeps_time_and_equipment(self):
         result = chinese_message(
             "Demo-SUT-2: upcoming reservation scheduled for 2026-10-16 14:00 Asia/Taipei. Manually check in or Claim when it starts."
