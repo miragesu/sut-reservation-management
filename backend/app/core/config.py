@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./data/sut.db"
     app_env: Literal["development", "test", "production"] = "production"
     cookie_secure: bool = True
+    deadline_processor_enabled: bool = True
+    deadline_poll_seconds: float = Field(default=1.0, ge=0.1, le=60)
     session_hours: int = Field(default=12, ge=1, le=168)
     minimum_password_length: int = Field(default=12, ge=12, le=128)
 

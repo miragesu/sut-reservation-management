@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<h1>In-app notifications</h1><p>Latest 50 notices. Fetching this list never marks notices read.</p><p data-poll-feedback role="status">Refreshes every 30 seconds.</p><div data-poll-url="/notifications/fragment">{% include 'notification_list.html' %}</div>{% endblock %}

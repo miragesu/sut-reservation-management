@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import uuid4
 
 from sqlalchemy import Boolean, CheckConstraint, ForeignKey, Integer, JSON, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -101,6 +102,7 @@ class CurrentUsage(Created, Base):
     __tablename__ = "current_usages"
     __table_args__ = (CheckConstraint("expected_end_time > start_time", name="positive_interval"),)
     id: Mapped[int] = mapped_column(primary_key=True)
+    usage_key: Mapped[str] = mapped_column(String(64), unique=True, default=lambda: uuid4().hex)
     sut_id: Mapped[int] = mapped_column(ForeignKey("suts.id"), unique=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     start_time: Mapped[datetime] = mapped_column(UTCDateTime())
@@ -123,6 +125,10 @@ class QueueEntry(Created, Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     sut_id: Mapped[int] = mapped_column(ForeignKey("suts.id"), index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    entry_key: Mapped[str] = mapped_column(String(64), unique=True, default=lambda: uuid4().hex)
+    offer_generation: Mapped[int] = mapped_column(Integer, default=0)
+    paused_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    remaining_microseconds: Mapped[int | None] = mapped_column(Integer)
     requested_duration_minutes: Mapped[int] = mapped_column(Integer)
     notified_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
     offer_expires_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), index=True)
@@ -136,6 +142,9 @@ class UsageHistory(Created, Base):
         CheckConstraint("release_reason IN ('user','admin')", name="release_reason"),
     )
     id: Mapped[int] = mapped_column(primary_key=True)
+    purpose: Mapped[str | None] = mapped_column(Text)
+    released_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    release_note: Mapped[str | None] = mapped_column(Text)
     # Immutable release identity, independent of a deleted current_usages row.
     usage_key: Mapped[str] = mapped_column(String(64), unique=True)
     sut_id: Mapped[int] = mapped_column(ForeignKey("suts.id"), index=True)

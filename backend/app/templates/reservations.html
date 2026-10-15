@@ -1,0 +1,3 @@
+{% extends 'base.html' %}{% block content %}<h1>{{ title }}</h1><a class="btn btn-primary" href="/reservations/new">New reservation</a>
+<form method="get" class="row g-2 my-3">{% for name,label in [('sut_id','SUT ID'),('user_id','User ID')] %}<div class="col"><label for="{{ name }}">{{ label }}</label><input class="form-control" id="{{ name }}" name="{{ name }}" type="number" min="1" value="{{ filters[name] or '' }}"></div>{% endfor %}<div class="col align-self-end"><button class="btn btn-outline-primary">Filter</button></div></form>
+{% include 'reservation_rows.html' %}{% include 'pagination.html' %}{% endblock %}

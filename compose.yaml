@@ -12,6 +12,8 @@ services:
       DATABASE_URL: sqlite:////app/data/sut.db
       COOKIE_SECURE: "${COOKIE_SECURE:-true}"
       TZ: Asia/Taipei
+      DEADLINE_PROCESSOR_ENABLED: "true"
+      DEADLINE_POLL_SECONDS: "${DEADLINE_POLL_SECONDS:-1}"
     volumes:
       - sut-data:/app/data
     restart: unless-stopped

@@ -109,3 +109,6 @@ Authenticated active RD users may update only their own display name, team, work
 
 ## BR-024 — Usage History retention (Confirmed: Option A)
 Usage History is retained indefinitely, without automatic time-based deletion. History records remain attributable and queryable when SUTs are archived or accounts deactivated, and after user profile edits. No usage-history purge endpoint or background expiry task is included in MVP. Release writes actual start/end/duration and is idempotent. Regular database backups are recommended separately; this retention policy does not guarantee recovery from storage failure.
+
+## Day 2 Queue admission clarification — confirmed 2026-10-15
+When a SUT is Available and has no queue entries, users must directly Claim; joining Queue is allowed only when In Use, Reserved, or when a queue already exists. The user explicitly confirmed the recommended SPEC rule while implementing Issue #2. Queue requests supply a positive requested duration; the API does not silently invent a requested duration.

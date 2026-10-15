@@ -21,7 +21,7 @@ from app.schemas.inputs import (
     SUTUpdate,
     UserInput,
 )
-from app.services import accounts, inventory
+from app.services import accounts, inventory, coordination_queries
 
 router = APIRouter(dependencies=[Depends(check_csrf)], include_in_schema=False)
 DB = Annotated[object, Depends(database, scope="function")]
@@ -165,7 +165,7 @@ def sut(identity: int, request: Request, db: DB, actor: Actor):
         "sut_detail.html",
         actor,
         sut=inventory.detail(db, actor, identity),
-        activity=inventory.activity(db, identity),
+        coordination=coordination_queries.coordination_view(db, identity, request.app.state.clock()),
     )
 
 
@@ -195,7 +195,12 @@ def restore(identity: int, db: DB, actor: Admin):
 @router.post("/suts/{identity}/operational-state")
 async def operational(identity: int, request: Request, db: DB, actor: Admin):
     await run_in_threadpool(
-        inventory.operational, db, actor, identity, await payload(request, OperationalInput)
+        inventory.operational,
+        db,
+        actor,
+        identity,
+        await payload(request, OperationalInput),
+        now=request.app.state.clock(),
     )
     return redirect(f"/suts/{identity}")
 
@@ -234,7 +239,14 @@ async def role(identity: int, request: Request, db: DB, actor: Super):
 
 @router.post("/admin/users/{identity}/status")
 async def status(identity: int, request: Request, db: DB, actor: Super):
-    await run_in_threadpool(accounts.change_status, db, actor, identity, await payload(request, StatusInput))
+    await run_in_threadpool(
+        accounts.change_status,
+        db,
+        actor,
+        identity,
+        await payload(request, StatusInput),
+        now=request.app.state.clock(),
+    )
     return redirect(f"/admin/users/{identity}")
 
 

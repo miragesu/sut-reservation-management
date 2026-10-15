@@ -1,0 +1,2 @@
+{% extends 'base.html' %}{% block content %}<h1>My Usage</h1><p>You may hold multiple distinct SUTs. Expected times are advisory.</p>
+{% for usage in usages %}<article class="card p-3 mb-3"><h2><a href="/suts/{{ usage.sut_id }}">{{ usage.lab_name }} / {{ usage.sut_name }}</a></h2><p>{{ usage.start_time|taipei }}–{{ usage.expected_end_time|taipei }} · {{ usage.purpose or '' }}{% if usage.overdue %} · <strong>Overdue</strong>{% endif %}</p><a href="/suts/{{ usage.sut_id }}">Release or update estimate</a></article>{% else %}<p>No current usage.</p>{% endfor %}{% endblock %}

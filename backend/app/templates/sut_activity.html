@@ -1,0 +1,17 @@
+<div data-registrations-open="{{ 'true' if not sut.is_archived and sut.operational_state == 'normal' else 'false' }}">
+<p><strong>{{ coordination.status }}</strong> {{ sut.operational_reason or '' }}</p>
+{% if coordination.usage %}
+<p>In Use{% if coordination.usage.overdue %} · <strong>Overdue — advisory; no automatic Release</strong>{% endif %}</p>
+<p>Holder: {{ coordination.usage.user.display_name }} · {{ coordination.usage.user.team }} · <a href="mailto:{{ coordination.usage.user.email }}">{{ coordination.usage.user.email }}</a></p>
+<p>Started {{ coordination.usage.start_time|taipei }} · Expected end {{ coordination.usage.expected_end_time|taipei }} · {{ coordination.usage.purpose or '' }}</p>
+{% else %}<p>No recorded current usage. Reservation and notified-queue priority still apply.</p>{% endif %}
+<h2>Queue</h2>
+<ol>{% for entry in coordination.queue %}<li>{{ entry.user.display_name }} · {{ entry.user.team }} · <a href="mailto:{{ entry.user.email }}">{{ entry.user.email }}</a> · {{ entry.requested_duration_minutes }} minutes · {{ entry.offer_status }}{% if not entry.eligible %} (currently ineligible; record retained){% endif %}{% if entry.paused_at %} · Offer paused{% elif entry.offer_expires_at %} · Claim before {{ entry.offer_expires_at|taipei }}{% endif %}</li>{% else %}<li>No queue entries.</li>{% endfor %}</ol>
+<h2>Current and upcoming reservations</h2>
+{% for booking in coordination.reservations %}<article class="border rounded p-2 mb-2">
+<a href="/reservations/{{ booking.id }}">{{ booking.user.display_name }} · {{ booking.start_time|taipei }}–{{ booking.end_time|taipei }}</a>
+<p>{{ booking.user.team }} · <a href="mailto:{{ booking.user.email }}">{{ booking.user.email }}</a> · {{ booking.purpose }} · {{ booking.status }}</p>
+{% if booking.checked_in_at %}<p>Checked in — {% if coordination.usage %}awaiting recorded Release{% else %}ready for a separate manual Claim{% endif %}. Priority ends at the booked end.</p>{% endif %}
+{% if booking.at_risk %}<p class="text-danger">Scheduling conflict: recorded use may delay this booking. Coordinate manually.</p>{% endif %}
+</article>{% else %}<p>No current or upcoming reservations.</p>{% endfor %}
+</div>

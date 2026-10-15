@@ -1,17 +1,15 @@
 {% extends 'base.html' %}{% block content %}<h1>{{ sut.name }}</h1>
 <p>{{ sut.lab_name }} · {{ sut.platform }} · {{ sut.owner_team }}</p>
 <p>{{ sut.description }}</p>
-<p>
-<strong>{{ 'Archived' if sut.is_archived else sut.status }}</strong> {{ sut.operational_reason or '' }} {% if sut.in_use %} · In Use{% endif %}{% if sut.overdue %} · Overdue{% endif %}</p>
-{% if sut.holder %}<p>Current holder: {{ sut.holder.display_name }} · {{ sut.holder.team }} · <a href="mailto:{{ sut.holder.email }}">{{ sut.holder.email }}</a> · Expected end {{ sut.expected_end_time|taipei }} · {{ sut.usage_purpose or '' }}</p>{% endif %}<p>BMC IP: {{ sut.bmc_ip or '—' }} · Host IP: {{ sut.host_ip or '—' }}</p>
-<p>Active usage: {{ activity.usages }} · Queue: {{ activity.queues }} · Current/future reservations: {{ activity.reservations }}</p>
+<p>Lifecycle: {{ 'Archived' if sut.is_archived else 'Active inventory' }}</p>
+<p>BMC IP: {{ sut.bmc_ip or '—' }} · Host IP: {{ sut.host_ip or '—' }}</p>
 {% if user.role != 'user' %}<a href="/suts/{{ sut.id }}/edit" class="btn btn-outline-primary">Edit inventory</a>
 <form method="post" action="/suts/{{ sut.id }}/{{ 'restore' if sut.is_archived else 'archive' }}" class="mt-3">
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 <button class="btn btn-outline-danger">{{ 'Restore' if sut.is_archived else 'Archive' }}</button>
 </form>
 {% if not sut.is_archived %}<h2 class="mt-4">Operational condition</h2>
-<p>Review outstanding activity above. Existing records will be retained.</p>
+<p>Review outstanding activity in the live coordination section below. Existing records will be retained.</p>
 <form method="post" action="/suts/{{ sut.id }}/operational-state">
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 <label for="state">Condition</label>
@@ -21,4 +19,5 @@
 <label>
 <input type="checkbox" name="acknowledge_activity" value="true"> I reviewed outstanding activity and will coordinate follow-up.</label>
 <button class="btn btn-primary d-block mt-3">Save condition</button>
-</form>{% endif %}{% endif %}{% endblock %}
+</form>{% endif %}{% endif %}{% include 'coordination_panel.html' %}
+{% endblock %}
