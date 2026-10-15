@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block content %}<h1>Your profile</h1>
+<p>Username: {{ user.username }} · Role: {{ user.role }}</p>
+<form method="post" action="/profile" class="auth-form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">{% for name,label in [('display_name','Display name'),('team','Team'),('email','Work email')] %}<label class="form-label" for="{{ name }}">{{ label }}</label>
+<input class="form-control mb-3" id="{{ name }}" name="{{ name }}" value="{{ user[name] }}" type="{{ 'email' if name == 'email' else 'text' }}" required>{% endfor %}<button class="btn btn-primary">Save profile</button>
+</form>
+<a href="/change-password">Change password</a>{% endblock %}

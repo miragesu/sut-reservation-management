@@ -1,0 +1,16 @@
+{% extends 'base.html' %}{% block content %}<h1>Accounts</h1>
+<ul>{% for account in users %}<li>
+<a href="/admin/users/{{ account.id }}">{{ account.username }}</a> · {{ account.role }} · {{ 'Active' if account.is_active else 'Disabled' }}</li>{% endfor %}</ul>
+<h2>Needs attention</h2>{% for entry in attention %}{% if entry.impact.usages or entry.impact.queues or entry.impact.reservations %}<section>
+<h3>
+<a href="/admin/users/{{ entry.user.id }}">{{ entry.user.display_name }}</a>
+</h3>{% for kind,items in entry.impact.items() %}<p>{{ kind|title }}: {{ items|length }}</p>{% for item in items %}<p>
+<a href="/suts/{{ item.sut_id }}">{{ item.lab_name }} / {{ item.sut_name }}</a>
+</p>{% endfor %}{% endfor %}</section>{% endif %}{% endfor %}<h2>Create account</h2>
+<p>Deliver the temporary password securely outside this application. First login requires replacement.</p>
+<form method="post" action="/admin/users">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">{% for name,label in [('username','Username'),('display_name','Display name'),('team','Team'),('email','Work email'),('temporary_password','Temporary password (12–128 characters)')] %}<label for="{{ name }}" class="form-label">{{ label }}</label>
+<input id="{{ name }}" name="{{ name }}" class="form-control mb-3" type="{{ 'password' if name == 'temporary_password' else 'email' if name == 'email' else 'text' }}" required {% if name == 'temporary_password' %}autocomplete="new-password" minlength="12" maxlength="128"{% endif %}>{% endfor %}<label for="role">Role</label>
+<select id="role" name="role" class="form-select mb-3">{% for role in ['user','lab_admin','super_admin'] %}<option>{{ role }}</option>{% endfor %}</select>
+<button class="btn btn-primary">Create account</button>
+</form>{% endblock %}

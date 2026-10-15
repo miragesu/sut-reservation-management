@@ -16,3 +16,8 @@ __pycache__/
 venv/
 .idea/
 .vscode/
+.ruff_cache/
+.coverage
+htmlcov/
+playwright-report/
+test-results/

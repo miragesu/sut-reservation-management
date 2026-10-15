@@ -11,3 +11,9 @@ exports
 .venv
 __pycache__
 .pytest_cache
+venv
+.ruff_cache
+.coverage
+htmlcov
+test-results
+playwright-report

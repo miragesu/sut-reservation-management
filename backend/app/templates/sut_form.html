@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block content %}<h1>{{ 'Edit' if sut else 'Register' }} SUT</h1>
+<form method="post" action="{{ '/suts/' ~ sut.id ~ '/edit' if sut else '/suts' }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">{% if not sut %}<label for="lab_id" class="form-label">Lab</label>
+<select id="lab_id" name="lab_id" class="form-select mb-3" required>{% for lab in labs %}<option value="{{ lab.id }}">{{ lab.name }}</option>{% endfor %}</select>{% else %}<p>Lab: {{ sut.lab_name }} (cannot be moved)</p>{% endif %}
+{% for name,label in [('name','SUT name'),('platform','Platform'),('owner_team','Owner team'),('description','Description'),('bmc_ip','BMC IP (optional)'),('host_ip','Host IP (optional)')] %}<label for="{{ name }}" class="form-label">{{ label }}</label>
+<input class="form-control mb-3" id="{{ name }}" name="{{ name }}" value="{{ sut[name] or '' if sut else '' }}" {% if name in ['name','platform','owner_team'] %}required{% endif %}>{% endfor %}<button class="btn btn-primary">Save SUT</button>
+</form>{% endblock %}

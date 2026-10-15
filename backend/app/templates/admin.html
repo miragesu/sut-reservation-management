@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block content %}<h1>Administration</h1>
+<p>
+<a href="/labs">Manage all labs</a> · <a href="/suts?include_archived=true">Manage all SUTs, including archives</a>
+</p>{% if user.role == 'super_admin' %}<p>
+<a href="/admin/users">Accounts and Needs attention</a>
+</p>{% endif %}{% endblock %}

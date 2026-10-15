@@ -1,0 +1,25 @@
+{% extends 'base.html' %}{% block content %}<h1>Inventory</h1>{% if user.role != 'user' %}<p>
+<a class="btn btn-primary" href="/suts/new">Register SUT</a> <a href="/suts?include_archived=true">Include archived</a> · <a href="/suts">Active inventory</a>
+</p>{% endif %}<p>{{ data.total }} SUTs · Use the <a href="/">Dashboard</a> to search and filter.</p>
+<div class="table-responsive">
+<table class="table">
+<thead>
+<tr>
+<th>Lab</th>
+<th>Name</th>
+<th>Platform</th>
+<th>Status</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>{% for sut in data['items'] %}<tr>
+<td>{{ sut.lab_name }}</td>
+<td>
+<a href="/suts/{{ sut.id }}">{{ sut.name }}</a>
+</td>
+<td>{{ sut.platform }}</td>
+<td>{{ 'Archived' if sut.is_archived else sut.status }}</td>
+<td>{{ sut.operational_reason or '' }}</td>
+</tr>{% endfor %}</tbody>
+</table>
+</div>{% if page > 1 %}<a href="?page={{ page-1 }}&include_archived={{ 'true' if include_archived else 'false' }}">Previous</a>{% endif %} {% if page*25 < data.total %}<a href="?page={{ page+1 }}&include_archived={{ 'true' if include_archived else 'false' }}">Next</a>{% endif %}{% endblock %}

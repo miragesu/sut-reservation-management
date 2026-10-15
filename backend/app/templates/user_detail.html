@@ -1,0 +1,29 @@
+{% extends 'base.html' %}{% block content %}<h1>{{ target.display_name }}</h1>
+<p>{{ target.username }} · {{ target.team }} · {{ target.email }} · {{ target.role }} · {{ 'Active' if target.is_active else 'Disabled' }}</p>
+<h2>Outstanding resources</h2>{% for kind,items in impact.items() %}<h3>{{ kind|title }} ({{ items|length }})</h3>
+<ul>{% for item in items %}<li>
+<a href="/suts/{{ item.sut_id }}">{{ item.lab_name }} / {{ item.sut_name }}</a>
+</li>{% endfor %}</ul>{% endfor %}
+<form method="post" action="/admin/users/{{ target.id }}/status">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<input type="hidden" name="is_active" value="{{ 'false' if target.is_active else 'true' }}">
+<label for="reason">Reason</label>
+<input class="form-control mb-2" id="reason" name="reason" {% if target.is_active %}required{% endif %}>
+<label>
+<input type="checkbox" name="acknowledge_resources" value="true"> I reviewed outstanding resources; follow-up is manual.</label>
+<button class="btn btn-outline-danger d-block mt-2">{{ 'Deactivate' if target.is_active else 'Reactivate' }}</button>
+</form>
+<h2 class="mt-4">Role</h2>
+<form method="post" action="/admin/users/{{ target.id }}/role">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label for="role">Role</label>
+<select class="form-select mb-2" id="role" name="role">{% for role in ['user','lab_admin','super_admin'] %}<option {% if target.role == role %}selected{% endif %}>{{ role }}</option>{% endfor %}</select>
+<button class="btn btn-primary">Save role</button>
+</form>
+<h2 class="mt-4">Reset password</h2>
+<form method="post" action="/admin/users/{{ target.id }}/reset-password">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label for="temporary_password">New temporary password</label>
+<input class="form-control mb-2" type="password" id="temporary_password" name="temporary_password" required minlength="12" maxlength="128" autocomplete="new-password">
+<button class="btn btn-primary">Reset and require password change</button>
+</form>{% endblock %}
