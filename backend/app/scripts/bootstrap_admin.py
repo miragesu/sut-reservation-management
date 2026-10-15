@@ -25,7 +25,7 @@ def main():
     }
     raw = os.environ.get("BOOTSTRAP_PASSWORD")
     if raw is None:
-        raw = getpass.getpass("Temporary password (12–128 characters): ")
+        raw = getpass.getpass(f"Temporary password ({settings.password_minimum}–128 characters): ")
         if raw != getpass.getpass("Confirm temporary password: "):
             raise SystemExit("Passwords do not match")
     data = UserInput(**fields, role="super_admin", temporary_password=raw)

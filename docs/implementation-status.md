@@ -119,7 +119,7 @@ actual backup mount; runtime application behavior is unchanged.
 | `.venv/bin/ruff check backend scripts`; `.venv/bin/ruff format --check backend scripts` | PASS; 52 files formatted. |
 | `bash -n` for every README/guide Bash block; local Markdown target checks; `git diff --check` | PASS. Syntax/static validation does not claim execution of commands against production. |
 | `DOCKER_CONFIG=/tmp/sut-v1-release-anonymous SUT_SMOKE_IMAGE=mirage315/sut-reservation-management@sha256:56b9e9ad2e5fb60b852fe214a7d79679875f526045e2d722d589fc472791cae6 SUT_SMOKE_PULL=1 .venv/bin/python scripts/container_smoke.py` | PASS, exit 0: anonymous pull of published image, source-free image-only Compose, temporary bind directory, actual **Host5088→Container80**, UID10001/capabilities/NoNewPrivs/port79 denial, startup migrations, bootstrap/forced-password/login/Chromium Dashboard/Table/Detail/My Usage, session/data persistence across down/recreate, Claim/Release/FIFO/history, live/offline deadlines and restart idempotency. No build. |
-| Runtime mount and filesystem inspection during smoke | PASS: `bind /tmp/sut-compose-7w5zc403/data -> /app/data`; directory UID/GID10001:10001, mode700, sut.db created. Only source path is substituted for isolation; static check verifies literal `/data/sut-reservation-data`. |
+| Runtime mount and filesystem inspection during smoke | PASS: `bind /tmp/sut-compose-7w5zc403/data -> /app/data`; directory UID/GID 10001:10001, mode700, sut.db created. Only source path is substituted for isolation; static check verifies literal `/data/sut-reservation-data`. |
 | Cold backup/restore portion of same smoke | PASS: source bind archive restored to separate empty disposable recovery Named Volume; sessions/history/notices/ownership, SQLite integrity/foreign keys and Alembic check preserved. A host bind-directory restore remains an operator rehearsal, not claimed by this test. |
 
 The first configuration assertion failed because Compose omits false boolean keys;
@@ -155,3 +155,70 @@ No PR was created or merged. The pushed branch is retained; the reviewable
 [create the PR manually](https://github.com/miragesu/sut-reservation-management/pull/new/docs/dep008-admin-deployment).
 This subsequent delivery commit only records the result and PR body. Hosted CI
 for this branch is not substituted for the locally observed verification above.
+
+## DEP-009 — Installer, optional password mode and version promotion
+
+Base main `79a6303`, branch `feat/dep009-setup-password-mode`; Issue #9 and all
+existing confirmed BR-001–BR-028 preserved. No new release tag, Docker Hub push,
+alias promotion, production host change or Named Volume migration was performed.
+
+Implemented shared password policy with strict true/false parsing, default12 or
+opt-in1-character minimum, maximum 128, nonblank requirement and no composition
+rules. Backend provision/reset/change/bootstrap and HTML/CLI prompts agree.
+SECRET_KEY validation is unchanged; hashing/rate limits/CSRF/RBAC/session revocation
+and forced first-login password change remain active. The existing1.0.0 image is
+explicitly prevented from claiming support for LOW_SECURITY_PASSWD.
+
+`setup.sh` uses a fixed full Compose source commit and embedded SHA256. Operators
+choose stable/latest/explicit version, confirm missing-alias1.0.0 fallback, and see
+the actual version/digest before installation. Failed registry lookups do not silently
+fall back. A private local digest lock prevents tag movement on reruns. The installer
+checks platform/Docker/mount/disk/port, generates and retains a96-character secret,
+uses the existing bind with0700/10001 ownership, refuses missing/mismatched existing
+storage, and never migrates volumes. Explicit upgrades stop writers, snapshot record
+IDs, make a cold backup before replacement and verify retained records plus
+health/ports/mount/migrations/integrity. No automatic downgrade is attempted.
+
+Primary Compose now exposes SUT_VERSION with stable default; optional source-build
+Compose also forwards the password setting. All port/security/deadline behavior is
+retained. Private installer output is ignored by Git and Docker build contexts.
+
+Release configuration refuses existing explicit versions (registry errors fail
+closed), promotes only validated official digests to latest after anonymous published
+pull/deploy, and promotes stable solely through explicit main workflow dispatch,
+`STABLE_PROMOTION_ENABLED=true` plus protected `dockerhub-stable` environment review,
+then another anonymous deployment before login/promotion. Environment/reviewer
+configuration and actual publishing remain external operations. OCI provenance,
+version/source/digest summary and serialized release concurrency remain in place.
+
+### Observed verification
+
+| Check | Actual result |
+| --- | --- |
+| `.venv/bin/pytest -q` | **196 passed, 1 warning in 105.75s**. Existing Starlette/httpx TestClient deprecation warning only. Includes74 new cases for policy boundaries/roles/reset/change/bootstrap/secret/Boolean, registry tag refusal/error handling and real Bash function execution with disposable files/command doubles. |
+| Ruff lint/format | PASS, 57 files. |
+| `bash -n setup.sh`, documentation Bash blocks/local links, `git diff --check` | PASS. |
+| `/tmp/actionlint-1.7.7 .github/workflows/release.yml .github/workflows/day1.yml` | PASS. Does not claim remote release jobs ran. |
+| Compose config/JSON for stable/latest/1.0.0/1.0.1 | PASS: expected repository:version, no build, literal `/data/sut-reservation-data`→`/app/data`, no named production volume, UID10001,5088→80, default LOW_SECURITY_PASSWD=false, deadlines enabled. |
+| Native baseline Chromium | PASS: login/forced replacement,2 Labs/20 fictional SUTs, filters/layouts/polling/stale-retry/profile. |
+| Native Day2 Chromium | PASS: multi-user Claim/Release/FIFO/force-release/estimate/booking/check-in/history/Inbox and30s Detail polling. |
+| Native Day3 Chromium | PASS: Card/Table actions, poll/input retention, conflicts, Taipei booking, keyboard/mobile and notification fallback/read. |
+| Final Docker source build/default-mode full smoke | PASS, exit0: `DOCKER_CONFIG=/tmp/sut-v1-release-anonymous SUT_BUILD_NETWORK=host SUT_BUILD_CA=/etc/ssl/certs/ca-certificates.crt SUT_SMOKE_EXPORT_IMAGE=mirage315/sut-reservation-management:ci-dep009 .venv/bin/python scripts/container_smoke.py`. Build TLS/hash checks retained;5088→80, UID10001,zero capabilities,NoNewPrivs,port79 denied, migration/bootstrap/login/Chromium, persisted sessions/data, live/offline deadlines, restart deduplication and independent cold recovery/integrity all passed. Local image only, no publication. |
+
+Final image-only low-mode and installer lifecycle results are recorded below when
+completed. Initial test-double/fixture failures were diagnosed rather than bypassed:
+upgrade mock lacked the new record snapshot; direct-SQL fictional Lab fixture lacked
+required description/created_at. Both fixtures were corrected without relaxing
+production checks. A dynamic HTML label was corrected and final runtime source was
+rebuilt and checked. Earlier passing results are not substituted for the final run.
+
+### Remaining external gates
+
+Only 1.0.0 is currently verified published and does not implement this new password
+mode. Tentative1.0.1 must follow PR review/merge and a separate approved release.
+No stable/latest availability or actual promotion is claimed. Configure protected
+stable environment/reviewers and explicit enable variable before promotion; repository
+owners retain publishing credentials only in Actions secrets. A real production
+persistent /data mount and reboot ordering, host UID/SELinux, firewall/two LAN clients,
+real administrator inventory workflow, disk/backup sizing and bind-directory restore
+rehearsal remain unverified. Full MVP production acceptance is not declared.

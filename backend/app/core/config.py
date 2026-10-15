@@ -10,10 +10,24 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./data/sut.db"
     app_env: Literal["development", "test", "production"] = "production"
     cookie_secure: bool = True
+    low_security_passwd: bool = False
     deadline_processor_enabled: bool = True
     deadline_poll_seconds: float = Field(default=1.0, ge=0.1, le=60)
     session_hours: int = Field(default=12, ge=1, le=168)
     minimum_password_length: int = Field(default=12, ge=12, le=128)
+
+    @field_validator("low_security_passwd", mode="before")
+    @classmethod
+    def explicit_boolean(cls, value):
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str) and value.lower() in {"true", "false"}:
+            return value.lower() == "true"
+        raise ValueError("LOW_SECURITY_PASSWD must be true or false")
+
+    @property
+    def password_minimum(self):
+        return 1 if self.low_security_passwd else self.minimum_password_length
 
     @field_validator("secret_key")
     @classmethod

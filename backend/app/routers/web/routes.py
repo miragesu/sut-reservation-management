@@ -32,7 +32,14 @@ Super = Annotated[User, Depends(super_admin)]
 
 def render(request, name, user=None, **context):
     return request.app.state.templates.TemplateResponse(
-        request=request, name=name, context={"user": user, "csrf_token": csrf_token(request), **context}
+        request=request,
+        name=name,
+        context={
+            "user": user,
+            "csrf_token": csrf_token(request),
+            "password_minimum": request.app.state.settings.password_minimum,
+            **context,
+        },
     )
 
 

@@ -23,8 +23,8 @@ def verify_password(encoded, raw):
 
 
 def validate_password(raw, settings):
-    if len(raw) < settings.minimum_password_length or len(raw) > 128 or raw.isspace():
-        raise HTTPException(422, f"Password must contain {settings.minimum_password_length}–128 characters")
+    if len(raw) < settings.password_minimum or len(raw) > 128 or raw.isspace():
+        raise HTTPException(422, f"Password must contain {settings.password_minimum}–128 characters")
 
 
 def token_hash(raw):

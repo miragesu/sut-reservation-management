@@ -9,8 +9,8 @@
 </p>{% endfor %}{% endfor %}</section>{% endif %}{% endfor %}<h2>Create account</h2>
 <p>Deliver the temporary password securely outside this application. First login requires replacement.</p>
 <form method="post" action="/admin/users">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}">{% for name,label in [('username','Username'),('display_name','Display name'),('team','Team'),('email','Work email'),('temporary_password','Temporary password (12–128 characters)')] %}<label for="{{ name }}" class="form-label">{{ label }}</label>
-<input id="{{ name }}" name="{{ name }}" class="form-control mb-3" type="{{ 'password' if name == 'temporary_password' else 'email' if name == 'email' else 'text' }}" required {% if name == 'temporary_password' %}autocomplete="new-password" minlength="12" maxlength="128"{% endif %}>{% endfor %}<label for="role">Role</label>
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">{% for name,label in [('username','Username'),('display_name','Display name'),('team','Team'),('email','Work email'),('temporary_password','Temporary password (' ~ password_minimum ~ '–128 characters)')] %}<label for="{{ name }}" class="form-label">{{ label }}</label>
+<input id="{{ name }}" name="{{ name }}" class="form-control mb-3" type="{{ 'password' if name == 'temporary_password' else 'email' if name == 'email' else 'text' }}" required {% if name == 'temporary_password' %}autocomplete="new-password" minlength="{{ password_minimum }}" maxlength="128"{% endif %}>{% endfor %}<label for="role">Role</label>
 <select id="role" name="role" class="form-select mb-3">{% for role in ['user','lab_admin','super_admin'] %}<option>{{ role }}</option>{% endfor %}</select>
 <button class="btn btn-primary">Create account</button>
 </form>{% endblock %}

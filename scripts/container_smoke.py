@@ -19,12 +19,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     project = "sut-smoke-" + secrets.token_hex(5)
-    password = secrets.token_urlsafe(24)
-    replacement = secrets.token_urlsafe(24)
+    low_password = os.environ.get("SUT_SMOKE_LOW_SECURITY") == "1"
+    password = "甲" if low_password else secrets.token_urlsafe(24)
+    replacement = "乙" if low_password else secrets.token_urlsafe(24)
     environment = {
         **os.environ,
         "SECRET_KEY": secrets.token_urlsafe(48),
         "COOKIE_SECURE": "false",
+        "LOW_SECURITY_PASSWD": str(low_password).lower(),
         "APP_BIND": "127.0.0.1",
         "APP_PORT": "5088",
         "BOOTSTRAP_USERNAME": "demo",
@@ -81,6 +83,9 @@ def main():
             deploy_file.write_text(
                 deploy_file.read_text().replace("/data/sut-reservation-data", str(bind_data))
             )
+            image_override = Path(temp) / "image.json"
+            image_override.write_text(json.dumps({"services": {"sut-management": {"image": image_ref}}}))
+            compose += ["-f", str(image_override)]
         if not image_ref:
             overrides = Path(temp) / "build.json"
             build = {"args": ["HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY"]}
