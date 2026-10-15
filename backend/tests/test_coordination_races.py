@@ -115,10 +115,12 @@ def test_claim_vs_expiry_serializes_at_exact_boundary(arena, application, offset
 
 
 @pytest.mark.parametrize("offset_microseconds", [-1, 0])
-def test_checkin_vs_no_show_exact_boundary(arena, application, offset_microseconds):
+def test_removed_checkin_cannot_extend_start_deadline(arena, application, offset_microseconds):
     users, sut, _, clock = arena
     booking = reserve(users["rd"], sut, clock, start=1, length=60)
-    clock.advance(minutes=16, microseconds=offset_microseconds)
+    clock.advance(minutes=1)
+    clock.sweep()  # Availability and its notification establish the persisted deadline.
+    clock.advance(minutes=15, microseconds=offset_microseconds)
     barrier = Barrier(2)
 
     def checkin():
@@ -139,9 +141,9 @@ def test_checkin_vs_no_show_exact_boundary(arena, application, offset_microsecon
         second = pool.submit(sweep)
         result = first.result()
         second.result()
-    assert result == (200 if offset_microseconds < 0 else 409)
+    assert result == 410
     assert users["root"].get(f"/api/v1/reservations/{booking['id']}").json()["status"] == (
-        "waiting_for_release" if offset_microseconds < 0 else "no_show"
+        "confirmed" if offset_microseconds < 0 else "no_show"
     )
     assert count(application, CurrentUsage) == 0
 
@@ -227,7 +229,9 @@ def test_claim_vs_maintenance_has_one_consistent_outcome(arena, application):
 def test_reserved_claim_vs_no_show_boundary(arena, application, offset_microseconds):
     users, sut, _, clock = arena
     booking = reserve(users["rd"], sut, clock, start=1, length=60)
-    clock.advance(minutes=16, microseconds=offset_microseconds)
+    clock.advance(minutes=1)
+    clock.sweep()  # Start the window when available and notified, not on the first later visit.
+    clock.advance(minutes=15, microseconds=offset_microseconds)
     barrier = Barrier(2)
 
     def claimant():

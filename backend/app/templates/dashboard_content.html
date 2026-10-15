@@ -1,36 +1,14 @@
-<div class="alert alert-light border" id="metrics">Labs: {{ data.metrics.labs }} · SUTs: {{ data.metrics.suts }}{% for name in ['Available','Reserved','In Use','Maintenance','Out of Service'] %} · {{ name }}: {{ data.metrics[name] }}{% endfor %}</div>
-{% for group in data['items']|groupby('lab_id') %}<section class="mb-4">
-<h2>{{ group.list[0].lab_name }}</h2>
-<div class="sut-grid card-layout">{% for sut in group.list %}<article class="card p-3" data-sut-id="{{ sut.id }}">
-<h3 class="h5">
-<a href="/suts/{{ sut.id }}">{{ sut.name }}</a>
-</h3>
-<p>{{ sut.platform }} · {{ sut.owner_team }}</p>
-<p class="fw-bold">{{ sut.status }}{% if sut.in_use and sut.status != 'In Use' %} · In Use{% endif %}{% if sut.overdue %} · Overdue{% endif %}</p>{% if sut.operational_reason %}<p>{{ sut.operational_reason }}</p>{% endif %}<p>Holder: {% if sut.holder %}{{ sut.holder.display_name }} · {{ sut.holder.team }} · <a href="mailto:{{ sut.holder.email }}">{{ sut.holder.email }}</a>{% else %}—{% endif %} · Expected end {{ sut.expected_end_time|taipei }}</p>{% if sut.next_reservation %}<p>Next reservation: {{ sut.next_reservation.user.display_name }} · {{ sut.next_reservation.start_time|taipei }}–{{ sut.next_reservation.end_time|taipei }}</p>{% else %}<p>No upcoming reservation</p>{% endif %}{% include "quick_actions.html" %}</article>{% endfor %}</div>
-<div class="table-responsive table-layout" hidden>
-<table class="table table-striped">
-<thead>
-<tr>
-<th scope="col">Lab</th>
-<th>SUT name</th>
-<th>Platform</th>
-<th>Status</th>
-<th>Current holder</th>
-<th>Expected end (Taipei)</th>
-<th>Reservations in next 24h (Taipei)</th><th>Actions</th>
-</tr>
-</thead>
-<tbody>{% for sut in group.list %}<tr data-sut-id="{{ sut.id }}">
-<td>{{ sut.lab_name }}</td>
-<td>
-<a href="/suts/{{ sut.id }}">{{ sut.name }}</a>
-</td>
-<td>{{ sut.platform }}</td>
-<td>{{ sut.status }}{% if sut.in_use and sut.status != 'In Use' %} · In Use{% endif %}{% if sut.overdue %} · Overdue{% endif %} {{ sut.operational_reason or '' }}</td>
-<td>{% if sut.holder %}{{ sut.holder.display_name }} · {{ sut.holder.team }} · <a href="mailto:{{ sut.holder.email }}">{{ sut.holder.email }}</a>{% else %}—{% endif %}</td>
-<td>{{ sut.expected_end_time|taipei }}</td>
-<td>{% for booking in sut.reservations_24h %}<p>{{ booking.user.display_name }} · {{ booking.start_time|taipei }}–{{ booking.end_time|taipei }}</p>{% else %}No reservations in next 24h{% endfor %}</td>
-<td>{% include "quick_actions.html" %}</td></tr>{% endfor %}</tbody>
-</table>
-</div>
-</section>{% else %}<p>No matching active SUTs.</p>{% endfor %}
+<div class="status-overview" id="metrics" aria-label="System status overview">
+{% for name in ['Available','In Use','Reserved','Maintenance','Out of Service'] %}<div class="status-summary status-{{ name|lower|replace(' ', '-') }}"><span class="status-dot" aria-hidden="true"></span><span>{{ name }}</span><strong>{{ data.metrics[name] }}</strong></div>{% endfor %}</div>
+{% for group in data['items']|groupby('lab_id') %}<section class="lab-section" data-lab-id="{{ group.grouper }}">
+<header class="lab-heading"><span class="lab-icon" aria-hidden="true">{{ '%02d'|format(loop.index) }}</span><div><p class="eyebrow">LAB {{ '%02d'|format(loop.index) }}</p><h2>{{ group.list[0].lab_name }}</h2></div><span class="lab-count">{{ group.list|length }} systems</span></header>
+<div class="sut-grid card-layout">{% for sut in group.list %}<article class="sut-card status-{{ sut.status|lower|replace(' ', '-') }}" data-sut-id="{{ sut.id }}" data-status="{{ sut.status }}">
+<div class="sut-card-top"><span class="system-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01M12 6.5h5M12 17.5h5" stroke-linecap="round"/></svg></span><span class="status-pill"><span class="status-dot" aria-hidden="true"></span>{{ sut.status }}</span></div>
+<h3><a href="/suts/{{ sut.id }}">{{ sut.name }}</a></h3><p class="sut-meta">{{ sut.platform }} · {{ sut.owner_team }}</p>
+{% if sut.in_use and sut.status != 'In Use' %}<p class="activity-warning">Also in use</p>{% endif %}{% if sut.overdue %}<p class="activity-warning">Overdue · awaiting release</p>{% endif %}
+<div class="sut-activity"><span class="detail-label">{% if sut.holder %}CURRENT HOLDER{% else %}CURRENT ACTIVITY{% endif %}</span><p class="activity-title">{% if sut.holder %}{{ sut.holder.display_name }}{% elif sut.operational_reason %}{{ sut.operational_reason }}{% elif sut.status == 'Reserved' %}Reserved for scheduled work{% else %}Ready for your next task{% endif %}</p><p class="activity-caption">{% if sut.holder %}{{ sut.holder.team }} · Until {{ sut.expected_end_time|taipei }}{% elif sut.status == 'Available' %}Start using a system to get started{% elif sut.status == 'Reserved' %}Check reservation details before claiming{% else %}New usage is currently unavailable{% endif %}</p></div>
+<div class="sut-booking"><span class="detail-label">UP NEXT</span><p>{% if sut.next_reservation %}{{ sut.next_reservation.start_time|taipei }}–{{ sut.next_reservation.end_time|taipei }}<span>{{ sut.next_reservation.user.display_name }}</span>{% else %}No upcoming reservation{% endif %}</p></div>
+{% include 'quick_actions.html' %}</article>{% endfor %}</div>
+<div class="table-responsive table-layout" hidden><table class="table dashboard-table"><thead><tr><th>SUT name</th><th>Platform</th><th>Status</th><th>Current holder</th><th>Expected end</th><th>Reservations in next 24h</th><th>Actions</th></tr></thead><tbody>
+{% for sut in group.list %}<tr class="status-{{ sut.status|lower|replace(' ', '-') }}" data-sut-id="{{ sut.id }}" data-status="{{ sut.status }}"><td><a href="/suts/{{ sut.id }}">{{ sut.name }}</a></td><td>{{ sut.platform }}</td><td><span class="status-pill"><span class="status-dot" aria-hidden="true"></span>{{ sut.status }}</span>{% if sut.in_use and sut.status != 'In Use' %}<small class="d-block">Also in use</small>{% endif %}{% if sut.overdue %}<small class="d-block">Overdue</small>{% endif %}{% if sut.operational_reason %}<small class="d-block">{{ sut.operational_reason }}</small>{% endif %}</td><td>{% if sut.holder %}{{ sut.holder.display_name }}<small class="d-block">{{ sut.holder.team }} · <a href="mailto:{{ sut.holder.email }}">{{ sut.holder.email }}</a></small>{% else %}—{% endif %}</td><td>{{ sut.expected_end_time|taipei }}</td><td>{% for booking in sut.reservations_24h %}<p>{{ booking.user.display_name }} · {{ booking.start_time|taipei }}–{{ booking.end_time|taipei }}</p>{% else %}<span class="text-secondary">No reservations in next 24h</span>{% endfor %}</td><td>{% include 'quick_actions.html' %}</td></tr>{% endfor %}</tbody></table></div>
+</section>{% else %}<p>No active SUTs.</p>{% endfor %}

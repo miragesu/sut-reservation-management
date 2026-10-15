@@ -34,7 +34,7 @@
       content.innerHTML = html;
       applyView();
       window.scrollTo(position);
-      feedback.textContent = `Updated ${new Intl.DateTimeFormat('en-GB', {timeZone: 'Asia/Taipei', dateStyle: 'short', timeStyle: 'medium'}).format(new Date())} (Asia/Taipei) · Refreshes every 30 seconds`;
+      feedback.textContent = `Updated ${new Intl.DateTimeFormat('en-GB', {timeZone: 'Asia/Taipei', dateStyle: 'short', timeStyle: 'medium'}).format(new Date())} · Refreshes every 30 seconds`;
       feedback.classList.remove('text-danger');
     } catch {
       feedback.textContent = 'Data may be stale. Refresh failed; retrying every 30 seconds. Sign in again if your session expired.';
@@ -45,8 +45,9 @@
     }
   };
   form.addEventListener('submit', event => { event.preventDefault(); generation++; history.replaceState(null, '', `/?${params()}`); refresh(); });
-  // Cancel stale responses if the user has unsaved filter edits.
+  // Discard a response if the user selected a different sort while it was in flight.
   form.addEventListener('input', () => { generation++; });
+  form.addEventListener('change', () => { form.requestSubmit(); });
   document.addEventListener("coordination:changed", () => { generation++; refresh(); });
   setInterval(refresh, 30000);
   if (initial.size) refresh();

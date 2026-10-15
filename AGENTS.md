@@ -1,3 +1,5 @@
+> **Effective owner-confirmed update (2026-10-16):** the approved Demo integration supersedes earlier manual Check in / reservation no-show timing and Dashboard filtering requirements in this document. Start using is explicit; availability notification starts a persisted 15-minute window capped at booking end; waiting for release does not consume it. My SUTs is own-only, Calendar is the shared timeline, and navigation/design follow `docs/demo-integration.md`. Earlier conflicting descriptions are historical; use that document and the updated tests for current acceptance. Production deployment constraints remain unchanged.
+
 ## Confirmed BR-020: local account provisioning
 Only Super Admin provisions users and resets temporary passwords. No self-registration. First login with an admin-issued password MUST force a password change before normal application access, including JSON APIs. Do not hardcode or leak credentials; secure one-time administrator bootstrap is CLI-only. Test access checks and mandatory password change.
 

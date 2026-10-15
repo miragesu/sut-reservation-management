@@ -54,6 +54,8 @@ def test_no_show_background_and_retry_after_failed_iteration(arena, application,
 
     users, sut, _, clock = arena
     booking = reserve(users["rd"], sut, clock, start=1, length=60)
+    clock.advance(minutes=1)
+    clock.sweep()  # Persist notification and its deadline before simulating a later worker failure.
     app = runtime_app(application, clock)
     real = deadlines.process_deadlines
     calls = []
@@ -91,8 +93,10 @@ def test_mid_transition_failure_rolls_back_notification_and_state_before_retry(
 
     users, sut, _, clock = arena
     booking = reserve(users["rd"], sut, clock, start=1, length=60)
+    clock.advance(minutes=1)
+    clock.sweep()
     baseline_notices = count(application, Notification)
-    clock.advance(minutes=16)
+    clock.advance(minutes=15)
     original = coordination.notice
 
     def interrupted(*args, **kwargs):

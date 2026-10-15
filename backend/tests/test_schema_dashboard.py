@@ -33,8 +33,9 @@ def test_fresh_migration_roundtrip_and_schema(application):
     } <= tables
     with unit_of_work(application.state.engine, write=True) as db:
         db.execute(delete(User))
-    command.downgrade(cfg, "base")
-    assert inspect(application.state.engine).get_table_names() == ["alembic_version"]
+    with pytest.raises(RuntimeError, match="compatible backup"):
+        command.downgrade(cfg, "base")
+    assert "ready_at" in {c["name"] for c in inspect(application.state.engine).get_columns("reservations")}
     command.upgrade(cfg, "head")
     command.upgrade(cfg, "head")
     command.check(cfg)

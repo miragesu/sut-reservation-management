@@ -145,7 +145,7 @@ def operational(db, actor, identity, data, *, now=None):
                 user_id=user_id,
                 sut_id=identity,
                 event_key=event,
-                message=f"{sut.name}: operational state changed to {data.state}. Existing activity is retained.",
+                message=f"{sut.name}：設備狀態已變更為{ {'normal':'正常','maintenance':'維護中','out_of_service':'停用'}[data.state] }，既有使用、排隊與預約紀錄均保留。",
             )
         )
 

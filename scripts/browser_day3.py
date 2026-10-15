@@ -158,7 +158,7 @@ def main():
                     page.locator("#quick-modal").get_by_role("button", name="Close", exact=True).last.click()
                     expect(page.locator("#quick-modal")).not_to_be_visible()
 
-                expect(admin.locator("#notification-status")).to_contain_text("Inbox")
+                expect(admin.locator("#desktop-opt-in")).to_have_count(0)
                 open_action(admin, "claim")
                 admin.get_by_label("Estimated duration (minutes)", exact=True).fill("4320")
                 admin.get_by_label("Purpose", exact=True).fill("Day 3 modal input retained")
@@ -195,9 +195,9 @@ def main():
                 # Table reservation, card reservation conflict acknowledgement.
                 open_action(rd, "reserve", sut=2, table=True)
                 start = datetime.now(TAIPEI) + timedelta(hours=1)
-                rd.get_by_label("Start (Asia/Taipei)", exact=True).fill(start.strftime("%Y-%m-%dT%H:%M:%S"))
-                rd.get_by_label("End (Asia/Taipei)", exact=True).fill(
-                    (start + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S")
+                rd.get_by_label("Start", exact=True).fill(start.strftime("%Y-%m-%dT%H:%M"))
+                rd.get_by_label("End", exact=True).fill(
+                    (start + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
                 )
                 rd.get_by_label("Purpose", exact=True).fill("Day 3 booking")
                 rd.locator("#quick-submit").click()
@@ -217,12 +217,12 @@ def main():
                 # Remaining action/layout combinations share the same modal/service.
                 open_action(lab, "queue", sut=4)
                 lab.locator("#quick-submit").click()
-                expect(lab.locator("#quick-feedback")).to_contain_text("Claim")
+                expect(lab.locator("#quick-feedback")).to_contain_text("Start using")
                 close_modal(lab)
                 open_action(lab, "reserve", sut=3)
-                lab.get_by_label("Start (Asia/Taipei)", exact=True).fill(start.strftime("%Y-%m-%dT%H:%M:%S"))
-                lab.get_by_label("End (Asia/Taipei)", exact=True).fill(
-                    (start + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S")
+                lab.get_by_label("Start", exact=True).fill(start.strftime("%Y-%m-%dT%H:%M"))
+                lab.get_by_label("End", exact=True).fill(
+                    (start + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
                 )
                 lab.get_by_label("Purpose", exact=True).fill("Card booking")
                 lab.locator("#quick-submit").click()
@@ -277,7 +277,7 @@ def main():
                 fallback.add_init_script("Object.defineProperty(window, 'isSecureContext', {value:false});")
                 fallback.add_cookies(rd.context.cookies())
                 fp = fallback.new_page()
-                fp.goto(base + "/")
+                fp.goto(base + "/notifications")
                 expect(fp.locator("#desktop-opt-in")).to_be_disabled()
                 expect(fp.locator("#notification-status")).to_contain_text("HTTPS")
                 fallback.close()
@@ -287,7 +287,7 @@ def main():
                 )
                 denied.add_cookies(rd.context.cookies())
                 dp = denied.new_page()
-                dp.goto(base + "/")
+                dp.goto(base + "/notifications")
                 expect(dp.locator("#desktop-opt-in")).to_be_disabled()
                 expect(dp.locator("#notification-status")).to_contain_text("blocked")
                 denied.close()
@@ -330,7 +330,7 @@ def main():
                     )
 
                 np.route("**/api/v1/notifications*", notices)
-                np.goto(base + "/")
+                np.goto(base + "/notifications")
                 expect(np.locator("#unread-count")).to_have_text("0")
                 expect(np.locator("body")).not_to_have_attribute("data-permission-requests", "1")
                 np.locator("#desktop-opt-in").click()
@@ -369,7 +369,7 @@ def main():
                 ep = failed.new_page()
                 ep.clock.install()
                 ep.route("**/api/v1/notifications*", notices)
-                ep.goto(base + "/")
+                ep.goto(base + "/notifications")
                 expect(ep.locator("#unread-count")).to_have_text("2")
                 ep.locator("#desktop-opt-in").click()
                 expect(ep.locator("#notification-status")).to_contain_text("enabled")
@@ -383,7 +383,7 @@ def main():
                 unsupported.add_cookies(rd.context.cookies())
                 unsupported.add_init_script("delete window.Notification;")
                 up = unsupported.new_page()
-                up.goto(base + "/")
+                up.goto(base + "/notifications")
                 expect(up.locator("#desktop-opt-in")).to_be_disabled()
                 unsupported.close()
                 assert errors == [], errors
@@ -392,7 +392,15 @@ def main():
                 "PASS: Day 3 card/table modals, real polling/input retention, FIFO/manual claim, conflict acknowledgement, Taipei booking, keyboard dismissal, mobile detail and notification fallback/read workflow"
             )
         finally:
-            process.terminate()
+            if os.name == "nt":
+                subprocess.run(
+                    ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                    check=False,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            else:
+                process.terminate()
             process.wait(timeout=10)
 
 

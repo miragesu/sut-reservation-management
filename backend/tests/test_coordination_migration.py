@@ -1,3 +1,4 @@
+import pytest
 from datetime import UTC, datetime
 
 from alembic import command
@@ -57,7 +58,8 @@ def test_upgrade_backfills_day1_live_data_and_downgrade_preserves_it(tmp_path, m
         assert usage.start_time == datetime(2026, 10, 15, 4, tzinfo=UTC)
         assert entry.offer_generation == 0 and entry.paused_at is None
         assert history.usage_key == "existing-release" and history.duration_minutes == 60
-    command.downgrade(config, "fd0b3a205c15")
+    with pytest.raises(RuntimeError, match="compatible backup"):
+        command.downgrade(config, "fd0b3a205c15")
     with engine.connect() as connection:
         assert connection.scalar(text("SELECT purpose FROM current_usages")) == "Synthetic existing purpose"
         assert connection.scalar(text("SELECT count(*) FROM usage_histories")) == 1

@@ -96,17 +96,14 @@ def main():
                     assert page.locator(".card-layout:visible [data-sut-id]").count() == 20
                     page.get_by_role("button", name="Table", exact=True).click()
                     assert page.locator(".table-layout:visible tbody tr").count() == 20
-                    page.get_by_label("SUT name", exact=True).fill("Demo-SUT-10")
-                    page.get_by_label("Sort", exact=True).select_option("status")
                     with page.expect_response("**/dashboard/fragment?*"):
-                        page.get_by_role("button", name="Apply filters").click()
-                    expect(page.locator(".table-layout:visible tbody tr")).to_have_count(2)
-                    assert (
-                        page.get_by_role("button", name="Table", exact=True).get_attribute("aria-pressed")
-                        == "true"
-                    )
+                        page.get_by_label("Sort by", exact=True).select_option("status")
+                    expect(page.locator(".table-layout:visible tbody tr")).to_have_count(20)
+                    expect(page.locator(".lab-section")).to_have_count(2)
+                    for group in page.locator(".lab-section").all():
+                        expect(group.locator("tbody tr")).to_have_count(10)
                     page.get_by_role("button", name="Card", exact=True).click()
-                    assert page.locator(".card-layout:visible [data-sut-id]").count() == 2
+                    assert page.locator(".card-layout:visible [data-sut-id]").count() == 20
                     # Mutate via an authenticated session and verify real 30-second polling.
                     csrf = page.locator("meta[name=csrf-token]").get_attribute("content")
                     response = page.request.patch(
@@ -115,22 +112,21 @@ def main():
                         headers={"X-CSRF-Token": csrf},
                     )
                     assert response.status == 200
-                    page.get_by_label("Platform", exact=True).fill("unsaved filter")
-                    page.get_by_label("Platform", exact=True).fill("")
-                    page.get_by_text("Synthetic browser repair", exact=True).wait_for(timeout=35000)
-                    assert page.get_by_label("SUT name", exact=True).input_value() == "Demo-SUT-10"
-                    assert page.get_by_label("Sort", exact=True).input_value() == "status"
+                    page.locator(".card-layout").get_by_text("Synthetic browser repair", exact=True).wait_for(
+                        timeout=35000
+                    )
+                    assert page.get_by_label("Sort by", exact=True).input_value() == "status"
                     assert (
                         page.get_by_role("button", name="Card", exact=True).get_attribute("aria-pressed")
                         == "true"
                     )
                     # Failure cue retains previous data; restore and refresh.
                     page.route("**/dashboard/fragment?*", lambda route: route.abort())
-                    page.get_by_role("button", name="Apply filters").click()
+                    page.get_by_label("Sort by", exact=True).select_option("name")
                     page.get_by_text("Data may be stale.", exact=False).wait_for()
-                    assert page.locator(".card-layout:visible [data-sut-id]").count() == 2
+                    assert page.locator(".card-layout:visible [data-sut-id]").count() == 20
                     page.unroute("**/dashboard/fragment?*")
-                    page.get_by_role("button", name="Apply filters").click()
+                    page.get_by_label("Sort by", exact=True).select_option("status")
                     expect(page.locator("#refresh-status")).to_contain_text("Updated")
                     page.goto(base + "/suts/10")
                     assert page.get_by_text("Synthetic browser repair", exact=False).count() >= 1
@@ -144,10 +140,18 @@ def main():
                     assert errors == [], errors
                     browser.close()
                 print(
-                    "PASS: Chromium login, mandatory password change, seeded dashboard, layouts, filters, 30s polling, stale/retry, detail and profile"
+                    "PASS: Chromium login, mandatory password change, seeded dashboard, layouts, grouped sorting, 30s polling, stale/retry, detail and profile"
                 )
             finally:
-                process.terminate()
+                if os.name == "nt":
+                    subprocess.run(
+                        ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                        check=False,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                else:
+                    process.terminate()
                 process.wait(timeout=10)
 
 

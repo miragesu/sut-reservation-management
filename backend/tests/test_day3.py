@@ -188,7 +188,7 @@ def test_reservation_notices_are_persisted_once_per_schedule_and_start(arena, ap
     users, sut, _, clock = arena
     booking = reserve(users["rd"], sut, clock, start=60, length=60)
     before = users["rd"].get("/api/v1/notifications").json()
-    assert any("upcoming reservation scheduled" in n["message"] for n in before["items"])
+    assert any("已安排預約" in n["message"] for n in before["items"])
     clock.sweep()
     clock.sweep()
     assert users["rd"].get("/api/v1/notifications").json() == before
@@ -196,5 +196,5 @@ def test_reservation_notices_are_persisted_once_per_schedule_and_start(arena, ap
     clock.sweep()
     clock.sweep()
     notices = users["rd"].get("/api/v1/notifications").json()["items"]
-    assert sum("has started" in n["message"] for n in notices) == 1
+    assert sum("設備已可用" in n["message"] for n in notices) == 1
     assert users["rd"].get(f"/api/v1/reservations/{booking['id']}").json()["status"] == "confirmed"

@@ -278,37 +278,31 @@ def test_claim_and_extension_overlap_requires_ack_never_shortens_or_reassigns(ar
         assert db.get(Reservation, booking["id"]).status == "confirmed"
 
 
-def test_no_show_exact_boundary_does_not_release_current_holder(arena, application):
+def test_waiting_does_not_expire_or_release_current_holder(arena, application):
     users, sut, _, clock = arena
     holder = claim(users["root"], sut, 72 * 60)
     booking = reserve(users["rd"], sut, clock, start=1, length=60)
-    assert booking["at_risk"] is True
-    clock.advance(minutes=16, microseconds=-1)
+    clock.advance(minutes=16)
     clock.sweep()
-    assert users["root"].get(f"/api/v1/reservations/{booking['id']}").json()["status"] == "confirmed"
-    clock.advance(microseconds=1)
-    assert mutate(users["rd"], "POST", f"/api/v1/reservations/{booking['id']}/check-in").status_code == 409
-    clock.sweep()
-    clock.sweep()
-    assert users["root"].get(f"/api/v1/reservations/{booking['id']}").json()["status"] == "no_show"
+    row = users["rd"].get(f"/api/v1/reservations/{booking['id']}").json()
+    assert row["status"] == "waiting_for_release" and row["start_deadline"] is None
     assert count(application, CurrentUsage) == 1 and count(application, UsageHistory) == 0
-    assert count(application, AuditEvent, AuditEvent.event_type == "reservation_no_show") == 1
+    assert count(application, AuditEvent, AuditEvent.event_type == "reservation_no_show") == 0
     assert release(users["root"], sut, holder).status_code == 200
+    clock.advance(minutes=15)
+    clock.sweep()
+    assert users["rd"].get(f"/api/v1/reservations/{booking['id']}").json()["status"] == "no_show"
+    assert count(application, AuditEvent, AuditEvent.event_type == "reservation_no_show") == 1
 
 
-def test_waiting_checkin_preserves_priority_and_manual_handoff_over_fifo(arena, application):
+def test_automatic_wait_preserves_priority_and_handoff_over_fifo(arena, application):
     users, sut, _, clock = arena
     holder = claim(users["root"], sut, 60)
     join(users["lab"], sut)
     booking = reserve(users["rd"], sut, clock, start=1, length=60)
-    assert mutate(users["rd"], "POST", f"/api/v1/reservations/{booking['id']}/check-in").status_code == 409
-    clock.advance(minutes=1)
-    result = mutate(users["rd"], "POST", f"/api/v1/reservations/{booking['id']}/check-in")
-    assert result.json()["status"] == "waiting_for_release"
-    assert mutate(users["rd"], "POST", f"/api/v1/reservations/{booking['id']}/check-in").status_code == 200
-    clock.advance(minutes=16)
+    assert mutate(users["rd"], "POST", f"/api/v1/reservations/{booking['id']}/check-in").status_code == 410
+    clock.advance(minutes=17)
     clock.sweep()
-    assert count(application, CurrentUsage) == 1
     assert users["rd"].get(f"/api/v1/reservations/{booking['id']}").json()["status"] == "waiting_for_release"
     assert mutate(users["root"], "DELETE", f"/api/v1/reservations/{booking['id']}").status_code == 409
     result = release(users["root"], sut, holder).json()
@@ -322,25 +316,27 @@ def test_waiting_checkin_preserves_priority_and_manual_handoff_over_fifo(arena, 
         mutate(users["rd"], "POST", f"/api/v1/suts/{sut}/claim", {"duration_minutes": 60}).status_code == 422
     )
     reserved = claim(users["rd"], sut, 1, reservation_id=booking["id"])
-    assert reserved["reservation_id"] == booking["id"]
     assert release(users["rd"], sut, reserved).status_code == 200
     assert users["lab"].get(f"/api/v1/suts/{sut}/queue").json()["items"][0]["offer_status"] == "notified"
-    assert count(application, Notification, Notification.event_key == f"check-in:{booking['id']}") == 2
+    assert count(application, Notification, Notification.event_key.like(f"auto-ready:{booking['id']}:%")) == 1
 
 
-def test_checkin_free_records_attendance_without_auto_claim_and_completion(arena, application):
+def test_available_reservation_requires_explicit_start_before_deadline(arena, application):
     users, sut, _, clock = arena
     booking = reserve(users["rd"], sut, clock, start=1, length=30)
     clock.advance(minutes=1)
-    assert mutate(users["lab"], "POST", f"/api/v1/reservations/{booking['id']}/check-in").status_code == 403
-    assert mutate(users["rd"], "POST", f"/api/v1/reservations/{booking['id']}/check-in").status_code == 200
-    clock.advance(minutes=16)
     clock.sweep()
+    for name in ("lab", "rd"):
+        assert (
+            mutate(users[name], "POST", f"/api/v1/reservations/{booking['id']}/check-in").status_code == 410
+        )
     assert count(application, CurrentUsage) == 0
-    assert users["rd"].get(f"/api/v1/reservations/{booking['id']}").json()["status"] == "waiting_for_release"
-    clock.advance(minutes=14)
+    assert (
+        users["rd"].get(f"/api/v1/reservations/{booking['id']}").json()["display_status"] == "Ready to start"
+    )
+    clock.advance(minutes=15)
     clock.sweep()
-    assert users["rd"].get(f"/api/v1/reservations/{booking['id']}").json()["status"] == "completed"
+    assert users["rd"].get(f"/api/v1/reservations/{booking['id']}").json()["status"] == "no_show"
 
 
 def test_no_show_releases_priority_and_notifies_fifo(arena, application):

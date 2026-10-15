@@ -40,6 +40,9 @@ def event(db, actor, kind, now, sut_id, **details):
 
 
 def notice(db, user_id, sut_id, key, message, now):
+    from app.services.notification_text import chinese_message
+
+    message = chinese_message(message)
     if not db.scalar(
         select(Notification.id).where(Notification.user_id == user_id, Notification.event_key == key)
     ):
@@ -95,7 +98,7 @@ def protected(db, sut_id, now):
             for r in reservations(db, sut_id)
             if r.start_time <= now < r.end_time
             and db.get(User, r.user_id).is_active
-            and (r.checked_in_at is not None or r.status == "claimed" or now < r.start_time + GRACE)
+            and (r.status == "claimed" or r.start_deadline is None or now < r.start_deadline)
         ),
         None,
     )
@@ -144,13 +147,12 @@ def expire_offer(db, entry, now):
 
 def reconcile_sut(db, sut, now):
     """Idempotent deadline/eligibility reconciliation, including restart catch-up."""
+    usage = current_usage(db, sut.id)
     for booking in reservations(db, sut.id):
-        deadline = booking.start_time + GRACE
         if (
-            booking.status == "confirmed"
-            and booking.checked_in_at is None
-            and deadline <= now
-            and deadline <= booking.end_time
+            booking.status != "claimed"
+            and booking.start_deadline is not None
+            and booking.start_deadline <= now
         ):
             booking.status = "no_show"
             booking.no_show_at = now
@@ -161,21 +163,83 @@ def reconcile_sut(db, sut, now):
                 now,
                 sut.id,
                 reservation_id=booking.id,
-                deadline=deadline.isoformat(),
+                deadline=booking.start_deadline.isoformat(),
             )
             notice(
                 db,
                 booking.user_id,
                 sut.id,
                 f"no-show:{booking.id}",
-                "Your reservation became no-show after the 15-minute check-in deadline.",
+                f"{sut.name}：設備可用並通知後，未在期限內開始使用，預約已記錄為未到場，剩餘時段已解除。",
                 now,
             )
         elif booking.end_time <= now:
             booking.status = "completed"
             event(db, None, "reservation_completed", now, sut.id, reservation_id=booking.id)
+        elif booking.start_time <= now and booking.status != "claimed":
+            available = (
+                usage is None
+                and not sut.is_archived
+                and sut.operational_state == "normal"
+                and db.get(User, booking.user_id).is_active
+            )
+            if not available:
+                if booking.start_deadline is not None:
+                    booking.start_remaining_microseconds = max(
+                        0, int((booking.start_deadline - now) / timedelta(microseconds=1))
+                    )
+                    booking.start_deadline = None
+                    event(db, None, "reservation_start_paused", now, sut.id, reservation_id=booking.id)
+                booking.status = "waiting_for_release"
+                notice(
+                    db,
+                    booking.user_id,
+                    sut.id,
+                    f"auto-wait:{booking.id}",
+                    f"{sut.name}：預約時段已開始，設備尚未可用。釋放後會另行通知，目前不計算開始使用的 15 分鐘期限。",
+                    now,
+                )
+                if usage and usage.user_id != booking.user_id:
+                    notice(
+                        db,
+                        usage.user_id,
+                        sut.id,
+                        f"auto-holder:{booking.id}:{usage.usage_key}",
+                        f"{sut.name}：下一位預約者正在等待設備，完成後請手動 Release。",
+                        now,
+                    )
+            else:
+                booking.status = "confirmed"
+                if booking.start_deadline is None:
+                    remaining = (
+                        timedelta(microseconds=booking.start_remaining_microseconds)
+                        if booking.start_remaining_microseconds is not None
+                        else GRACE
+                    )
+                    booking.ready_at = now
+                    booking.start_deadline = min(now + remaining, booking.end_time)
+                    booking.start_remaining_microseconds = None
+                    event(
+                        db,
+                        None,
+                        "reservation_ready",
+                        now,
+                        sut.id,
+                        reservation_id=booking.id,
+                        deadline=booking.start_deadline.isoformat(),
+                    )
+                    deadline_label = booking.start_deadline.astimezone(ZoneInfo("Asia/Taipei")).strftime(
+                        "%Y-%m-%d %H:%M"
+                    )
+                    notice(
+                        db,
+                        booking.user_id,
+                        sut.id,
+                        f"auto-ready:{booking.id}:{now.isoformat()}",
+                        f"{sut.name}：設備已可用，請於 {deadline_label} 前按 Start using 開始使用；逾期將記錄為未到場。",
+                        now,
+                    )
     db.flush()
-    usage = current_usage(db, sut.id)
     priority = protected(db, sut.id, now)
     if usage and usage.expected_end_time <= now:
         notice(
@@ -183,34 +247,7 @@ def reconcile_sut(db, sut, now):
             usage.user_id,
             sut.id,
             f"overdue:{usage.usage_key}:{usage.expected_end_time.isoformat()}",
-            f"{sut.name}: your usage estimate is overdue. Record Release when finished; no automatic release occurs.",
-            now,
-        )
-    if priority:
-        notice(
-            db,
-            priority.user_id,
-            sut.id,
-            f"booking-started:{priority.id}:{priority.start_time.isoformat()}",
-            f"{sut.name}: your reservation has started. Check in or manually Claim within the displayed attendance deadline; checked-in priority lasts until the booked end. Attendance never creates usage automatically.",
-            now,
-        )
-    if usage and priority and priority.user_id != usage.user_id:
-        notice(
-            db,
-            usage.user_id,
-            sut.id,
-            f"booking-start:{priority.id}:{usage.usage_key}",
-            f"{sut.name}: a reservation has started while you remain recorded as using it. Coordinate a manual Release.",
-            now,
-        )
-    if priority and not usage:
-        notice(
-            db,
-            priority.user_id,
-            sut.id,
-            f"booking-ready:{priority.id}",
-            f"{sut.name}: your reservation has priority. Manually Claim to start usage.",
+            f"{sut.name}：已超過預計使用時間，完成後請手動 Release，系統不會自動釋放。",
             now,
         )
     entries = queue_entries(db, sut.id)
@@ -364,11 +401,11 @@ def claim(db, actor, sut_id, data, *, now=None):
             409, "Another reservation holder has priority until release of reservation protection"
         )
     if data.reservation_id is not None and (priority is None or priority.id != data.reservation_id):
-        raise HTTPException(409, "Reservation is not currently eligible for Claim")
+        raise HTTPException(409, "Reservation is not currently eligible to Start using")
     if priority:
         if end > priority.end_time:
             raise HTTPException(
-                422, "Reservation-specific Claim estimate must end by " + priority.end_time.isoformat()
+                422, "Reservation-specific usage estimate must end by " + priority.end_time.isoformat()
             )
     else:
         entries = queue_entries(db, sut.id)
@@ -382,7 +419,7 @@ def claim(db, actor, sut_id, data, *, now=None):
             None,
         )
         if eligible and (offered is None or offered.user_id != actor.id):
-            raise HTTPException(409, "Only the notified eligible FIFO head may Claim")
+            raise HTTPException(409, "Only the notified eligible FIFO head may Start using")
     conflicts = overlapping(db, sut.id, now, end, exclude_user=actor.id)
     require_ack(db, conflicts, data.acknowledge_reservation_conflict)
     usage = CurrentUsage(
@@ -398,7 +435,7 @@ def claim(db, actor, sut_id, data, *, now=None):
     if priority:
         priority.status = "claimed"
         priority.claimed_at = now
-        priority.checked_in_at = priority.checked_in_at or now
+
     own_entry = db.scalar(
         select(QueueEntry).where(QueueEntry.sut_id == sut.id, QueueEntry.user_id == actor.id)
     )
@@ -523,7 +560,7 @@ def join_queue(db, actor, sut_id, data, *, now=None):
     if any(e.user_id == actor.id for e in entries):
         raise HTTPException(409, "Already queued for this SUT")
     if usage is None and protected(db, sut.id, now) is None and not entries:
-        raise HTTPException(409, "SUT is Available with no queue; Claim directly")
+        raise HTTPException(409, "SUT is Available with no queue; select Start using directly")
     entry = QueueEntry(
         sut_id=sut.id,
         user_id=actor.id,
@@ -670,40 +707,4 @@ def cancel_reservation(db, actor, identity, *, now=None):
 
 
 def check_in(db, actor, identity, *, now=None):
-    active_actor(actor)
-    now = now or utcnow()
-    booking = get_or_404(db, Reservation, identity)
-    if booking.user_id != actor.id:
-        raise HTTPException(403, "Only the reservation owner may check in")
-    sut = get_or_404(db, SUT, booking.sut_id)
-    if (
-        booking.checked_in_at is not None
-        and booking.status == "waiting_for_release"
-        and now < booking.end_time
-    ):
-        return booking
-    if booking.status != "confirmed" or not booking.start_time <= now < min(
-        booking.start_time + GRACE, booking.end_time
-    ):
-        raise HTTPException(409, "Check-in requires an active reservation before its 15-minute deadline")
-    booking.status = "waiting_for_release"
-    booking.checked_in_at = now
-    event(db, actor, "reservation_checked_in", now, sut.id, reservation_id=identity)
-    usage = current_usage(db, sut.id)
-    if usage and usage.user_id != actor.id:
-        recipients = {
-            usage.user_id,
-            *db.scalars(select(User.id).where(User.role.in_(ADMIN), User.is_active.is_(True))),
-        }
-        for user_id in recipients:
-            notice(
-                db,
-                user_id,
-                sut.id,
-                f"check-in:{identity}",
-                f"{sut.name}: reservation holder checked in and awaits a manual recorded Release.",
-                now,
-            )
-    db.flush()
-    reconcile_sut(db, sut, now)
-    return booking
+    raise HTTPException(410, "Manual check-in has been removed. Use Start using when the system is ready.")

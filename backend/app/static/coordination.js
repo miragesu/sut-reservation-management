@@ -21,7 +21,7 @@
       // Claim/queue/estimate forms remain outside this region with their input intact.
       region.innerHTML = await response.text();
       updateControls();
-      feedback.textContent = 'Updated (Asia/Taipei): ' + new Intl.DateTimeFormat('en-GB', {timeZone: 'Asia/Taipei', timeStyle: 'medium'}).format(new Date());
+      feedback.textContent = 'Updated: ' + new Intl.DateTimeFormat('en-GB', {timeZone: 'Asia/Taipei', timeStyle: 'medium'}).format(new Date());
       feedback.classList.remove('text-danger');
     } catch {
       feedback.textContent = 'Data may be stale. Retrying in 30 seconds; sign in again if your session expired.';

@@ -7,32 +7,32 @@
 <title>{% block title %}SUT Coordination{% endblock %}</title>
 <link rel="stylesheet" href="/static/bootstrap.min.css">
 <link rel="stylesheet" href="/static/app.css">
+<link rel="stylesheet" href="/static/theme.css">
 <script defer src="/static/bootstrap.bundle.min.js"></script>
 <script defer src="/static/notifications.js"></script>
 <script defer src="/static/app.js">
 </script>
 <script defer src="/static/coordination.js"></script>
 </head>
-<body{% if user %} data-user-id="{{ user.id }}"{% endif %}>
+<body class="{% block body_class %}{% endblock %}"{% if user %} data-user-id="{{ user.id }}"{% endif %}>
 <a class="visually-hidden-focusable" href="#main-content">Skip to content</a>
 <nav class="navbar navbar-expand bg-dark navbar-dark">
 <div class="container flex-wrap gap-3">
 <a class="navbar-brand" href="/">SUT Coordination</a>
-{% if user %}<a class="text-white" href="/labs">Labs</a>
-<a class="text-white" href="/suts">Inventory</a>
-<a class="text-white" href="/profile">Profile</a>
-<a class="text-white" href="/my-usage">My Usage</a>
-<a class="text-white" href="/reservations">Reservations</a>
+{% if user %}
+<a class="text-white" href="/my-suts">My SUTs</a>
 <a class="text-white" href="/calendar">Calendar</a>
 <a class="text-white" href="/history">History</a>
-<a class="text-white" href="/notifications" aria-label="Notification center">🔔 Inbox <span id="unread-count" class="badge bg-danger" aria-live="polite"></span></a>
+<a class="text-white inbox-link" href="/notifications" aria-label="Notification center">Inbox <span id="unread-count" class="inbox-count" aria-live="polite" hidden></span></a>
 {% if user.role != 'user' %}<a class="text-white" href="/admin">Admin</a>{% endif %}
-<form method="post" action="/logout" class="ms-auto">
+<div class="ms-auto d-flex align-items-center gap-2" aria-label="Account actions">
+<a class="btn btn-outline-light" href="/profile">Profile</a>
+<form method="post" action="/logout" class="m-0">
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 <button class="btn btn-outline-light">Sign out</button>
-</form>{% endif %}</div>
+</form></div>{% endif %}</div>
 </nav>
-<main id="main-content" class="container py-4">{% if user %}<div class="mb-3"><button type="button" id="desktop-opt-in" class="btn btn-sm btn-outline-secondary">Enable desktop notifications</button><span id="notification-status" role="status" class="ms-2"></span><details class="mt-2"><summary>Recent notifications</summary><div id="notification-preview"></div><a href="/notifications">All notification history</a></details></div>{% endif %}{% block content %}{% endblock %}</main>
-<footer class="container py-4 text-secondary">Asia/Taipei (UTC+08:00) · Recorded status is advisory. This application does not control hardware access.</footer>
+<main id="main-content" class="container py-4">{% block content %}{% endblock %}</main>
+<footer class="container py-4 text-secondary">All times are Taipei time (UTC+8). Recorded status is advisory. This application does not control hardware access.</footer>
 </body>
 </html>
