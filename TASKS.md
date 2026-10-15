@@ -33,7 +33,7 @@
 - [x] Dockerfile, compose, persistent SQLite data volume
 - [x] `.env.example`, `.gitignore`, README
 - [x] Pytest fixtures and local test/smoke runners (see Day 1 evidence)
-- [ ] Hosted GitHub Actions execution verified (workflow added; remote run not yet observed)
+- [x] Hosted GitHub Actions execution verified at final application `eb17c6f` — run 38736460114 succeeds.
 
 ## Phase 2 — Inventory
 - [x] Lab HTML and JSON CRUD with role-based all-lab access (BR-008)
@@ -83,7 +83,7 @@
 - [x] `docker compose up --build` starts cleanly
 - [x] Fresh DB `alembic upgrade head` works
 - [x] Restart/recreate container preserves SQLite DB
-- [ ] `pytest` passes, CI green
+- [x] `pytest` passes, CI green for final application SHA `eb17c6f` (103 cases; hosted run 38736460114).
 - [x] End-to-end manual smoke walkthrough documented
 - [x] README and API docs match actual behavior
 - [x] No TODOs for MVP requirements, no exposed credentials
@@ -215,13 +215,13 @@
 - [ ] Every confirmed BR-001 to BR-028 has passing behavior tests and documented manual checks; no silent postponement.
 - [ ] Day 1, Day 2, Day 3 gates from `SPRINT_3DAY.md` each have recorded commands/outcomes.
 - [x] Concurrency and time-based reservation/queue expiry tests pass, including restart/idempotency.
-- [ ] Auth/RBAC, CSRF, DB migration, Docker persistence, Profile, notifications and dashboard checks pass.
-- [ ] `docs/implementation-status.md` shows PASS only with evidence.
+- [x] Auth/RBAC, CSRF, DB migration, Docker persistence, Profile, notifications and dashboard checks pass for application SHA `eb17c6f`; actual LAN/owner gates remain separate.
+- [x] `docs/implementation-status.md` shows PASS only with evidence.
 - [ ] If Day 3 is incomplete, retain NOT DONE and continue; do not recast full MVP as beta.
 
 ## DEP-001 — LAN deployment acceptance (all required)
 - [x] Supply deployable Dockerfile + compose.yaml and complete repository/image prerequisites.
-- [x] Map host TCP 5088 to container 8000 (configurable without changing Python code).
+- [x] DEP-006: map host TCP 5088 to container 80; verify non-root listener, health and port-binding isolation.
 - [x] Serve login/root page and 200 `/health`; FastAPI binds 0.0.0.0 in container.
 - [x] Fresh Alembic migration succeeds and fails startup visibly on error.
 - [x] SQLite data persists across container restart and image rebuild, never stored only in writable container layer.
@@ -273,8 +273,16 @@ Historical Day 2 note: Detail/Inbox polling supplied the shared read-only contro
 - [x] Responsive navigation/calendar/history/detail, keyboard modal dismissal and fictional 2-lab/20-SUT browser fixtures.
 - [x] BR-001–BR-028 implementation/test map recorded in `docs/day3-verification.md`.
 - [x] Disposable local cold backup restored into a separate empty named volume, retaining sessions/history/notices and passing schema/integrity checks.
-- [ ] Published Day 3 SHA Remote Build and final delivery recorded (pending final run).
-- [ ] Hosted Actions result verified.
+- [x] Published final Day 3 SHA `eb17c6f` Remote Build and source-free Compose/deadline/backup-restore checks pass; implementation branch pushed.
+- [ ] Day 3 PR created — actual GitHub GraphQL creation returned Forbidden; pushed branch and reviewable PR body available for ChatGPT.
+- [x] Hosted Actions result verified at final DEP-006 application SHA `eb17c6f` (run 38736460114).
 - [ ] Actual production LAN host/firewall/two-client/backup rehearsal and project-owner acceptance.
 
 Day 3 application evidence is distinct from full MVP production acceptance. Full MVP remains NOT DONE until external gates pass.
+
+## DEP-006 — Updated deployment gate
+- [x] Dockerfile EXPOSE/healthcheck, entrypoint and Compose consistently use container port 80.
+- [x] UID 10001, all capabilities dropped, no-new-privileges; container-local binding permission verified without host changes.
+- [x] Host 5088 → container 80 health, login and actual Chromium workflow pass.
+- [x] Local build/Compose and published-SHA GitHub Remote Build pass; named-volume persistence and backup/restore retained.
+- [ ] Production LAN host/firewall/two-client acceptance (requires company access).

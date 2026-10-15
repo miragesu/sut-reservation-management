@@ -56,6 +56,10 @@ The cloud builder needs its inherited proxy resolved and its existing approved C
 
 For public source-free Remote Build, add `SUT_SMOKE_REMOTE_REF=<published-full-SHA>` to the container command. The runner copies only Compose and host build settings to a fresh directory. It tests migrations, startup rejection on broken DB, port 5088, login/password gate, non-root UID 10001, persistence after rebuild/recreation, background processing without HTTP, offline catch-up and restart deduplication. Day 3 additionally stops writers, archives the complete disposable data volume, restores into a different empty volume and checks existing session/history/notices, schema, SQLite integrity and foreign keys. Only randomly named smoke volumes are removed.
 
+Observed public Remote Build **PASS** at final application SHA `eb17c6f7dd4581caff9502e64701de6ab895fc62` including DEP-006 **Host 5088 → Container 80**, with only Compose/settings in the temporary directory. It passed the complete deadline/persistence and cold-backup/independent-volume restore workflow.
+
+Hosted Actions also **PASS** for this final DEP-006 application SHA: [run 38736460114](https://github.com/miragesu/sut-reservation-management/actions/runs/38736460114), conclusion SUCCESS, duration 4m 51s. This independently runs the full pytest/browser/updated container suite on GitHub infrastructure.
+
 The bootstrap JavaScript bundle is vendored from Bootstrap 5.3.8 with the npm package's SHA-512 integrity verified, under the existing MIT license. No CDN, inline JavaScript, relaxed CSP, service worker, email/Teams or device-control integration is added.
 
 ## Verification corrections
@@ -63,6 +67,18 @@ The bootstrap JavaScript bundle is vendored from Bootstrap 5.3.8 with the npm pa
 An initial browser assertion selected action buttons as well as SUT containers because they shared `data-sut-id`; action identity now uses `data-quick-sut`, preserving existing DOM/test contracts. Bootstrap transition timing also exposed early Escape dismissal; the modal now opens without animation, restores focus explicitly and is verified with keyboard dismissal. A rank-test fixture initially omitted the required maintenance reason; the fixture was corrected without relaxing the database constraint.
 
 Adding persisted schedule notifications changed the rollback test's starting count. It now snapshots the count before the simulated interruption, still proving zero committed effects from failure and exactly one additional no-show notice after repeated retry. The transaction guarantee and original assertions about state/audit remain intact.
+
+## DEP-006 port correction
+
+The updated Issue #4 was reread during the same branch. The current deployment contract is **Host TCP 5088 → Container TCP 80**; earlier Day 1/2 and initial Day 3 build evidence used container 8000 and is historical, not proof of DEP-006.
+
+`Dockerfile` EXPOSE/healthcheck, entrypoint, Compose and deployment specifications now agree on port 80. Runtime stays UID/GID 10001, cap_drop ALL and no-new-privileges. Compose sets `net.ipv4.ip_unprivileged_port_start=80` only in the private container network namespace. No root app startup, NET_BIND_SERVICE, interpreter file capabilities or host sysctl change is used.
+
+Image metadata inspection verifies EXPOSE 80 and the real image healthcheck command is executed successfully. The container runner asserts actual `docker compose port ... 80` returns 127.0.0.1:5088, PID 1 UID 10001, CapEff/CapPrm/CapBnd zero, NoNewPrivs=1, namespace threshold 80, listening socket 0.0.0.0:80, internal /health:80, no old :8000 listener and denied port-79 binding. Chromium then signs in and opens Dashboard/Table/Detail/My Usage through host 5088. Persistence, background deadlines and independent-volume restore are rerun with the new mapping. Local and published-SHA Remote Build **PASS** for all of these assertions, including actual Chromium over 5088→80. Final outcomes and published SHA are recorded in implementation-status.md.
+
+DEP-006 does not require a schema change. Updating from older images requires the matching Compose revision as well as the new pinned image source SHA; pre-DEP-006 rollback must also restore its historical port mapping. No data-volume deletion is needed.
+
+Final browser cases also cover a successful action racing an outstanding notification poll and a granted Notification permission whose constructor throws. The former queues an immediate follow-up read; the latter leaves an explicit Inbox fallback cue.
 
 ## External gates
 
