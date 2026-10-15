@@ -295,21 +295,25 @@ def main():
                 desktop = browser.new_context()
                 desktop.add_cookies(rd.context.cookies())
                 desktop.add_init_script("""window.Notification = class {
-                  static permission = 'default';
-                  static async requestPermission(){document.body.dataset.permissionRequests='1'; this.permission='granted'; return 'granted';}
+                  static permission = sessionStorage.getItem('synthetic-notification-permission') || 'default';
+                  static async requestPermission(){document.body.dataset.permissionRequests='1'; this.permission='granted'; sessionStorage.setItem('synthetic-notification-permission','granted'); return 'granted';}
                   constructor(title, options){document.body.dataset.deliveries=String(Number(document.body.dataset.deliveries||0)+1); document.body.dataset.desktopBody=options.body;}
                 };""")
                 np = desktop.new_page()
                 np.clock.install()
-                state = {"new": False}
+                state = {"new": False, "id": 777, "hold": False}
+                held = []
 
                 def notices(route):
+                    if state["hold"] and "after_id" not in route.request.url:
+                        held.append(route)
+                        return
                     route.fulfill(
                         json={
                             "items": (
                                 [
                                     {
-                                        "id": 777,
+                                        "id": state["id"],
                                         "sut_id": 1,
                                         "message": "Synthetic private rd@example.com",
                                         "created_at": "2026-10-15T00:00:00Z",
@@ -319,9 +323,9 @@ def main():
                                 if state["new"]
                                 else []
                             ),
-                            "total": int(state["new"]),
-                            "unread_count": int(state["new"]),
-                            "latest_id": 777 if state["new"] else 0,
+                            "total": state["id"] - 776 if state["new"] else 0,
+                            "unread_count": state["id"] - 776 if state["new"] else 0,
+                            "latest_id": state["id"] if state["new"] else 0,
                         }
                     )
 
@@ -344,7 +348,37 @@ def main():
                 np.clock.fast_forward(30000)
                 np.wait_for_timeout(250)
                 expect(np.locator("body")).not_to_have_attribute("data-deliveries", "1")
+                # A successful action arriving during an old read must queue a fresh read.
+                state["hold"] = True
+                np.clock.fast_forward(30000)
+                np.wait_for_timeout(250)
+                assert len(held) == 1
+                np.locator("body").dispatch_event("coordination:changed")
+                state["hold"] = False
+                state["id"] = 778
+                held.pop().fulfill(json={"items": [], "total": 1, "unread_count": 1, "latest_id": 777})
+                expect(np.locator("#unread-count")).to_have_text("2")
+                expect(np.locator("body")).to_have_attribute("data-deliveries", "1")
                 desktop.close()
+                # A granted permission can still fail at the browser/OS delivery step.
+                failed = browser.new_context()
+                failed.add_cookies(rd.context.cookies())
+                failed.add_init_script(
+                    "window.Notification = class {static permission='default'; static async requestPermission(){this.permission='granted';return 'granted';} constructor(){throw Error('Synthetic platform delivery failure');}};"
+                )
+                ep = failed.new_page()
+                ep.clock.install()
+                ep.route("**/api/v1/notifications*", notices)
+                ep.goto(base + "/")
+                expect(ep.locator("#unread-count")).to_have_text("2")
+                ep.locator("#desktop-opt-in").click()
+                expect(ep.locator("#notification-status")).to_contain_text("enabled")
+                state["id"] = 779
+                ep.clock.fast_forward(30000)
+                expect(ep.locator("#notification-status")).to_contain_text(
+                    "Desktop delivery unavailable. Use Inbox."
+                )
+                failed.close()
                 unsupported = browser.new_context()
                 unsupported.add_cookies(rd.context.cookies())
                 unsupported.add_init_script("delete window.Notification;")

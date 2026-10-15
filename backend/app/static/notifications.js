@@ -7,7 +7,7 @@
   const supported = window.isSecureContext && typeof window.Notification === 'function';
   const key = `sut-notifications-${document.body.dataset.userId}`;
   const delivered = new Set();
-  let cursor = null, pending = false, enabled = false;
+  let cursor = null, pending = false, queued = false, enabled = false;
   try { cursor = Number(sessionStorage.getItem(key)) || null; enabled = sessionStorage.getItem(`${key}-enabled`) === 'yes'; } catch { /* Storage is optional. */ }
   const save = () => { try { sessionStorage.setItem(key, String(cursor)); sessionStorage.setItem(`${key}-enabled`, enabled ? 'yes' : 'no'); } catch { /* In-memory deduplication remains active. */ } };
   const describe = () => {
@@ -21,7 +21,7 @@
     catch { status.textContent = 'Desktop permission unavailable. Use Inbox.'; }
   });
   const refresh = async () => {
-    if (pending) return;
+    if (pending) { queued = true; return; }
     pending = true;
     try {
       const response = await fetch('/api/v1/notifications?page_size=100');
@@ -40,6 +40,7 @@
       });
       if (!rows.length) { const empty = document.createElement('p'); empty.textContent = 'No notifications.'; rows.push(empty); }
       preview.replaceChildren(...rows);
+      let desktopFailed = false;
       // First visit establishes a baseline; never replay historical notifications.
       if (cursor !== null && supported && enabled && Notification.permission === 'granted') {
         // Fetch every intervening page so bursts over 100 cannot silently disappear.
@@ -50,17 +51,18 @@
           items = (await next.json()).items;
           for (const item of items) {
             if (!item.read_at && item.id > cursor && item.id <= data.latest_id && !delivered.has(item.id)) {
-              try { const notice = new Notification('SUT Coordination', {body: 'You have a new coordination notification. Open Inbox for details.', tag: `sut-${item.id}`}); delivered.add(item.id); notice.onclick = () => { window.focus(); location.href = '/notifications'; }; } catch { status.textContent = 'Desktop delivery unavailable. Use Inbox.'; }
+              try { const notice = new Notification('SUT Coordination', {body: 'You have a new coordination notification. Open Inbox for details.', tag: `sut-${item.id}`}); delivered.add(item.id); notice.onclick = () => { window.focus(); location.href = '/notifications'; }; } catch { desktopFailed = true; }
             }
           }
           page++;
         } while (items.length === 100);
       }
       describe();
+      if (desktopFailed) status.textContent = 'Desktop delivery unavailable. Use Inbox.';
       cursor = Math.max(cursor || 0, data.latest_id);
       save();
     } catch { status.textContent = 'Notifications may be stale. Retrying in 30 seconds; Inbox remains available.'; }
-    finally { pending = false; }
+    finally { pending = false; if (queued) { queued = false; refresh(); } }
   };
   document.addEventListener('coordination:changed', refresh);
   refresh();
