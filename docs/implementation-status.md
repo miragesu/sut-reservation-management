@@ -1,4 +1,30 @@
-# Implementation status — Issue #4 / Day 3
+# Current implementation status — DEP-007 / Issue #6
+
+**Registry release / production acceptance: NOT DONE.** Started from latest main `3b59e2e` on `feat/dep007-dockerhub-release`. Day 3/DEP-006 is now merged; its historical verification is retained below.
+
+Implemented the version-tag Docker Hub release workflow, mandatory successful regression/candidate deployment checks before pushing, main ancestry/SemVer guards, official SHA-pinned actions and scoped GitHub Secrets references. Post-push validation uses an empty Docker credential directory to test anonymous published-digest pull and deployment. No release tag, registry push or production deployment is claimed.
+
+Primary operators use image-only `compose.deploy.yaml` and a private SECRET_KEY. GitHub Remote Build remains optional. Host **5088 → Container 80**, UID10001, zero capabilities/no-new-privileges, private namespace sysctl80, migrations, SQLite named volume and all application behavior remain. Administrator setup/update/provenance/backup/restore/rollback: [deployment guide](deployment.md). Acceptance map: [DEP-007 verification](dep007-verification.md).
+
+| Check | Observed result |
+| --- | --- |
+| Ruff check/format, compileall, official actionlint 1.7.7 (checksum verified) | PASS |
+| Full pytest | **122 passed** (103 retained + 19 release-ref cases), 86.68s; one TestClient deprecation warning |
+| Baseline / Day 2 / Day 3 Chromium | All PASS |
+| Source Docker build/full Compose runner | PASS, exports a locally loaded validation image; no registry push |
+| Image-only Compose in source-free temp directory, --no-build | PASS: actual 5088→80, UID/capabilities/sysctl, migrations/login/browser, data/session persistence, deadline recovery/dedupe and independent-volume cold restore |
+| Image-only rerun with Git unavailable | PASS |
+| Required image / SECRET_KEY missing | Both fail closed; valid image-only config needs no Git ref/build |
+| Hosted application CI / optional latest-branch Remote Build | Pending push/run; not yet claimed |
+| Docker Hub version publishing / anonymous public pull | NOT RUN: no authorized release version/tag selected; cloud has no registry credential bindings, GitHub secrets metadata query returns Forbidden and Docker Hub metadata tunnel returns Forbidden |
+
+GitHub Secrets may exist remotely but cannot be verified through the blocked API. The owner must securely configure/verify DOCKERHUB_USERNAME=mirage315 and a scoped DOCKERHUB_TOKEN, public repository visibility, then publish an explicit reviewed version tag after merge. Never supply token values in chat/source/server configuration. A successful loaded-image test is not evidence of a public Docker Hub release.
+
+Delivery branch/PR results will be recorded after push. Company LAN access, separate production Linux server, firewall/two-client access and production restore/cross-version rollback remain unverified. No production data/secrets or hardware-control code is added.
+
+---
+
+# Historical implementation status — Issue #4 / Day 3
 
 **Full MVP production acceptance: NOT DONE.** Day 1 PR #1 and Day 2 PR #3 are merged (project owner confirmed). Day 3 started from latest main `719c32e47db148401ffdef2fb87ad11b6c2ac915` on `feat/day3-ui-acceptance`.
 

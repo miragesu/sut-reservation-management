@@ -116,3 +116,7 @@ When a SUT is Available and has no queue entries, users must directly Claim; joi
 
 ## DEP-006 — Host 5088 → container 80 (confirmed 2026-10-15)
 The project owner updated Issue #4 during Day 3: Compose publishes 5088:80, Uvicorn binds 0.0.0.0:80, and Dockerfile/entrypoint/healthcheck/docs/tests must agree. Non-root runtime is mandatory; preserve GitHub Remote Build and SQLite named volume. The implementation uses a private-container-network sysctl (unprivileged port start 80), retains cap_drop ALL and no-new-privileges, and does not modify the host sysctl or grant the Python interpreter file capabilities. Actual company LAN acceptance remains unverified without host access.
+
+
+## DEP-007 — Confirmed Docker Hub release/operator path (2026-10-15)
+Issue #6 changes the primary operator workflow to one image-only Compose file plus host-managed secrets, pulling public versioned/digest-pinned images from mirage315/sut-reservation-management. Explicit version tags trigger tested publishing; ordinary main pushes do not. GitHub Remote Build remains an optional developer path. DEP-006 port/privilege and persistent-volume requirements remain. Registry publishing credentials belong only in GitHub Actions secrets, never source or production server settings. Real publishing/pull and company LAN checks remain independent acceptance gates.

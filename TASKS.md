@@ -286,3 +286,18 @@ Day 3 application evidence is distinct from full MVP production acceptance. Full
 - [x] Host 5088 → container 80 health, login and actual Chromium workflow pass.
 - [x] Local build/Compose and published-SHA GitHub Remote Build pass; named-volume persistence and backup/restore retained.
 - [ ] Production LAN host/firewall/two-client acceptance (requires company access).
+
+## DEP-007 — Versioned Docker Hub release / image-only operator deployment
+- [x] Start latest main `3b59e2e`, branch `feat/dep007-dockerhub-release`; read Issue #6.
+- [x] Explicit version-tag workflow with main-ancestry/version guards, reusable application checks, tested candidate before push, pinned official actions and least-privilege secrets handling (unit/actionlint verified).
+- [x] Version/digest/OCI provenance/SBOM publishing configuration, no automatic latest; post-push anonymous digest pull/deploy gate implemented (actual registry release pending).
+- [x] Production compose.deploy.yaml has image only, 5088:80, UID10001, zero capabilities, no-new-privileges, private namespace sysctl80 and persistent SQLite/deadline configuration.
+- [x] Administrator guide: single YAML plus secure local secret, pull/up/bootstrap, provenance, project/volume continuity, backup/empty-volume restore and compatible rollback.
+- [x] 122 pytest cases, three browser runners, source-build and source-free locally loaded image deployment; port/privilege/persistence/deadline/backup-restore checks pass.
+- [x] Image mode passes with Git deliberately unavailable; missing image/secret configuration fails closed.
+- [ ] Latest branch hosted CI / optional Remote Build and delivery evidence recorded after push.
+- [ ] Actual Docker Hub secret configuration, accepted version-tag push, anonymous public registry pull and separate-server deployment verified.
+- [ ] Production company LAN/firewall/two clients and production recovery accepted.
+- [ ] PR created (or actual GraphQL failure recorded with pushed branch).
+
+DEP-007 implementation verification does not establish image publication or production acceptance. See docs/dep007-verification.md and docs/implementation-status.md.
