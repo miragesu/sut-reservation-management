@@ -7,11 +7,14 @@
 <title>{% block title %}SUT Coordination{% endblock %}</title>
 <link rel="stylesheet" href="/static/bootstrap.min.css">
 <link rel="stylesheet" href="/static/app.css">
+<script defer src="/static/bootstrap.bundle.min.js"></script>
+<script defer src="/static/notifications.js"></script>
 <script defer src="/static/app.js">
 </script>
 <script defer src="/static/coordination.js"></script>
 </head>
-<body>
+<body{% if user %} data-user-id="{{ user.id }}"{% endif %}>
+<a class="visually-hidden-focusable" href="#main-content">Skip to content</a>
 <nav class="navbar navbar-expand bg-dark navbar-dark">
 <div class="container flex-wrap gap-3">
 <a class="navbar-brand" href="/">SUT Coordination</a>
@@ -22,14 +25,14 @@
 <a class="text-white" href="/reservations">Reservations</a>
 <a class="text-white" href="/calendar">Calendar</a>
 <a class="text-white" href="/history">History</a>
-<a class="text-white" href="/notifications">Inbox</a>
+<a class="text-white" href="/notifications" aria-label="Notification center">🔔 Inbox <span id="unread-count" class="badge bg-danger" aria-live="polite"></span></a>
 {% if user.role != 'user' %}<a class="text-white" href="/admin">Admin</a>{% endif %}
 <form method="post" action="/logout" class="ms-auto">
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 <button class="btn btn-outline-light">Sign out</button>
 </form>{% endif %}</div>
 </nav>
-<main class="container py-4">{% block content %}{% endblock %}</main>
+<main id="main-content" class="container py-4">{% if user %}<div class="mb-3"><button type="button" id="desktop-opt-in" class="btn btn-sm btn-outline-secondary">Enable desktop notifications</button><span id="notification-status" role="status" class="ms-2"></span><details class="mt-2"><summary>Recent notifications</summary><div id="notification-preview"></div><a href="/notifications">All notification history</a></details></div>{% endif %}{% block content %}{% endblock %}</main>
 <footer class="container py-4 text-secondary">Asia/Taipei (UTC+08:00) · Recorded status is advisory. This application does not control hardware access.</footer>
 </body>
 </html>

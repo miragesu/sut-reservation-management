@@ -178,3 +178,10 @@ class ReleaseView(Output):
     history: HistoryView
     queue: list[QueueView]
     priority_reservation_id: int | None
+
+
+class NotificationPage(Output):
+    items: list[NotificationView]
+    total: int
+    unread_count: int
+    latest_id: int

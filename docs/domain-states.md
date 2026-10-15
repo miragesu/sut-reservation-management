@@ -26,4 +26,4 @@ A live offer pauses with remaining eligible response microseconds during mainten
 
 Check-in is owner-only and strictly before the 15-minute deadline/booked end. Attendance is retained as `waiting_for_release` whether the SUT is occupied or free; it never implicitly creates usage or becomes no-show while awaiting Release. The owner separately Claims within the remaining booking. At booked end it completes, even if a prior holder remains overdue. Releasing a reservation-specific usage completes that booking early and releases its remaining protection; timestamps and history remain. No automatic usage Release exists.
 
-Day 3 still adds Dashboard action modals, the notification bell/desktop opt-in and final full-MVP UI acceptance. There are no placeholder coordination routes.
+Day 3 adds shared Dashboard action modals, recipient-scoped notification history/unread projections, browser opt-in/fallback and verified UI workflows. Notification GETs remain read-only; schedule/start reminders use the same transactional deduplicated service. Production LAN/owner acceptance remains separate; see day3-verification.md. There are no placeholder coordination routes.

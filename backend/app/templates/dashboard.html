@@ -38,4 +38,15 @@
 <button class="btn btn-outline-primary" id="table-view" type="button" aria-pressed="false">Table</button>
 </div>
 <p id="refresh-status" role="status" aria-live="polite">Updated {{ data.as_of|taipei }} · Refreshes every 30 seconds</p>
-<div id="dashboard-content">{% include 'dashboard_content.html' %}</div>{% endblock %}
+<div id="dashboard-content">{% include 'dashboard_content.html' %}</div><div class="modal" id="quick-modal" tabindex="-1" aria-labelledby="quick-title" aria-hidden="true">
+<div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+<div class="modal-header"><h2 class="modal-title fs-5" id="quick-title"></h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+<div class="modal-body"><p id="quick-feedback" role="alert" tabindex="-1"></p><p id="quick-state-status" role="status"></p><div id="quick-detail"></div>
+<form id="quick-form"><div id="quick-duration"><div class="d-flex gap-2">{% for hours in [1,2,4,8] %}<button type="button" class="btn btn-sm btn-outline-secondary" data-duration-preset="{{ hours*60 }}">{{ hours }}h</button>{% endfor %}</div><label for="quick-minutes">Estimated duration (minutes)</label><input class="form-control" id="quick-minutes" type="number" min="1" step="1" value="60" required></div>
+<div id="quick-times"><label for="quick-start">Start (Asia/Taipei)</label><input class="form-control" id="quick-start" type="datetime-local" step="1"><label for="quick-end">End (Asia/Taipei)</label><input class="form-control" id="quick-end" type="datetime-local" step="1"></div>
+<div id="quick-purpose-group"><label for="quick-purpose">Purpose</label><textarea class="form-control" id="quick-purpose" maxlength="4000"></textarea></div>
+<div id="quick-conflict" hidden><label><input type="checkbox" id="quick-ack"> I understand the conflicting reservation and will coordinate release.</label><p id="quick-conflicts"></p></div>
+<button class="btn btn-primary mt-3" id="quick-submit" type="submit">Submit</button></form></div>
+<div class="modal-footer"><a id="quick-full-detail" class="btn btn-outline-secondary">Open full SUT detail</a><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+</div></div></div>
+<script defer src="/static/quick-actions.js"></script>{% endblock %}

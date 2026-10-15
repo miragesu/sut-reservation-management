@@ -13,6 +13,7 @@ from app.schemas.coordination import (
     ExpectedEndInput,
     HistoryPage,
     NotificationView,
+    NotificationPage,
     QueueInput,
     QueueLeaveInput,
     QueueView,
@@ -181,9 +182,18 @@ def history(
     )
 
 
-@router.get("/notifications", response_model=Collection[NotificationView])
-def notifications(db: DB, actor: Actor):
-    return {"items": q.notification_list(db, actor)}
+@router.get("/notifications", response_model=NotificationPage)
+def notifications(
+    db: DB,
+    actor: Actor,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    after_id: int | None = Query(None, ge=0),
+    through_id: int | None = Query(None, ge=0),
+):
+    return q.notification_page(
+        db, actor, page=page, page_size=page_size, after_id=after_id, through_id=through_id
+    )
 
 
 @router.post("/notifications/{identity}/read", response_model=NotificationView)

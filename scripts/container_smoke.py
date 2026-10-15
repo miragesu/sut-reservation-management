@@ -197,6 +197,9 @@ def main():
                 from container_day2 import check_coordination
 
                 check_coordination(client, mutation, run, ready, lab)
+                from container_day3 import check_restore
+
+                check_restore(client, run, ready, compose, environment, working_directory, temp, project)
             if remote_ref:
                 print(
                     f"Remote-context deployment verified at {remote_ref} with only Compose/settings in working directory"

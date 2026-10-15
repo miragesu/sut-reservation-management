@@ -375,13 +375,15 @@ def calendar(
 
 
 @router.get("/notifications")
-def notifications(request: Request, db: DB, actor: Actor):
-    return render(request, "notifications.html", actor, notifications=q.notification_list(db, actor))
+def notifications(request: Request, db: DB, actor: Actor, page: int = Query(1, ge=1)):
+    data = q.notification_page(db, actor, page=page)
+    return render(request, "notifications.html", actor, notifications=data["items"], data=data, page=page)
 
 
 @router.get("/notifications/fragment")
-def notification_fragment(request: Request, db: DB, actor: Actor):
-    return render(request, "notification_list.html", actor, notifications=q.notification_list(db, actor))
+def notification_fragment(request: Request, db: DB, actor: Actor, page: int = Query(1, ge=1)):
+    data = q.notification_page(db, actor, page=page)
+    return render(request, "notification_list.html", actor, notifications=data["items"])
 
 
 @router.post("/notifications/{identity}/read")

@@ -110,7 +110,7 @@ curl --fail http://127.0.0.1:5088/health # use the configured APP_BIND if not lo
 docker compose exec sut-management python -m app.scripts.bootstrap_admin
 ```
 
-Open the configured LAN address on port 5088, sign in and change the temporary password. Verify from two LAN browsers on the real host. Actual host/firewall/LAN reachability cannot be established by agent-local checks. In-app HTTP features do not require browser desktop-notification permission. Future opt-in desktop alerts may require a trusted HTTPS internal hostname; private-IP HTTP is usually not a secure context and must retain in-app fallback.
+Open the configured LAN address on port 5088, sign in and change the temporary password. Verify from two LAN browsers on the real host. Actual host/firewall/LAN reachability cannot be established by agent-local checks. In-app HTTP features do not require browser desktop-notification permission. Opt-in desktop alerts may require a trusted HTTPS internal hostname; private-IP HTTP is usually not a secure context and must retain in-app fallback.
 
 SQLite lives at `/app/data/sut.db` in the `sut-data` named volume, owned by runtime UID/GID 10001. A fresh volume inherits image directory ownership; for a restored volume preserve that ownership. The non-root image runs migration-before-startup and a single Uvicorn worker. Missing/invalid secrets or failed migration prevent serving. Production accounts, emails, IP inventory, hashes, schedules and histories stay in this volume; they never enter Git or the image.
 
@@ -136,3 +136,15 @@ docker compose start sut-management
 ```
 
 Protect the resulting archive; it contains credentials and internal data. For restore, stop the service, retain a recovery copy of current data, restore the entire backup into an **empty** compatible volume, preserve ownership 10001:10001, and start the matching application revision. Check SQLite `PRAGMA integrity_check`, migration version, health, login and representative inventory/history. Do not overlay a backup onto live database/WAL files or silently downgrade a migrated database. A deployment-specific backup/restore rehearsal is still required.
+
+## Day 3 Dashboard and notifications
+
+Both Dashboard layouts offer Claim, Queue, Reserve and Detail modals. Duration presets or positive custom minutes support multi-day estimates; queue duration remains an integer. Dates explicitly represent Asia/Taipei regardless of browser timezone. Conflict acknowledgement never shortens the estimate. Server-side services remain authoritative for stale state, FIFO/reservation priority, maintenance, roles and concurrent submissions. Successful actions close the modal and refresh the shared Dashboard; filters/layout/scroll and other unsaved inputs are preserved. Full SUT Detail provides Release, estimate edits, check-in links and administrator operations.
+
+The bell shows the recipient's total unread count, with a recent-notice preview and complete paginated Inbox history. `GET /api/v1/notifications` accepts `page`, `page_size` (1–100), `after_id` and `through_id`; returns `items,total,unread_count,latest_id`. The count covers all retained notices, independently of the page. Bounded ID polling avoids shifting pages while new notices arrive. Only explicit CSRF-protected `POST /api/v1/notifications/{id}/read` marks a recipient's own notice read. Schedule confirmation, reservation start, queue/expiry, overdue and maintenance notices are persisted; repeated deadline sweeps do not duplicate them.
+
+Desktop alerts require a supported secure context (HTTPS or localhost), browser/OS permission and an explicit **Enable desktop notifications** click. Private-IP HTTP normally falls back to Inbox. Permission is never requested on login/page load. Alerts work best-effort while the site is open; there is no service worker or delivery guarantee after closing the site. IDs are deduplicated between polls and a tab's reloads; independent tabs may each alert. Desktop bodies are generic and omit colleague emails/purposes. If storage or desktop delivery is unavailable, in-app history remains authoritative.
+
+Run `.venv/bin/python scripts/browser_day3.py` for modal/layout/keyboard/mobile/notification acceptance. `scripts/container_smoke.py` now includes a cold backup restored into a separate empty disposable named volume, validating sessions/history/notices/schema/integrity. Production backup recovery must still be rehearsed on the actual host.
+
+Windows development may use Docker Desktop with Linux containers and `docker compose -f compose.yaml -f compose.local.yaml up -d --build` from the checkout (PowerShell environment variables or a host-only `.env`). Production continues to use the pinned public GitHub Remote Build path on Linux; no GitHub push automatically updates a running server.
