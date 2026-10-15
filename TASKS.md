@@ -1,0 +1,250 @@
+# Implementation Checklist
+
+> Check boxes only after successful verification. Link PR or test evidence in the PR description.
+
+## Phase 0 — Decision gate
+- [x] Confirm BR-008: Lab Admin manages both labs, creates/deletes labs and SUTs, force-releases records and clears queues; user management remains Super Admin only
+- [x] Confirm FIFO queue temporary-use rule before an upcoming reservation
+- [x] Confirm manual reservation claim and 15-minute no-show expiration
+- [x] Confirm BR-003: checked-in reservation holder waits for recorded release; manual Claim; no forced access restrictions
+- [x] Confirm BR-004: FIFO head notified upon release, manual Claim required
+- [x] Confirm BR-005: 15-minute notified-user Claim deadline; expire/audit and notify next eligible user
+- [x] Confirm BR-006: Taiwan-only deployment, two labs/~20 SUTs, UI in Asia/Taipei; UTC at rest
+- [x] Confirm BR-009: SUT delete = archive, historical data retained, default inventory excludes archives, admin restore; block archive while actively used, queued or reserved
+- [x] Confirm BR-010: Admin manually names SUT; names unique within each Lab (including archives) but reusable across different Labs
+- [x] Confirm BR-011: no maximum on Claim expected duration; overdue shows reminder only, no auto-release
+- [x] BR-012: reservation duration is >0 and <=24 hours (elapsed duration), independently of BR-011 Claim estimates
+- [x] BR-013: reservation start must be future and no more than 30 × 24 hours ahead (inclusive), validated using UTC instants; reservation length independently capped at 24 hours
+- [x] Confirm BR-007: one user may Claim multiple distinct SUTs concurrently; each has independent usage and history
+- [x] Record confirmed BR-001/002/003 in `SPEC.md` and `docs/decisions.md` (other Phase 0 decisions remain open)
+
+- [x] Confirm BR-020: Super Admin creates local accounts, issues temporary password, and first login requires password change; no public registration
+- [ ] BR-020 tests: CLI bootstrap, temporary password hashed, forced password change for web/API, create/reset role enforcement and audit hygiene
+
+## Phase 1 — Foundation
+- [ ] App factory/main, settings and `/health`
+- [ ] SQLAlchemy 2.x models/relationships/constraints
+- [ ] Alembic initial migration
+- [ ] Local auth (password hash, login/logout, secure session, CSRF)
+- [ ] Role-based authorization dependencies (no lab assignment mapping)
+- [ ] Shared Bootstrap template and error pages
+- [ ] Admin bootstrap CLI and dev seed script
+- [ ] Dockerfile, compose, persistent SQLite data volume
+- [ ] `.env.example`, `.gitignore`, README
+- [ ] Pytest fixtures and CI smoke tests
+
+## Phase 2 — Inventory
+- [ ] Lab HTML and JSON CRUD with role-based all-lab access (BR-008)
+- [ ] SUT HTML and JSON CRUD: archive-only DELETE, blocked-conflict 409, admin restore, include_archived admin filter, historical linkage preserved (BR-009)
+- [ ] Test archive/restore role permissions, archive conflicts, history retention, exclusion from KPIs and inability to Claim/Queue/Reserve archived devices
+- [ ] Dashboard KPIs and Lab-grouped Card default plus Table toggle (BR-025)
+- [ ] SUT list search/filter/pagination
+- [ ] SUT detail basic information
+- [ ] Test BR-010: create same name in different Labs succeeds; case-insensitive/trim-equivalent duplicate in same Lab returns 409 / user-friendly form error; rename conflict rejected; archived names remain reserved; DB uniqueness handles concurrent submissions; FK protections and missing resource 404
+- [ ] Test Lab Admin editing/force-releasing/clearing queues in either lab; User denied; Super Admin user management only
+
+## Phase 3 — Usage & queue
+- [ ] Claim with positive, overflow-safe expected duration; 1/2/4/8 hour presets and multi-day custom duration, no business cap (BR-011)
+- [ ] Exclusive current usage **per SUT** and serialized writes; never impose per-user one-SUT restriction (BR-007)
+- [ ] Own release and admin force release
+- [ ] Exactly-once usage history
+- [ ] Queue join/leave with duplicate prevention
+- [ ] Queue FIFO position computation, clear by admin
+- [ ] Atomic queue-head notification on release without creating current usage
+- [ ] Only notified FIFO head can manually Claim; Claim clears offer and records usage
+- [ ] Test that a notified user is not displayed as In Use before Claim
+- [ ] BR-005 offer expires at notified_at + 15 minutes without Claim; audit timeout and notify affected user
+- [ ] Advance to next eligible FIFO head with new 15-minute offer; preserve protected reservation priority
+- [ ] Expired user may rejoin at tail; concurrent Claim/expiry, repeated sweep and restart are safe
+- [ ] History listing/filter; BR-011 overdue shown on dashboard/detail/My Usage with in-app reminders, while usage stays active
+- [ ] BR-011 tests: multi-day claim allowed, zero/negative/invalid duration rejected, no auto-release at deadline, history computes actual elapsed time
+- [ ] Concurrent claim and queue race tests
+- [ ] BR-007 tests: same user Claims two distinct SUTs, independently Releases one, other remains active, histories separate; same SUT still rejects duplicate active claim
+
+## Phase 4 — Reservations
+- [ ] Create/list/cancel reservation in API and HTML
+- [ ] BR-013 API and HTML validation: accept future start exactly 30 days ahead, reject start beyond 30 days and starts in past; keep timezone conversions consistent
+- [ ] BR-012 server-side and form validation: accept exactly 24 hours, reject >24 hours/zero/negative/inverted endpoints with clear 422/API or form error; do not silently shorten
+- [ ] Validate half-open overlap and active usage conflict
+- [ ] Reservation-aware claim and queue promotion
+- [ ] Calendar page with timezone labels
+- [ ] Effective status calculation across all pages
+- [ ] Reservation boundary/Asia-Taipei display/race tests
+- [ ] Background no-show processing at 15 minutes (no page visit; retry-safe and restart-safe)
+- [ ] No-show releases reservation protection and tries FIFO head notification without double claim
+- [ ] Upcoming reservation prominently warned; no enforced hardware cutoff or forced handover
+- [ ] BR-003 check-in while occupied -> waiting_for_release, not no_show
+- [ ] Release prioritizes checked-in reservation by notifying holder to Claim (no auto-claim)
+- [ ] In-app warning to current user when reserved holder checks in
+
+## Phase 5 — Release validation
+- [ ] `docker compose up --build` starts cleanly
+- [ ] Fresh DB `alembic upgrade head` works
+- [ ] Restart/recreate container preserves SQLite DB
+- [ ] `pytest` passes, CI green
+- [ ] End-to-end manual smoke walkthrough documented
+- [ ] README and API docs match actual behavior
+- [ ] No TODOs for MVP requirements, no exposed credentials
+- [ ] Final acceptance checklist signed off by project owner
+
+- [x] BR-014: owner can edit/cancel own upcoming confirmed reservation; admins can edit/cancel any; validate edited booking and audit changes
+
+- [ ] BR-014 Phase 4: reservation update and cancellation APIs/UI; owner/admin authorization, validation against BR-012/013, overlap, state guard, audit, queue refresh, boundary/race tests
+
+- [x] BR-015 business policy confirmed: edit expected end without re-Claim; advisory reservation conflict with explicit confirmation
+- [ ] Phase 3 BR-015: owner/admin edit active expected end (API + HTML), same usage record, no upper duration cap, validation and audit
+- [ ] Phase 3 BR-015: reservation conflict warning requires affirmative acknowledgement, no denial after acknowledgement and no reservation mutation
+- [ ] Phase 3 BR-015 tests: normal extension, overlap/acknowledgement, permission, missing usage, stale/concurrent updates, history unchanged
+
+- [x] BR-016 confirmed: no direct handover; Release followed by separately authorized manual Claim.
+- [ ] Phase 3 BR-016: no handover API/UI or current user reassignment.
+- [ ] Phase 3 BR-016 tests: Release makes distinct history, queue/reservation priority remains, next user manually Claims, no automatic new usage or bypass.
+
+
+## BR-017 — Maintenance / Out of Service acceptance checks (confirmed)
+- [ ] Migration adds operational state, reason, update timestamp and actor to SUT; default `normal`.
+- [ ] Only Lab Admin/Super Admin may change the state; non-normal states require an explanatory reason and changes are audited.
+- [ ] Dashboard, detail, list, calendar and relevant filters show `Maintenance` / `Out of Service` and reason, with active use conflicts still visible.
+- [ ] New Claim, Queue join and Reservation creation fail with an actionable `409` for non-normal SUTs (also when racing with a state change).
+- [ ] Existing usage/history/queue/reservations are not silently deleted or released; Release/leave Queue remain possible.
+- [ ] Queue offers are paused safely while unavailable and re-evaluated upon return to normal, respecting reservation priority and avoiding duplicate notices.
+- [ ] Pytest covers permissions, invalid missing reason, state changes and restoration, ongoing usage and existing reservations, and no hardware calls.
+
+
+## BR-018 — Status / notification 30-second refresh (confirmed)
+- [x] Confirm BR-018: Option B — HTTP polling every 30 seconds on Dashboard, SUT Detail and notification area; no WebSocket/SSE in MVP.
+- [ ] Authenticated read-only status and notification endpoints return current state without side effects.
+- [ ] Dashboard, SUT Detail and in-app notification UI update automatically every 30 seconds, preserving in-progress form entries and filters.
+- [ ] Successful actions trigger immediate relevant status refresh; polling handles changes by other users.
+- [ ] Network/API failure keeps prior values, shows stale/retry cue and retries; no duplicate notification display.
+- [ ] Tests verify response authorization, 30-second client interval, external changes becoming visible, and no state mutation by polling.
+
+
+## BR-019 — In-app + optional browser desktop notifications (confirmed)
+- [x] Confirm BR-019 Option B: in-app + opt-in browser desktop notifications; Email/Teams deferred.
+- [ ] Create persisted, user-scoped notification records with event identifiers and `read_at`; deliver at most once per logical event/recipient despite retries.
+- [ ] Implement notification bell, unread count, notification list and explicit mark-read action.
+- [ ] Fetch new/unread notifications using existing 30-second read-only HTTP polling (BR-018).
+- [ ] Provide user-click permission opt-in; gracefully handle denied/unsupported/insecure contexts.
+- [ ] Show best-effort desktop alerts while site is open and avoid duplicate notifications across polls.
+- [ ] Cover permissions, recipient access, read semantics, dedupe, no GET side effects and failure fallback in tests.
+- [ ] Document limits (HTTPS/localhost; browser/OS permission; no notifications guaranteed when website is closed).
+- [ ] Do not implement Email, Teams, service-worker push or SMTP in MVP.
+
+## BR-021 — Account deactivation with admin resource review (confirmed)
+- [x] Confirm Option B: disable login and show affected resources; do not auto Release/leave Queue/cancel Reservations.
+- [ ] Super Admin-only disable/reactivate API + UI, audit actor/time/reason, and last active Super Admin protection.
+- [ ] Disable invalidates/rejects all existing sessions and mutations for affected user; historical references intact.
+- [ ] Impact preview and Admin `Needs attention` list active usages, queue entries and upcoming reservations with SUT/Lab context.
+- [ ] Verify disabling user leaves existing usage/queue/reservation data untouched, while authorized admins can take explicit audited actions.
+- [ ] Queue notification skips inactive users without silently deleting history or blocking subsequent eligible people.
+- [ ] Tests for role authorization, session rejection, no auto cleanup, reactivation, retention and race/expiry paths.
+
+
+## BR-022 — Colleague information visibility (confirmed)
+- [x] Confirm Option C: logged-in users can see other RD display names, teams, work emails, purposes (where recorded), and scheduling times.
+- [ ] Add `users.team` and optional `current_usages.purpose`, with Alembic upgrade/backfill strategy.
+- [ ] Show name, team, email (`mailto:`), time, purpose on SUT detail/queue/reservation views where relevant.
+- [ ] Authenticated API/polling includes only required coordination fields; no anonymous access, password hashes or session/security fields.
+- [ ] Tests cover permission boundaries, visibility, missing purpose, disabled-account history, and no email in desktop notification payloads.
+
+## BR-023 — User profile self-service (Confirmed)
+- [x] Confirm Option B: RD can edit own display name, team, work email and password; no self-service username/role/permission change.
+- [ ] Build `/profile` edit form and authenticated `GET/PATCH /api/v1/users/me`; allowlist editable fields on server.
+- [ ] Reuse secure password-change endpoint, require current password and invalidate other sessions where applicable.
+- [ ] Validate required fields, work-email format and unique normalized email; show clear UI/API errors.
+- [ ] Enforce first-login password-change gate and reject attempts to edit others or mass-assign username/role/status.
+- [ ] Audit safe field changes and verify SUT/Queue/Reservation contact info reflects updated profile without mutating historical user IDs.
+- [ ] Tests for successful updates, invalid/duplicate email, forbidden fields, authentication, CSRF, and password changes.
+
+
+## BR-024 — Usage History retention (Confirmed: Option A)
+- [x] Confirm indefinite application-level retention; no automatic deletion.
+- [ ] Ensure Release/Force Release creates one history row with actual start/end/duration; retry does not duplicate it.
+- [ ] Ensure SUT archive/restore, user deactivation and profile changes preserve histories and user/SUT attribution.
+- [ ] Check database foreign keys/ORM cascade policies cannot delete history by accident.
+- [ ] Confirm `/history` and APIs offer user/SUT/date filtering, pagination, and read-only queries.
+- [ ] Verify no TTL, history purge scheduler, deletion endpoint, or automatic retention job exists in MVP.
+- [ ] Add tests for retrieval after archival/deactivation, history list filters and persistence across app restarts; document backup recommendations.
+
+## BR-025 — Dashboard layout switch acceptance (Confirmed: C)
+- [x] Confirm Card default + optional Table view; no separate datasets.
+- [ ] Default Dashboard groups cards by Lab with status, current user and next reservation context.
+- [ ] Accessible Card/Table toggle renders table columns for Lab/name/platform/status/current holder/expected end.
+- [ ] Search and filters are shared, and switching views preserves criteria and visible results.
+- [ ] BR-018 30-second polling updates cards/table and KPI from a single status source, without resetting the toggle or filters; stale-state warning on failure.
+- [ ] Automated tests cover both layouts, filter parity, archived exclusions, maintenance flags and polling refresh.
+
+
+## BR-026 — Dashboard reservation visibility (Confirmed: custom)
+- [x] Confirm Card = next upcoming reservation only; Table = all valid reservations in the rolling next 24h.
+- [ ] Implement server-side next-booking projection and per-SUT rolling-24h reservation lists, filtered to valid states.
+- [ ] Card shows at most one booking (name + TW start/end) or empty message.
+- [ ] Table shows every booking overlapping `[now, now+24h)` in chronological order, with clear multi-booking layout.
+- [ ] Include window-boundary overlapping bookings, omit expired/cancelled/no-show; respect timezone and status rules.
+- [ ] Preserve BR-025 shared SUT filters/view switch and BR-018 polling without interrupting input.
+- [ ] Test booking counts 0/1/multiple, boundaries, clock advancement, state updates, view switch, and polling.
+
+## BR-027 — Dashboard quick actions (Confirmed: B)
+- [x] Confirm Dashboard supports Claim, Join Queue and Reserve using Bootstrap modals in both Card and Table views.
+- [ ] Build reusable modal components prefilled with the selected SUT and accessible labels/focus management.
+- [ ] Claim modal: duration/custom time, optional purpose, upcoming reservation warning and confirmation where applicable; use shared Claim API/service.
+- [ ] Queue modal: display position/eligibility, prevent duplicate registration; use existing Queue service.
+- [ ] Reserve modal: start/end/purpose with Asia/Taipei formatting and BR-012/013 validation/conflict handling.
+- [ ] Enforce role/device/queue/reservation rules server-side and handle races/duplicate submissions.
+- [ ] Success closes modal and immediately refreshes affected SUT, stats and notices without losing search, filters, active view, or scroll.
+- [ ] Errors preserve modal inputs and explain corrective action; 30-second polling never resets an open modal or unsaved input.
+- [ ] Test both views, accessible modal interaction, validation, API authorization, success/failure, race cases and polling safety.
+
+
+## BR-028 — Dashboard sorting (Confirmed: customized C)
+- [x] Confirm only `Name` and `Status` options; default is Name.
+- [ ] Name uses case-insensitive natural ascending order within Lab; tie-break by SUT ID.
+- [ ] Status uses Available → Reserved → In Use → Maintenance → Out of Service, then name/ID, within Lab.
+- [ ] Card/Table, filtering and 30s polling retain the selected sort choice.
+- [ ] Cover Name/Status, cross-Lab groups, archived filtering, overdue indicator and stable ties with tests.
+
+## Three-day sprint checkpoint
+- [ ] Follow `SPRINT_3DAY.md`; capture actual command outputs and evidence for each day gate.
+- [ ] Clearly label unimplemented/deferred MVP features in final handoff; NEVER check a task as complete without successful verification.
+- [ ] Run fresh DB migration, test suite, Docker smoke path, and security/role checks before claiming ready for internal deployment.
+
+## Full-MVP execution gate (confirmed Option A)
+- [ ] Every confirmed BR-001 to BR-028 has passing behavior tests and documented manual checks; no silent postponement.
+- [ ] Day 1, Day 2, Day 3 gates from `SPRINT_3DAY.md` each have recorded commands/outcomes.
+- [ ] Concurrency and time-based reservation/queue expiry tests pass, including restart/idempotency.
+- [ ] Auth/RBAC, CSRF, DB migration, Docker persistence, Profile, notifications and dashboard checks pass.
+- [ ] `docs/implementation-status.md` shows PASS only with evidence.
+- [ ] If Day 3 is incomplete, retain NOT DONE and continue; do not recast full MVP as beta.
+
+## DEP-001 — LAN deployment acceptance (all required)
+- [ ] Supply deployable Dockerfile + compose.yaml and complete repository/image prerequisites.
+- [ ] Map host TCP 5088 to container 8000 (configurable without changing Python code).
+- [ ] Serve login/root page and 200 `/health`; FastAPI binds 0.0.0.0 in container.
+- [ ] Fresh Alembic migration succeeds and fails startup visibly on error.
+- [ ] SQLite data persists across container restart and image rebuild, never stored only in writable container layer.
+- [ ] Bootstrap and secrets configured via env securely; no default hard-coded credentials.
+- [ ] 15-minute queue/no-show deadlines run without browser open and do not duplicate on restart.
+- [ ] Provide deploy/update/log/backup/restore instructions and LAN/firewall prerequisites.
+- [ ] Verify browser can reach `http://<server-ip>:5088/` on actual internal host; if host not accessible, mark unverified, not passed.
+- [ ] In-app notifications work over LAN HTTP; desktop notifications degrade gracefully when browser requires secure context.
+
+
+## DEP-002 — GitHub Remote Build acceptance
+- [ ] Production `compose.yaml` obtains source + Dockerfile from pinned GitHub Git context, with no source checkout on server.
+- [ ] Container start does not clone/pull Git, and runtime contains no embedded Git credentials.
+- [ ] Clean Linux host deploy with only Compose + local configuration succeeds via `docker compose up -d --build`.
+- [ ] Published `:5088`, `/health`, login, migrations and browser UI verified.
+- [ ] Named volume keeps SQLite data through rebuild and recreate; backup and rollback are documented.
+- [ ] Public vs private repo network/authentication requirements documented and tested as applicable.
+- [ ] Windows Docker local development override documented; production remains Linux remote-context build.
+- [ ] Explicit redeploy required after GitHub changes; release revision pinned for repeatability.
+
+## DEP-004 — Public repository acceptance checklist
+
+- [ ] Compose performs GitHub remote build using a pinned public tag/commit and requires no token.
+- [ ] `.gitignore`, `.dockerignore`, `.env.example` exist and production `.env` is not committed.
+- [ ] Git history and tracked files contain no actual secrets, RD contacts, production BMC/Host IP addresses, DB files, exports, or backups.
+- [ ] Example seed data is fictional and safe for public distribution.
+- [ ] SQLite persists in a Docker named volume, survives container rebuild, and is never committed.
+- [ ] Port 5088 is available to trusted LAN users only, with login enforcement; public repository visibility does not imply a public service.
