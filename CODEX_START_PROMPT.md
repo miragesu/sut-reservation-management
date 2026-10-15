@@ -59,7 +59,7 @@ git push -u origin main
 Do not include any real passwords, tokens, secrets, `.env`, SQLite files or production user data in Git.
 
 ## Deployment acceptance — required, not optional
-Target a single internal server reachable from LAN browsers at `http://10.88.26.99:5088/` (example IP). Provide the approved Compose GitHub Remote Build production path: server holds only compose.yaml and local secrets; the remote build context obtains the GitHub source and Dockerfile during image build; publish host 5088 -> container 8000, app bind 0.0.0.0, SQLite persistent data volume, migration on startup, health endpoint, safe admin bootstrap, documented logs/update/backup. Keep server IP configurable. Test published-port and persistence locally; report actual LAN host access as unverified until tested there. Explain that browser desktop notifications may require HTTPS; preserve in-app fallback under HTTP. Read DEP-001 in SPEC.md before implementation.
+Target a single internal server reachable from LAN browsers at `http://10.88.26.99:5088/` (example IP). Provide the approved Compose GitHub Remote Build production path: server holds only compose.yaml and local secrets; the remote build context obtains the GitHub source and Dockerfile during image build; publish host 5088 -> container 80, app bind 0.0.0.0, SQLite persistent data volume, migration on startup, health endpoint, safe admin bootstrap, documented logs/update/backup. Keep server IP configurable. Test published-port and persistence locally; report actual LAN host access as unverified until tested there. Explain that browser desktop notifications may require HTTPS; preserve in-app fallback under HTTP. Read DEP-001 in SPEC.md before implementation.
 
 
 

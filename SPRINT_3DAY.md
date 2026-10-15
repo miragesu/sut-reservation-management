@@ -53,7 +53,7 @@ If conflicting rules appear, document the conflict and propose the smallest cons
 Controlling or locking physical SUT access; automatic release of overdue usage; Microsoft Entra ID, Email, Teams, Redfish/IPMI; other-country labs; a new frontend SPA stack.
 
 ## DEP-001 — Three-day deployment checkpoints
-- **Day 1:** Docker image builds from entire repo; Compose publishes 5088:8000, data volume persists, migration and /health work; document GitHub remote-context Compose deployment, production secrets and bootstrap.
+- **Day 1:** Docker image builds from entire repo; Compose publishes 5088:80, data volume persists, migration and /health work; document GitHub remote-context Compose deployment, production secrets and bootstrap.
 - **Day 2:** Verify queue and reservation timeout processor survives worker/container restart without duplicate notifications.
 - **Day 3:** Rebuild/restart/backup/restore smoke checks, LAN browser access validation on actual host when available, desktop notification fallback over plain HTTP; unresolved host firewall/DNS conditions reported distinctly from application test results.
 

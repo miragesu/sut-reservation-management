@@ -98,6 +98,9 @@ def main():
             run("config", "--quiet")
             run("up", "-d", "--build")
             ready()
+            from container_day3 import check_port_contract, check_published_browser
+
+            check_port_contract(run)
             broken = subprocess.run(
                 [
                     *compose,
@@ -197,6 +200,7 @@ def main():
                 from container_day2 import check_coordination
 
                 check_coordination(client, mutation, run, ready, lab)
+                check_published_browser(replacement)
                 from container_day3 import check_restore
 
                 check_restore(client, run, ready, compose, environment, working_directory, temp, project)
@@ -205,7 +209,7 @@ def main():
                     f"Remote-context deployment verified at {remote_ref} with only Compose/settings in working directory"
                 )
             print(
-                "PASS: Compose build, migrations, :5088 health/login, authenticated inventory, named-volume and session persistence across down/rebuild/recreate"
+                "PASS: Compose build, migrations, Host 5088 -> Container 80 health/login, authenticated inventory, named-volume and session persistence across down/rebuild/recreate"
             )
         finally:
             # Only the random isolated test project is removed, never deployment volumes.

@@ -141,7 +141,7 @@ Implement Compose port mapping, persistent database and documented one-host depl
 
 
 ## DEP-002 — Remote Build implementation critical path
-Day 1: add production `compose.yaml` using pinned GitHub remote build context and root `Dockerfile`, with `5088:8000`, migrations, health, and named SQLite volume. Keep Windows development with local build override as needed. Day 3: verify on Linux with only Compose + local secrets (no app checkout), including rebuild/restart persistence, update/rollback guide, and private-repo authentication instructions if applicable. See SPEC.md DEP-002.
+Day 1: add production `compose.yaml` using pinned GitHub remote build context and root `Dockerfile`, with `5088:80`, migrations, health, and named SQLite volume. Keep Windows development with local build override as needed. Day 3: verify on Linux with only Compose + local secrets (no app checkout), including rebuild/restart persistence, update/rollback guide, and private-repo authentication instructions if applicable. See SPEC.md DEP-002.
 
 ## DEP-004 — Public GitHub decision and delivery gates
 

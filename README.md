@@ -112,6 +112,12 @@ docker compose exec sut-management python -m app.scripts.bootstrap_admin
 
 Open the configured LAN address on port 5088, sign in and change the temporary password. Verify from two LAN browsers on the real host. Actual host/firewall/LAN reachability cannot be established by agent-local checks. In-app HTTP features do not require browser desktop-notification permission. Opt-in desktop alerts may require a trusted HTTPS internal hostname; private-IP HTTP is usually not a secure context and must retain in-app fallback.
 
+DEP-006 mapping is **Host TCP 5088 → Container TCP 80** (`5088:80`). Uvicorn listens on `0.0.0.0:80`; Docker `EXPOSE` and the in-container healthcheck also use port 80. `APP_PORT` changes the host port only.
+
+The image remains UID/GID **10001:10001**, with `cap_drop: ALL` and `no-new-privileges`. Compose explicitly sets **`net.ipv4.ip_unprivileged_port_start=80` in the container's own network namespace**. This allows the non-root listener on port 80 while keeping ports 1–79 privileged; no `NET_BIND_SERVICE`, root startup, Python file capability or host-wide sysctl change is required. Keep the private bridge network; do not replace it with host networking. A manual `docker run` on a stricter engine must supply the same container-local `--sysctl net.ipv4.ip_unprivileged_port_start=80`. The native virtualenv command above uses local development port 8000 and is separate from the container contract.
+
+When upgrading from Day 1/2, replace the host's `compose.yaml` with the reviewed DEP-006 revision **and** update `SUT_GIT_REF`, then recreate the service. The browser URL stays on host 5088 and the existing SQLite volume is retained; this port change needs no database migration. Rolling back to a pre-DEP-006 image also requires its matching Compose mapping (those historical images listened on 8000). Never mix an old image with the new port-80 mapping or remove the volume during this update.
+
 SQLite lives at `/app/data/sut.db` in the `sut-data` named volume, owned by runtime UID/GID 10001. A fresh volume inherits image directory ownership; for a restored volume preserve that ownership. The non-root image runs migration-before-startup and a single Uvicorn worker. Missing/invalid secrets or failed migration prevent serving. Production accounts, emails, IP inventory, hashes, schedules and histories stay in this volume; they never enter Git or the image.
 
 For a local Docker build with checked-out source:

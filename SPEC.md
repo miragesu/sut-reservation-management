@@ -202,7 +202,7 @@ The documented API paths above are relative to `/api/v1`, except `/health`. Docu
 - Never cascade-delete usages or history when deleting records.
 
 ## 9. Nonfunctional requirements
-- `docker compose up --build` starts one web worker, with persisted `./data` volume (or named volume) and app listening at `localhost:8000`.
+- `docker compose up --build` starts one web worker, with persisted `./data` volume (or named volume) and app listening inside the container at `0.0.0.0:80`, published on host port `5088`.
 - `.env.example` documents non-secret configuration; `.gitignore` ignores `.env`, SQLite files, venv, caches.
 - Alembic initial migration creates full schema; no `Base.metadata.create_all()` at app start.
 - Bootstrap admin CLI, deterministic demo seed script (development only), pytest with isolated temporary DB, explicit migration/test commands.
@@ -358,7 +358,7 @@ The approved deliverable is ALL confirmed BR-001–BR-028, including background 
 ## DEP-001 — Internal LAN Docker Deployment (confirmed)
 
 - Target: a single internal Linux Docker host, example private LAN address `10.88.26.99`, browser URL `http://10.88.26.99:5088/`. Address is an example configurable deployment target, not a fixed application constant. Not a claim the host is accessible or configured.
-- MUST supply root-level `Dockerfile` (or documented `backend/Dockerfile` with correct build context) and `compose.yaml`; publish TCP `5088:8000` by default (overridable via `APP_PORT`, e.g. `${APP_PORT:-5088}:8000`). App binds `0.0.0.0:8000` inside container; `/` is the application/login page, `/health` returns 200 on healthy startup.
+- MUST supply root-level `Dockerfile` (or documented `backend/Dockerfile` with correct build context) and `compose.yaml`; publish TCP `5088:80` by default (overridable via `APP_PORT`, e.g. `${APP_PORT:-5088}:80`). App binds `0.0.0.0:80` inside container; `/` is the application/login page, `/health` returns 200 on healthy startup.
 - **Deployment artifacts:** Dockerfile and Compose alone are NOT sufficient. Default **production** method is Compose with a remote Git build context, which fetches application source during image build; the server stores only compose.yaml and locally configured secrets (plus Docker named volume). The Dockerfile and application source remain in GitHub. Never clone at container startup.
 - Keep SQLite at `/app/data/sut.db`, persist with host bind `./data:/app/data` or named volume; never bake SQLite DB, passwords, or mutable user files into the image. Use `.env.example`; never commit actual `.env`. Explain filesystem permissions, volume ownership, backup and restore.
 - Configure one app worker and one effective background scheduler for expiration processing (BR-002/005). Avoid duplicate schedule execution on restarts. Run `alembic upgrade head` before service accepts traffic; errors must fail startup visibly. Do not run `create_all()` during app startup.
@@ -380,7 +380,7 @@ services:
       context: https://github.com/YOUR-ORG/sut-management-system.git#v1.0.0
       dockerfile: Dockerfile
     ports:
-      - "${APP_PORT:-5088}:8000"
+      - "${APP_PORT:-5088}:80"
     environment:
       DATABASE_URL: sqlite:////app/data/sut.db
       TZ: Asia/Taipei
@@ -391,7 +391,7 @@ volumes:
   sut-data:
 ```
 
-- `Dockerfile` MUST copy/build application code into the image; startup runs migrations safely and serves FastAPI on `0.0.0.0:8000`. **Do not run `git clone`, `git pull`, or install Git credentials inside the running container.**
+- `Dockerfile` MUST copy/build application code into the image; startup runs migrations safely and serves FastAPI on `0.0.0.0:80`. **Do not run `git clone`, `git pull`, or install Git credentials inside the running container.**
 - The server needs Docker Engine + Compose plugin, Git/BuildKit support for remote Git build context, outbound GitHub access, and appropriate authentication if the repo is private. Never write tokens into Compose, Git URLs, Dockerfile or repository. Document safe authentication via host-side Git credential/SSH support and verify chosen builder actually supports it.
 - Use a Docker named volume for SQLite. Preserve the volume across builds, container recreation and updates. Document backup before migration and never use `docker compose down -v` for routine updates.
 - `docker compose up -d --build` fetches/builds the referenced Git revision; **it does not automatically redeploy on GitHub push**. Updates require an explicit rebuild and should preferably change a pinned release tag/commit, with documented rollback.
@@ -420,3 +420,6 @@ volumes:
 - Database schema is provisioned/migrated through Alembic. Back up the named volume before potentially destructive migrations and test persistence across container recreation.
 - The production server runs Docker Compose against a public GitHub remote build context. Only the Compose file and any private deployment settings are required on the server; source checkout is not required.
 - Security note: Keeping the SQLite volume outside GitHub does not protect data from exposed application endpoints, weak credentials, or server compromise. Authentication, authorization, and network controls remain required.
+
+## DEP-006 — Confirmed container HTTP port correction
+Host TCP 5088 maps to container TCP 80. Uvicorn binds 0.0.0.0:80; EXPOSE and healthcheck use 80. This supersedes the earlier Day 1/2 container-port-8000 deployment target. Keep UID/GID 10001, no-new-privileges and cap_drop ALL. Compose may use the container-network-namespaced net.ipv4.ip_unprivileged_port_start=80 so the non-root process can bind port 80 without interpreter file capabilities, root startup or host-wide sysctl changes. GitHub Remote Build and named SQLite volume remain required. Verify the published mapping, actual listener, non-root privileges and persistence; company LAN/firewall/two-client checks remain external.

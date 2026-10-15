@@ -12,6 +12,7 @@ RUN --mount=type=secret,id=build_ca \
 COPY --chown=sut:sut backend/ /app/
 COPY --chown=sut:sut scripts/entrypoint.sh /app/entrypoint.sh
 USER 10001:10001
-EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+# Compose grants port 80 binding with a container-network-namespace sysctl; no capabilities.
+EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:80/health', timeout=3)"]
 ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]

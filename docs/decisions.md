@@ -112,3 +112,7 @@ Usage History is retained indefinitely, without automatic time-based deletion. H
 
 ## Day 2 Queue admission clarification — confirmed 2026-10-15
 When a SUT is Available and has no queue entries, users must directly Claim; joining Queue is allowed only when In Use, Reserved, or when a queue already exists. The user explicitly confirmed the recommended SPEC rule while implementing Issue #2. Queue requests supply a positive requested duration; the API does not silently invent a requested duration.
+
+
+## DEP-006 — Host 5088 → container 80 (confirmed 2026-10-15)
+The project owner updated Issue #4 during Day 3: Compose publishes 5088:80, Uvicorn binds 0.0.0.0:80, and Dockerfile/entrypoint/healthcheck/docs/tests must agree. Non-root runtime is mandatory; preserve GitHub Remote Build and SQLite named volume. The implementation uses a private-container-network sysctl (unprivileged port start 80), retains cap_drop ALL and no-new-privileges, and does not modify the host sysctl or grant the Python interpreter file capabilities. Actual company LAN acceptance remains unverified without host access.
