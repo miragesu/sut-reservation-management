@@ -144,3 +144,14 @@ mount-at-boot ordering, host UID mapping/SELinux policy, actual host5088 firewal
 two LAN browsers, first-time administrator workflow with real inventory, production
 backup/off-host protection, empty bind-directory restore rehearsal and owner signoff
 remain unverified from cloud. Full MVP production acceptance is **not declared**.
+
+### DEP-008 delivery
+
+Implementation commit `454cb5b` pushed to `docs/dep008-admin-deployment`.
+`gh pr create --repo miragesu/sut-reservation-management --base main --head docs/dep008-admin-deployment --title 'DEP-008: administrator deployment guide and persistent bind mount' --body-file /tmp/dep008-pr.md`
+failed with exact error: **`Post "https://api.github.com/graphql": Forbidden`**.
+No PR was created or merged. The pushed branch is retained; the reviewable
+[PR body](dep008-pr.md) can be used to
+[create the PR manually](https://github.com/miragesu/sut-reservation-management/pull/new/docs/dep008-admin-deployment).
+This subsequent delivery commit only records the result and PR body. Hosted CI
+for this branch is not substituted for the locally observed verification above.

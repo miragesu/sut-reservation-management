@@ -312,3 +312,5 @@ DEP-007 implementation verification does not establish image publication or prod
 - [ ] Actual production `/data` mount/boot ordering, ownership/SELinux, firewall/LAN clients, administrator install and bind-directory recovery rehearsal (external).
 
 Delivery and precise verification evidence: docs/implementation-status.md, DEP-008 section.
+- [x] DEP-008 implementation branch pushed (`454cb5b`); PR creation attempted.
+- [ ] DEP-008 PR created: GraphQL request returned `Post "https://api.github.com/graphql": Forbidden`; branch and docs/dep008-pr.md retained for manual creation. No merge performed.
