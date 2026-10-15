@@ -1,8 +1,10 @@
 # SUT Reservation & Queue Management System
 
-Day 1 + Day 2 implementation for a Taiwan-only internal coordination application: Python 3.12, FastAPI, synchronous SQLAlchemy 2, Alembic, SQLite, Jinja2 and locally served Bootstrap 5.3.8. Recorded status is advisory; the application never controls hardware, SSH, BMC or power.
+Day 1–Day 3 implementation for a Taiwan-only internal coordination application: Python 3.12, FastAPI, synchronous SQLAlchemy 2, Alembic, SQLite, Jinja2 and locally served Bootstrap 5.3.8. Recorded status is advisory; the application never controls hardware, SSH, BMC or power.
 
-Implemented: local accounts/RBAC, inventory/lifecycle management, atomic Claim/Release and Usage History, FIFO notification/manual Claim, reservations/check-in/no-show, pause/resume and inactive-user eligibility, and a background deadline processor. Browser forms, Calendar, My Usage, History and recipient-scoped in-app notices are available. **Full MVP is not complete:** Day 3 Dashboard action modals, notification bell/desktop opt-in and final acceptance remain. See [actual evidence](docs/implementation-status.md) and [Issue #2 verification](docs/day2-verification.md).
+Implemented: local accounts/RBAC, inventory/lifecycle management, atomic Claim/Release and Usage History, FIFO notification/manual Claim, reservations/check-in/no-show, background deadlines, Dashboard action modals, notification bell/desktop opt-in, Calendar and profile self-service. Full production acceptance still requires the actual LAN/owner gates; see [actual evidence](docs/implementation-status.md).
+
+**Production administrators:** use [image-only Docker Hub deployment](docs/deployment.md) with `compose.deploy.yaml`. The GitHub Remote Build guide below is retained as an optional developer/alternative path. No image publication is implied until the release's registry push/pull checks succeed.
 
 Read [AGENTS.md](AGENTS.md), [SPEC.md](SPEC.md), [PLAN.md](PLAN.md), [TASKS.md](TASKS.md), [SPRINT_3DAY.md](SPRINT_3DAY.md), [CODEX_START_PROMPT.md](CODEX_START_PROMPT.md) and [confirmed decisions](docs/decisions.md) before implementation. [Domain states](docs/domain-states.md) describe constraints and transaction boundaries.
 
@@ -93,7 +95,7 @@ For a trusted corporate build proxy, the smoke accepts `SUT_BUILD_NETWORK=host` 
 
 Runtime/dev dependencies are fully pinned with hashes in `backend/requirements*.txt`; edit `.in` manifests and regenerate with `uv pip compile --generate-hashes` when intentionally upgrading. Tests migrate isolated databases; startup never calls `create_all`. SQLite uses foreign keys, WAL and a five-second busy timeout. Writes reserve the database with `BEGIN IMMEDIATE` before checks. Contention returns retryable 503; deploy one app worker only.
 
-## Linux production: Compose + public GitHub Remote Build
+## Optional developer/alternative path: GitHub Remote Build
 
 **Passing Day 1/2 checks is not full-MVP production acceptance.** A trusted Linux host needs Docker Engine, the Compose plugin, a Git-context-capable BuildKit builder and outbound access to public GitHub, Docker Hub and PyPI. No GitHub token is required for public source. Only `compose.yaml` and locally generated `.env` are needed on the host; no source checkout is needed. Dockerfile/source are fetched at build time, never at container startup.
 
@@ -154,3 +156,12 @@ Desktop alerts require a supported secure context (HTTPS or localhost), browser/
 Run `.venv/bin/python scripts/browser_day3.py` for modal/layout/keyboard/mobile/notification acceptance. `scripts/container_smoke.py` now includes a cold backup restored into a separate empty disposable named volume, validating sessions/history/notices/schema/integrity. Production backup recovery must still be rehearsed on the actual host.
 
 Windows development may use Docker Desktop with Linux containers and `docker compose -f compose.yaml -f compose.local.yaml up -d --build` from the checkout (PowerShell environment variables or a host-only `.env`). Production continues to use the pinned public GitHub Remote Build path on Linux; no GitHub push automatically updates a running server.
+
+
+## DEP-007: primary production deployment
+
+LAN administrators use **`compose.deploy.yaml` with `image:` only**, pulling a tested version/digest from `mirage315/sut-reservation-management`. No source checkout or build tooling is required on the server. A private persistent `SECRET_KEY` still must be supplied via secure environment export or an optional host-only `.env`; it cannot safely be embedded in public YAML. Do not use `latest` for production.
+
+Read [the administrator guide](docs/deployment.md) for Docker Hub Secrets setup, explicit version-tag releases, first-time pull/start/bootstrap, provenance, same-volume upgrades and backup/rollback. GitHub Remote Build instructions above remain an **optional developer/alternative path**, superseded as the primary operator workflow by DEP-007. Host **5088 → Container 80**, UID 10001, zero capabilities, migrations and the SQLite named volume remain unchanged.
+
+Publication is triggered only by explicit reviewed `vMAJOR.MINOR.PATCH[-prerelease]` tags after successful checks. Configure GitHub Secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`; never put publisher credentials in source or on public-image production servers. Committing the workflow is not evidence that a release was published. Actual results and remaining registry/LAN gates are recorded in [DEP-007 verification](docs/dep007-verification.md).

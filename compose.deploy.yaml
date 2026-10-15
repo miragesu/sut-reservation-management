@@ -1,0 +1,31 @@
+# Production DEP-007: image only; no source checkout or build tooling required.
+services:
+  sut-management:
+    # Pin a tested version tag or, preferably, its immutable Docker Hub digest.
+    image: "${SUT_IMAGE:?Set mirage315/sut-reservation-management:version or @sha256:digest}"
+    platform: linux/amd64
+    user: "10001:10001"
+    ports:
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-5088}:80"
+    environment:
+      APP_ENV: production
+      SECRET_KEY: "${SECRET_KEY:?Generate a random SECRET_KEY locally}"
+      DATABASE_URL: sqlite:////app/data/sut.db
+      COOKIE_SECURE: "${COOKIE_SECURE:-true}"
+      TZ: Asia/Taipei
+      DEADLINE_PROCESSOR_ENABLED: "true"
+      DEADLINE_POLL_SECONDS: "${DEADLINE_POLL_SECONDS:-1}"
+    volumes:
+      - sut-data:/app/data
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # Namespaced to this container's private network; never change the host sysctl.
+    # Allows UID 10001 to bind 80 without NET_BIND_SERVICE or file capabilities.
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: "80"
+    stop_grace_period: 15s
+volumes:
+  sut-data:

@@ -370,6 +370,8 @@ The approved deliverable is ALL confirmed BR-001–BR-028, including background 
 
 ## DEP-002 — GitHub Remote Build (approved production deployment)
 
+> DEP-007 supersedes this as the primary operator path. The Remote Build instructions are retained for optional developer/alternative deployment.
+
 - **Production preference:** On Linux host `10.88.26.99`, deploy using only a `compose.yaml` file and locally generated runtime secrets/configuration (`.env` if needed). Do NOT require copying/cloning the entire source repository onto the server. The application source and root `Dockerfile` live in GitHub.
 - `compose.yaml` MUST support a remote Git build context. Example for a public repo (replace placeholders and PIN a release tag or full commit SHA for repeatability):
 
@@ -423,3 +425,7 @@ volumes:
 
 ## DEP-006 — Confirmed container HTTP port correction
 Host TCP 5088 maps to container TCP 80. Uvicorn binds 0.0.0.0:80; EXPOSE and healthcheck use 80. This supersedes the earlier Day 1/2 container-port-8000 deployment target. Keep UID/GID 10001, no-new-privileges and cap_drop ALL. Compose may use the container-network-namespaced net.ipv4.ip_unprivileged_port_start=80 so the non-root process can bind port 80 without interpreter file capabilities, root startup or host-wide sysctl changes. GitHub Remote Build and named SQLite volume remain required. Verify the published mapping, actual listener, non-root privileges and persistence; company LAN/firewall/two-client checks remain external.
+
+
+## DEP-007 — Docker Hub image deployment supersedes the primary Remote Build path
+Confirmed by Issue #6: release tested Linux amd64 images to `mirage315/sut-reservation-management` on explicit `v*` version tags only. Use scoped GitHub Actions secrets `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN`, full-SHA pinned actions and successful automated checks before publishing; record version/source/digest provenance and verify an anonymous published-digest pull. Production administrators use image-only `compose.deploy.yaml` with a version/digest (never default latest), a securely supplied persistent SECRET_KEY, no source checkout/build. Keep 5088:80, non-root UID 10001, all capabilities dropped, no-new-privileges, private-network port-80 sysctl, Alembic startup and named SQLite volume. GitHub Remote Build remains optional for developers. Preserve the existing project/volume when switching deployment files; back up before schema upgrades and do not assume an old image supports a newer database. Do not claim registry publication, a separate-server deployment or LAN acceptance without actual evidence. See docs/deployment.md and docs/dep007-verification.md.
