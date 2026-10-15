@@ -89,3 +89,69 @@ It failed with **`Post "https://api.github.com/graphql": Forbidden`**. **No PR w
 ## Remaining external gates
 
 Actual company Linux host `10.88.26.99`, trusted firewall rules, two independent company LAN clients, production-host backup/restore rehearsal and project-owner sign-off are **unverified** from Codex Cloud. A source-free build on the existing Linux cloud daemon does not prove a clean company OS/network deployment. Hosted CI is reported separately. These gates prevent a full-MVP production-ready declaration even when local application checks pass.
+
+## DEP-008 — Administrator deployment documentation (2026-10-15)
+
+Based on main `5ebb4f62c30812d67c0383c0a426bdd0ea862796`, branch
+`docs/dep008-admin-deployment`. Primary `compose.deploy.yaml` now uses long-form
+bind `/data/sut-reservation-data` → `/app/data`, refusing silent source creation.
+Existing Named Volumes are untouched. Optional Remote Build retains its historical
+Named Volume. Application source, Dockerfiles, entrypoint, migrations and published
+image are unchanged; no image rebuild/republication was performed.
+
+README contains the A–H Linux quick start; deployment.md adds initial web operation,
+private random secret generation, persistent filesystem checks, cold backup with
+WAL/SHM/ownership, empty-directory restore/integrity, upgrades/compatible rollback,
+manual old-volume migration, and troubleshooting. AGENTS/SPEC/PLAN/decisions record
+DEP-008's explicit supersession of primary production Named Volume requirements.
+The old v1.0.0 tag contains historical Compose; the guide requires a reviewed
+DEP-008 source SHA for the deployment file while using the unchanged image digest.
+Smoke helpers were updated solely to isolate test bind storage and discover the
+actual backup mount; runtime application behavior is unchanged.
+
+### Observed verification
+
+| Check / command | Actual result |
+| --- | --- |
+| `docker compose -f compose.deploy.yaml config --quiet` and JSON assertions (generated test key, never printed) | PASS on Compose v2.40.3: exact production bind source/target, no top-level volume/build, 5088:80, UID10001, capability/deadline/restart settings retained. Rendered JSON omits false `create_host_path`; YAML explicitly sets false. |
+| Temporary missing-source deployment, using existing image and isolated project | PASS: fails with `bind source path does not exist`; source is not created and app never starts. No real `/data` access. |
+| `.venv/bin/pytest -q` | **122 passed, 1 warning in 123.61s**. Existing Starlette/httpx deprecation warning is non-failing. |
+| `.venv/bin/ruff check backend scripts`; `.venv/bin/ruff format --check backend scripts` | PASS; 52 files formatted. |
+| `bash -n` for every README/guide Bash block; local Markdown target checks; `git diff --check` | PASS. Syntax/static validation does not claim execution of commands against production. |
+| `DOCKER_CONFIG=/tmp/sut-v1-release-anonymous SUT_SMOKE_IMAGE=mirage315/sut-reservation-management@sha256:56b9e9ad2e5fb60b852fe214a7d79679875f526045e2d722d589fc472791cae6 SUT_SMOKE_PULL=1 .venv/bin/python scripts/container_smoke.py` | PASS, exit 0: anonymous pull of published image, source-free image-only Compose, temporary bind directory, actual **Host5088→Container80**, UID10001/capabilities/NoNewPrivs/port79 denial, startup migrations, bootstrap/forced-password/login/Chromium Dashboard/Table/Detail/My Usage, session/data persistence across down/recreate, Claim/Release/FIFO/history, live/offline deadlines and restart idempotency. No build. |
+| Runtime mount and filesystem inspection during smoke | PASS: `bind /tmp/sut-compose-7w5zc403/data -> /app/data`; directory UID/GID10001:10001, mode700, sut.db created. Only source path is substituted for isolation; static check verifies literal `/data/sut-reservation-data`. |
+| Cold backup/restore portion of same smoke | PASS: source bind archive restored to separate empty disposable recovery Named Volume; sessions/history/notices/ownership, SQLite integrity/foreign keys and Alembic check preserved. A host bind-directory restore remains an operator rehearsal, not claimed by this test. |
+
+The first configuration assertion failed because Compose omits false boolean keys;
+the assertion was corrected to accept omitted false, and the full image smoke then
+passed. No deployment setting was weakened. Only generated synthetic test storage
+was cleaned up; no production path or preexisting volume was mounted or migrated.
+
+### Published image evidence (release operation preceding DEP-008)
+
+v1.0.0 source is `5ebb4f62c30812d67c0383c0a426bdd0ea862796`;
+[release run 38746750990](https://github.com/miragesu/sut-reservation-management/actions/runs/38746750990)
+**SUCCESS**, 8m23s, includes tests/build/Compose/login/push/anonymous digest deployment.
+Published and independently anonymously pulled immutable reference:
+`mirage315/sut-reservation-management@sha256:56b9e9ad2e5fb60b852fe214a7d79679875f526045e2d722d589fc472791cae6`.
+Earlier DEP-007 publication-pending entries are historical, superseded by this
+observed release; separate production-server acceptance remains pending.
+
+### External checks still required
+
+No real server was modified. Production persistent `/data` filesystem capacity,
+mount-at-boot ordering, host UID mapping/SELinux policy, actual host5088 firewall and
+two LAN browsers, first-time administrator workflow with real inventory, production
+backup/off-host protection, empty bind-directory restore rehearsal and owner signoff
+remain unverified from cloud. Full MVP production acceptance is **not declared**.
+
+### DEP-008 delivery
+
+Implementation commit `454cb5b` pushed to `docs/dep008-admin-deployment`.
+`gh pr create --repo miragesu/sut-reservation-management --base main --head docs/dep008-admin-deployment --title 'DEP-008: administrator deployment guide and persistent bind mount' --body-file /tmp/dep008-pr.md`
+failed with exact error: **`Post "https://api.github.com/graphql": Forbidden`**.
+No PR was created or merged. The pushed branch is retained; the reviewable
+[PR body](dep008-pr.md) can be used to
+[create the PR manually](https://github.com/miragesu/sut-reservation-management/pull/new/docs/dep008-admin-deployment).
+This subsequent delivery commit only records the result and PR body. Hosted CI
+for this branch is not substituted for the locally observed verification above.

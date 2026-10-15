@@ -301,3 +301,16 @@ Day 3 application evidence is distinct from full MVP production acceptance. Full
 - [x] PR creation attempted and actual GraphQL Forbidden recorded; **no PR created**, implementation branch pushed with reviewable body.
 
 DEP-007 implementation verification does not establish image publication or production acceptance. See docs/dep007-verification.md and docs/implementation-status.md.
+
+## DEP-008 — Administrator deployment documentation
+- [x] Primary image-only Compose uses explicit bind `/data/sut-reservation-data` → `/app/data`, `create_host_path: false`; no top-level Named Volume. Security/ports/migrations/deadline behavior retained.
+- [x] README A–H Linux quick start and linked complete administrator guide: persistent mount, ownership, pinned reviewed Compose, private secret generation, published digest, start/bootstrap and persistence checks.
+- [x] First web operations, cold backup/isolated restore, upgrade/schema-aware rollback, manual old Named Volume migration and troubleshooting documented; alternative Remote Build clearly separated.
+- [x] Confirmed supersession recorded in specification/plan/agent instructions/decisions. No application/image/build changes or production data operations.
+- [x] 122 pytest cases, Ruff lint/format, Bash-block syntax, local documentation links, Compose config/runtime mount assertions and missing-bind fail-closed test PASS.
+- [x] Existing published v1.0.0 digest pulled anonymously; isolated bind-mount image-only smoke PASS (5088→80, UID/security, migrations, browser, persistence/deadlines and cold recovery/integrity).
+- [ ] Actual production `/data` mount/boot ordering, ownership/SELinux, firewall/LAN clients, administrator install and bind-directory recovery rehearsal (external).
+
+Delivery and precise verification evidence: docs/implementation-status.md, DEP-008 section.
+- [x] DEP-008 implementation branch pushed (`454cb5b`); PR creation attempted.
+- [ ] DEP-008 PR created: GraphQL request returned `Post "https://api.github.com/graphql": Forbidden`; branch and docs/dep008-pr.md retained for manual creation. No merge performed.

@@ -55,6 +55,32 @@ def main():
             # Operator directory contains only Compose and host settings, no source.
             shutil.copyfile(ROOT / compose_name, working_directory / compose_name)
         compose = ["docker", "compose", "-p", project, "-f", str(working_directory / compose_name)]
+        bind_data = None
+        if image_ref:
+            # Never use the production host directory in disposable integration tests.
+            bind_data = Path(temp) / "data"
+            bind_data.mkdir()
+            subprocess.run(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--user",
+                    "0",
+                    "--entrypoint",
+                    "sh",
+                    "-v",
+                    f"{bind_data}:/data",
+                    image_ref,
+                    "-c",
+                    "chown 10001:10001 /data && chmod 700 /data",
+                ],
+                check=True,
+            )
+            deploy_file = working_directory / compose_name
+            deploy_file.write_text(
+                deploy_file.read_text().replace("/data/sut-reservation-data", str(bind_data))
+            )
         if not image_ref:
             overrides = Path(temp) / "build.json"
             build = {"args": ["HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY"]}
@@ -101,6 +127,14 @@ def main():
 
         try:
             run("config", "--quiet")
+            if bind_data:
+                mount = json.loads(run("config", "--format", "json", capture=True).stdout)["services"][
+                    "sut-management"
+                ]["volumes"][0]
+                assert mount["type"] == "bind" and mount["source"] == str(bind_data)
+                assert (
+                    mount["target"] == "/app/data" and mount["bind"].get("create_host_path", False) is False
+                )
             if image_ref:
                 rendered = json.loads(run("config", "--format", "json", capture=True).stdout)
                 assert "build" not in rendered["services"]["sut-management"]
@@ -229,7 +263,7 @@ def main():
                     f"Remote-context deployment verified at {remote_ref} with only Compose/settings in working directory"
                 )
             print(
-                "PASS: Compose deployment, migrations, Host 5088 -> Container 80 health/login, authenticated inventory, named-volume and session persistence across down/recreate"
+                "PASS: Compose deployment, migrations, Host 5088 -> Container 80 health/login, authenticated inventory, data and session persistence across down/recreate"
             )
         finally:
             # Only the random isolated test project is removed, never deployment volumes.
@@ -240,6 +274,24 @@ def main():
                 check=False,
                 stdout=subprocess.DEVNULL,
             )
+            if bind_data:
+                subprocess.run(
+                    [
+                        "docker",
+                        "run",
+                        "--rm",
+                        "--user",
+                        "0",
+                        "--entrypoint",
+                        "sh",
+                        "-v",
+                        f"{bind_data}:/data",
+                        image_ref,
+                        "-c",
+                        "rm -rf /data/* /data/.[!.]* /data/..?*; chmod 777 /data",
+                    ],
+                    check=True,
+                )
 
 
 if __name__ == "__main__":
