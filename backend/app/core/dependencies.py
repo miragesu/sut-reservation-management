@@ -8,6 +8,7 @@ from app.services.common import require_role
 
 def database(request: Request):
     with unit_of_work(request.app.state.engine, write=request.method not in ("GET", "HEAD", "OPTIONS")) as db:
+        db.info["clock"] = request.app.state.clock
         yield db
 
 

@@ -102,8 +102,8 @@ def impact(identity: int, db: DB, actor: Super):
 
 
 @router.patch("/users/{identity}/status", response_model=UserView)
-def status(identity: int, data: StatusInput, db: DB, actor: Super):
-    return accounts.change_status(db, actor, identity, data)
+def status(identity: int, data: StatusInput, request: Request, db: DB, actor: Super):
+    return accounts.change_status(db, actor, identity, data, now=request.app.state.clock())
 
 
 @router.post("/users/{identity}/reset-password", status_code=204)
@@ -222,6 +222,6 @@ def restore(identity: int, db: DB, actor: Actor):
 
 
 @router.patch("/suts/{identity}/operational-state", response_model=SUTView)
-def operational(identity: int, data: OperationalInput, db: DB, actor: Actor):
-    inventory.operational(db, actor, identity, data)
+def operational(identity: int, data: OperationalInput, request: Request, db: DB, actor: Actor):
+    inventory.operational(db, actor, identity, data, now=request.app.state.clock())
     return inventory.detail(db, actor, identity)

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% block content %}
+<h1>Reservation #{{ booking.id }}</h1><p><a href="/suts/{{ booking.sut_id }}">{{ booking.lab_name }} / {{ booking.sut_name }}</a></p>
+<p>{{ booking.user.display_name }} · {{ booking.user.team }} · <a href="mailto:{{ booking.user.email }}">{{ booking.user.email }}</a></p>
+<p>{{ booking.start_time|taipei }}–{{ booking.end_time|taipei }} (Asia/Taipei) · {{ booking.status }} · Current SUT: {{ booking.effective_status }}{% if booking.in_use and booking.effective_status != 'In Use' %} · In Use{% endif %} {{ booking.operational_reason or '' }}</p><p>{{ booking.purpose }}</p>
+{% if booking.at_risk %}<p class="alert alert-warning">Recorded usage may delay this reservation. Coordinate a manual Release; no forced ownership transfer occurs.</p>{% endif %}
+{% if booking.checked_in_at %}<p>Checked in at {{ booking.checked_in_at|taipei }}. Not a no-show; manually Claim when eligible before the booked end.</p>{% endif %}
+{% if booking.user.id == user.id and booking.status in ['confirmed','waiting_for_release'] %}
+<form method="post" action="/reservations/{{ booking.id }}/check-in"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-primary">I'm here / Check in</button></form>
+<p>Check in from the booked start until strictly before start + 15 minutes (or the booked end, if earlier). Check-in records attendance; it does not create usage. <a href="/suts/{{ booking.sut_id }}">Manually Claim on SUT Detail</a>. A reservation-specific estimate must end by {{ booking.end_time|taipei }}.</p>
+{% endif %}
+{% if booking.status == 'confirmed' and booking.start_time > now and (booking.user.id == user.id or user.role != 'user') %}
+<a class="btn btn-outline-primary" href="/reservations/{{ booking.id }}/edit">Edit reservation</a>
+<form method="post" action="/reservations/{{ booking.id }}/cancel" class="mt-2"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-outline-danger">Cancel reservation</button></form>{% endif %}
+<a href="/reservations">All reservations</a>
+{% endblock %}

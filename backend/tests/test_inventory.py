@@ -213,7 +213,20 @@ def test_operational_reason_acknowledgement_and_preservation(root, application, 
     assert "Demo repair" in root.get("/").text and "Demo repair" in root.get(f"/suts/{sut}").text
     with unit_of_work(application.state.engine) as db:
         assert inventory.activity(db, sut) == {"usages": 1, "queues": 1, "reservations": 1}
-        assert db.scalar(select(func.count()).select_from(Notification)) == 1
+        assert (
+            db.scalar(
+                select(func.count())
+                .select_from(Notification)
+                .where(Notification.event_key.like("operational:%"))
+            )
+            == 1
+        )
+        assert (
+            db.scalar(
+                select(func.count()).select_from(Notification).where(Notification.event_key.like("overdue:%"))
+            )
+            == 1
+        )
     assert mutate(root, "PATCH", path, {"state": "normal"}).json()["operational_reason"] is None
     assert root.get(f"/api/v1/suts/{sut}").json()["status"] == "In Use"
 

@@ -1,3 +1,6 @@
+from contextlib import ExitStack
+from datetime import UTC, datetime, timedelta
+from app.core.deadlines import process_deadlines
 import secrets
 from pathlib import Path
 
@@ -26,7 +29,11 @@ def application(tmp_path, monkeypatch):
     cfg = Config(str(ROOT / "backend/alembic.ini"))
     command.upgrade(cfg, "head")
     settings = Settings(
-        secret_key=secrets.token_urlsafe(48), database_url=url, app_env="test", cookie_secure=False
+        secret_key=secrets.token_urlsafe(48),
+        database_url=url,
+        app_env="test",
+        deadline_processor_enabled=False,
+        cookie_secure=False,
     )
     app = create_app(settings)
     with unit_of_work(app.state.engine, write=True) as db:
@@ -94,3 +101,27 @@ def create_inventory(client, name="SUT-1", lab_name="Demo Lab 1"):
     )
     assert response.status_code == 201, response.text
     return lab_id, response.json()["id"]
+
+
+@pytest.fixture
+def arena(root, application):
+    lab, sut = create_inventory(root, name="Coordination-1")
+    lab2, sut2 = create_inventory(root, name="Coordination-2", lab_name="Demo Lab 2")
+
+    class Clock:
+        now = datetime(2026, 10, 15, 4, 0, tzinfo=UTC)
+
+        def advance(self, **delta):
+            self.now += timedelta(**delta)
+
+        def sweep(self):
+            process_deadlines(application.state.engine, lambda: self.now)
+
+    clock = Clock()
+    application.state.clock = lambda: clock.now
+    with ExitStack() as stack:
+        clients = {"root": root}
+        for name in ("rd", "lab"):
+            clients[name] = stack.enter_context(TestClient(application))
+            sign_in(clients[name], name)
+        yield clients, sut, sut2, clock

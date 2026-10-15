@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="/static/app.css">
 <script defer src="/static/app.js">
 </script>
+<script defer src="/static/coordination.js"></script>
 </head>
 <body>
 <nav class="navbar navbar-expand bg-dark navbar-dark">
@@ -17,6 +18,11 @@
 {% if user %}<a class="text-white" href="/labs">Labs</a>
 <a class="text-white" href="/suts">Inventory</a>
 <a class="text-white" href="/profile">Profile</a>
+<a class="text-white" href="/my-usage">My Usage</a>
+<a class="text-white" href="/reservations">Reservations</a>
+<a class="text-white" href="/calendar">Calendar</a>
+<a class="text-white" href="/history">History</a>
+<a class="text-white" href="/notifications">Inbox</a>
 {% if user.role != 'user' %}<a class="text-white" href="/admin">Admin</a>{% endif %}
 <form method="post" action="/logout" class="ms-auto">
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

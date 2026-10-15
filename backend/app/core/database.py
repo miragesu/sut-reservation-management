@@ -23,6 +23,10 @@ def utcnow():
     return datetime.now(UTC)
 
 
+def clock_now(db):
+    return db.info.get("clock", utcnow)()
+
+
 class UTCDateTime(TypeDecorator):
     """SQLite stores naive UTC; all Python boundaries require/return aware UTC."""
 

@@ -1,3 +1,5 @@
+import asyncio
+from contextlib import asynccontextmanager
 import logging
 import secrets
 from pathlib import Path
@@ -14,7 +16,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import Settings
 from app.core.csrf import csrf_token
-from app.core.database import make_engine
+from app.core.database import make_engine, utcnow
+from app.core.deadlines import process_deadlines, run_deadlines
 from app.core.rate_limit import LoginLimiter
 
 ROOT = Path(__file__).parent
@@ -23,8 +26,32 @@ logger = logging.getLogger("sut.requests")
 
 def create_app(settings=None):
     settings = settings or Settings()
-    app = FastAPI(title="SUT Reservation Management — Day 1", docs_url=None, redoc_url=None, openapi_url=None)
+
+    @asynccontextmanager
+    async def lifespan(app):
+        stopped = asyncio.Event()
+        task = None
+        try:
+            if settings.deadline_processor_enabled:
+                # Catch up before accepting traffic; a failed initial run is visible.
+                await asyncio.to_thread(process_deadlines, app.state.engine, app.state.clock)
+                task = asyncio.create_task(run_deadlines(app, stopped))
+            yield
+        finally:
+            stopped.set()
+            if task:
+                await task
+
+    app = FastAPI(
+        title="SUT Reservation Management — Day 2",
+        docs_url=None,
+        redoc_url=None,
+        openapi_url=None,
+        lifespan=lifespan,
+    )
     app.state.settings = settings
+    app.state.clock = utcnow
+    app.state.deadline_last_success = None
     app.state.engine = make_engine(settings.database_url)
     app.state.login_limiter = LoginLimiter()
     app.state.templates = Jinja2Templates(directory=str(ROOT / "templates"))
@@ -112,4 +139,13 @@ def create_app(settings=None):
 
     app.include_router(api)
     app.include_router(web)
+    from app.routers.api.coordination import router as coordination_api
+
+    app.include_router(coordination_api)
+    from app.routers.web.coordination import router as coordination_web
+
+    app.include_router(coordination_web)
+    app.state.templates.env.filters["local_input"] = lambda value: (
+        value.astimezone(ZoneInfo("Asia/Taipei")).strftime("%Y-%m-%dT%H:%M:%S") if value else ""
+    )
     return app

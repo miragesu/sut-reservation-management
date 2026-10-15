@@ -194,6 +194,9 @@ def main():
                     capture=True,
                 )
                 print(check.stdout.strip())
+                from container_day2 import check_coordination
+
+                check_coordination(client, mutation, run, ready, lab)
             if remote_ref:
                 print(
                     f"Remote-context deployment verified at {remote_ref} with only Compose/settings in working directory"

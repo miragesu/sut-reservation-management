@@ -7,7 +7,7 @@ from argon2.exceptions import InvalidHashError, VerificationError
 from fastapi import HTTPException
 from sqlalchemy import delete, func, select
 
-from app.core.database import utcnow
+from app.core.database import clock_now, utcnow
 from app.models.domain import CurrentUsage, Lab, LoginSession, QueueEntry, Reservation, SUT, User
 from app.services.common import audit, get_or_404, require_role
 
@@ -143,6 +143,7 @@ def change_role(db, actor, identity, data):
 
 
 def impact(db, identity):
+    now = clock_now(db)
     get_or_404(db, User, identity)
     result = {}
     for key, model, conditions in (
@@ -153,7 +154,7 @@ def impact(db, identity):
             Reservation,
             [
                 Reservation.status.in_(["confirmed", "waiting_for_release", "claimed"]),
-                Reservation.end_time > utcnow(),
+                Reservation.end_time > now,
             ],
         ),
     ):
@@ -170,7 +171,8 @@ def impact(db, identity):
     return result
 
 
-def change_status(db, actor, identity, data):
+def change_status(db, actor, identity, data, *, now=None):
+    now = now or utcnow()
     require_role(actor, "super_admin")
     target = get_or_404(db, User, identity)
     if target.is_active == data.is_active:
@@ -182,9 +184,16 @@ def change_status(db, actor, identity, data):
         if any(impact(db, identity).values()) and not data.acknowledge_resources:
             raise HTTPException(409, "Review outstanding resources and acknowledge before deactivation")
     target.is_active = data.is_active
-    target.deactivated_at = None if data.is_active else utcnow()
+    target.deactivated_at = None if data.is_active else now
     target.deactivated_by_user_id = None if data.is_active else actor.id
     target.deactivation_reason = None if data.is_active else data.reason
     db.execute(delete(LoginSession).where(LoginSession.user_id == identity))
     audit(db, actor, "user_status_changed", user_id=identity, is_active=data.is_active, reason=data.reason)
+    db.flush()
+    from app.services.coordination import reconcile_sut
+
+    affected = set(db.scalars(select(QueueEntry.sut_id).where(QueueEntry.user_id == identity)))
+    affected.update(db.scalars(select(Reservation.sut_id).where(Reservation.user_id == identity)))
+    for sut_id in affected:
+        reconcile_sut(db, db.get(SUT, sut_id), now)
     return public_user(target)

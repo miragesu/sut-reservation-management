@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block content %}
+<h1>{{ 'Edit reservation' if booking else 'New reservation' }}</h1>
+<p>Times are Asia/Taipei. Start must be future and within 30 days; elapsed duration must be at most 24 hours. Booking does not guarantee physical access.</p>
+<form method="post" action="{{ '/reservations/' ~ booking.id ~ '/edit' if booking else '/reservations' }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+{% if not booking %}<label for="sut-id">SUT</label><select class="form-select" id="sut-id" name="sut_id" required>{% for sut in suts %}<option value="{{ sut.id }}" {% if selected_sut == sut.id %}selected{% endif %} {% if sut.operational_state != 'normal' %}disabled{% endif %}>{{ sut.lab.name }} / {{ sut.name }} — {{ sut.operational_state }}</option>{% endfor %}</select>
+{% else %}<p>{{ booking.lab_name }} / {{ booking.sut_name }} · {{ booking.user.display_name }}</p>{% endif %}
+<label for="booking-start">Start (Asia/Taipei)</label><input id="booking-start" type="datetime-local" step="1" name="start_time" class="form-control" value="{{ booking.start_time|local_input if booking else '' }}" required>
+<label for="booking-end">End (Asia/Taipei)</label><input id="booking-end" type="datetime-local" step="1" name="end_time" class="form-control" value="{{ booking.end_time|local_input if booking else '' }}" required>
+<label for="booking-purpose">Purpose</label><textarea id="booking-purpose" name="purpose" class="form-control" required maxlength="4000">{{ booking.purpose if booking else '' }}</textarea>
+<button class="btn btn-primary mt-3">Save reservation</button></form>
+{% endblock %}

@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload
 
-from app.core.database import utcnow
+from app.core.database import clock_now
 from app.models.domain import CurrentUsage, Lab, Notification, QueueEntry, Reservation, SUT, User
 from app.services.common import audit, get_or_404, require_role
 
@@ -57,7 +57,7 @@ def sut_save(db, actor, data, identity=None):
 
 
 def activity(db, sut_id, now=None):
-    now = now or utcnow()
+    now = now or clock_now(db)
     return {
         "usages": db.scalar(
             select(func.count()).select_from(CurrentUsage).where(CurrentUsage.sut_id == sut_id)
@@ -91,12 +91,12 @@ def archive(db, actor, identity, *, restore=False):
                 409, "Resolve active usage, queue and current/future reservations before archiving"
             )
         sut.is_archived = True
-        sut.archived_at = utcnow()
+        sut.archived_at = clock_now(db)
         sut.archived_by_user_id = actor.id
     audit(db, actor, "sut_restored" if restore else "sut_archived", sut_id=identity)
 
 
-def operational(db, actor, identity, data):
+def operational(db, actor, identity, data, *, now=None):
     require_role(actor, *ADMIN)
     sut = get_or_404(db, SUT, identity)
     if sut.is_archived:
@@ -105,10 +105,15 @@ def operational(db, actor, identity, data):
         raise HTTPException(422, "A reason is required for an unavailable SUT")
     if data.state != "normal" and any(activity(db, identity).values()) and not data.acknowledge_activity:
         raise HTTPException(409, "Review outstanding activity and acknowledge before changing state")
+    from app.services.coordination import reconcile_sut
+
+    now = now or clock_now(db)
+    # Resolve already-due offers before pausing, so an expired offer is not revived.
+    reconcile_sut(db, sut, now)
     before = {"state": sut.operational_state, "reason": sut.operational_reason}
     sut.operational_state = data.state
     sut.operational_reason = data.reason if data.state != "normal" else None
-    sut.operational_updated_at = utcnow()
+    sut.operational_updated_at = now
     sut.operational_updated_by_user_id = actor.id
     audit(
         db,
@@ -120,7 +125,8 @@ def operational(db, actor, identity, data):
         reason=sut.operational_reason,
     )
     db.flush()
-    # Persist safe in-app notices; coordination worker integration is Day 2.
+    reconcile_sut(db, sut, now)
+    # Persist affected-user notices in the same transaction as the state change.
     users = set(db.scalars(select(CurrentUsage.user_id).where(CurrentUsage.sut_id == identity)))
     users.update(db.scalars(select(QueueEntry.user_id).where(QueueEntry.sut_id == identity)))
     users.update(
@@ -128,7 +134,7 @@ def operational(db, actor, identity, data):
             select(Reservation.user_id).where(
                 Reservation.sut_id == identity,
                 Reservation.status.in_(ACTIVE_RESERVATIONS),
-                Reservation.end_time > utcnow(),
+                Reservation.end_time > clock_now(db),
             )
         )
     )
@@ -154,6 +160,12 @@ def contact(user):
     return {"id": user.id, "display_name": user.display_name, "team": user.team, "email": user.email}
 
 
+def effective_status(sut, usage, has_reservation):
+    return STATES[sut.operational_state] or (
+        "In Use" if usage else "Reserved" if has_reservation else "Available"
+    )
+
+
 def snapshot(
     db,
     actor,
@@ -173,7 +185,7 @@ def snapshot(
         raise HTTPException(422, "Sort must be name or status")
     if status and status not in RANK:
         raise HTTPException(422, "Invalid status filter")
-    now = now or utcnow()
+    now = now or clock_now(db)
     suts = list(
         db.scalars(
             select(SUT)
@@ -197,13 +209,7 @@ def snapshot(
     for sut in suts:
         usage = usages.get(sut.id)
         scheduled = bookings.get(sut.id, [])
-        effective = STATES[sut.operational_state] or (
-            "In Use"
-            if usage
-            else "Reserved"
-            if any(r.start_time <= now < r.end_time for r in scheduled)
-            else "Available"
-        )
+        effective = effective_status(sut, usage, any(r.start_time <= now < r.end_time for r in scheduled))
         if (
             search.casefold() not in sut.name.casefold()
             or lab_id

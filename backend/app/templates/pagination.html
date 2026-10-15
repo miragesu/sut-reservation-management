@@ -1,0 +1,2 @@
+<p>{{ data.total }} records · Page {{ page }}</p>
+<nav aria-label="Pagination">{% if page > 1 %}<a href="?page={{ page-1 }}{% for name,value in filters.items() if value %}&amp;{{ name }}={{ value|string|urlencode }}{% endfor %}">Previous</a>{% endif %} {% if page*25 < data.total %}<a href="?page={{ page+1 }}{% for name,value in filters.items() if value %}&amp;{{ name }}={{ value|string|urlencode }}{% endfor %}">Next</a>{% endif %}</nav>
