@@ -1,8 +1,8 @@
-# Production DEP-008: image only; no source checkout or build tooling required.
+# Production DEP-009: image only; no source checkout or build tooling required.
 services:
   sut-management:
-    # Pin a tested version tag or, preferably, its immutable Docker Hub digest.
-    image: "${SUT_IMAGE:?Set mirage315/sut-reservation-management:version or @sha256:digest}"
+    # Installer resolves this version to an audited digest in its local lock override.
+    image: "mirage315/sut-reservation-management:${SUT_VERSION:-stable}"
     platform: linux/amd64
     user: "10001:10001"
     ports:
@@ -11,6 +11,7 @@ services:
       APP_ENV: production
       SECRET_KEY: "${SECRET_KEY:?Generate a random SECRET_KEY locally}"
       DATABASE_URL: sqlite:////app/data/sut.db
+      LOW_SECURITY_PASSWD: "${LOW_SECURITY_PASSWD:-false}"
       COOKIE_SECURE: "${COOKIE_SECURE:-true}"
       TZ: Asia/Taipei
       DEADLINE_PROCESSOR_ENABLED: "true"

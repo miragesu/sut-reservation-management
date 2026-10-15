@@ -18,6 +18,7 @@ jobs:
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install --require-hashes -r backend/requirements-dev.txt
       - run: ruff check backend scripts
+      - run: bash -n setup.sh
       - run: pytest -q
       - run: python -m playwright install --with-deps chromium
       - run: python scripts/browser_smoke.py
@@ -30,4 +31,9 @@ jobs:
       - name: Validate operator image-only Compose without build or checkout
         env:
           SUT_SMOKE_IMAGE: mirage315/sut-reservation-management:ci-${{ github.sha }}
+          SUT_SMOKE_LOW_SECURITY: '1'
         run: python scripts/container_smoke.py
+      - name: Rehearse installer fresh setup, rerun and backup upgrade in disposable directories
+        env:
+          SUT_INSTALLER_TEST_IMAGE: mirage315/sut-reservation-management:ci-${{ github.sha }}
+        run: python scripts/installer_smoke.py

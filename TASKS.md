@@ -314,3 +314,15 @@ DEP-007 implementation verification does not establish image publication or prod
 Delivery and precise verification evidence: docs/implementation-status.md, DEP-008 section.
 - [x] DEP-008 implementation branch pushed (`454cb5b`); PR creation attempted.
 - [ ] DEP-008 PR created: GraphQL request returned `Post "https://api.github.com/graphql": Forbidden`; branch and docs/dep008-pr.md retained for manual creation. No merge performed.
+
+## DEP-009 — Setup / password mode / release promotion
+- [x] Start latest merged DEP-008 main `79a6303`, branch `feat/dep009-setup-password-mode`; read Issue #9 and confirmed decisions.
+- [x] Implement shared strict-Boolean LOW_SECURITY_PASSWD policy, dynamic browser/CLI prompts and unchanged authentication controls.
+- [x] Implement version-based image-only Compose and immutable local install lock; pinned/checksummed one-file installer, opt-in warning, preservation, cold-backup upgrade and deployment verification.
+- [x] Implement existing-explicit-tag refusal, post-registry-validation official latest promotion and separate protected/explicit stable approval flow. No publishing performed.
+- [x] Update administrator quick start, maintenance/backup/rollback/migration guide and confirmed requirements.
+- [x] Final197-case regression, three native browsers, default-mode final source-image and one-character low-mode image-only/installer fresh-rerun-backup-upgrade lifecycle all PASS; exact commands/limitations in implementation status.
+- [x] Implementation and acceptance report pushed; PR creation attempted and GraphQL Forbidden recorded.
+- [ ] DEP-009 PR created: no PR exists; pushed branch and docs/dep009-pr.md retained for manual creation. No merge performed.
+- [ ] Separately approved new image release (tentative1.0.1), hosted promotion/stable environment configuration and production LAN/boot/storage acceptance.
+- [x] Hosted implementation CI at `ebe6efb` PASS: run38775191083,6m11s, including all native browsers, default/low-mode Docker smoke and installer lifecycle.

@@ -24,6 +24,6 @@
 <form method="post" action="/admin/users/{{ target.id }}/reset-password">
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 <label for="temporary_password">New temporary password</label>
-<input class="form-control mb-2" type="password" id="temporary_password" name="temporary_password" required minlength="12" maxlength="128" autocomplete="new-password">
+<input class="form-control mb-2" type="password" id="temporary_password" name="temporary_password" required minlength="{{ password_minimum }}" maxlength="128" autocomplete="new-password">
 <button class="btn btn-primary">Reset and require password change</button>
 </form>{% endblock %}

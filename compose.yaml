@@ -10,6 +10,7 @@ services:
       APP_ENV: production
       SECRET_KEY: "${SECRET_KEY:?Generate a random SECRET_KEY locally}"
       DATABASE_URL: sqlite:////app/data/sut.db
+      LOW_SECURITY_PASSWD: "${LOW_SECURITY_PASSWD:-false}"
       COOKIE_SECURE: "${COOKIE_SECURE:-true}"
       TZ: Asia/Taipei
       DEADLINE_PROCESSOR_ENABLED: "true"

@@ -17,3 +17,7 @@ venv
 htmlcov
 test-results
 playwright-report
+
+# Installer-managed private configuration, audit snapshots and image lock.
+sut-deployment/
+.records-before.json

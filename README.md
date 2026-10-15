@@ -6,159 +6,35 @@ Implemented: local accounts/RBAC, inventory/lifecycle management, atomic Claim/R
 
 ## Administrator Quick Start — Linux Server
 
-Required: Linux x86-64, Docker Engine, Docker Compose v2 supporting
-`bind.create_host_path: false`, Internet access to Docker Hub for the initial pull,
-a trusted internal network, a persistent `/data` filesystem, one reviewed
-`compose.deploy.yaml`, and secure local configuration. Run Docker commands from an
-authorized operator account. Docker access effectively grants host administration.
-
-The verified v1.0.0 source is `5ebb4f62c30812d67c0383c0a426bdd0ea862796`.
-[Release workflow succeeded](https://github.com/miragesu/sut-reservation-management/actions/runs/38746750990),
-including anonymous digest pull/deployment. DEP-008 changes the deployment file;
-**the old v1.0.0 tag's Compose still uses a Named Volume**. Obtain the newly reviewed
-DEP-008 Compose revision separately from the unchanged image.
-
-### A — Verify disk space and mount point
+Requires Linux amd64, Docker Engine/Compose v2, Docker access, Internet access and
+an intended persistent filesystem mounted at `/data`. Download only the reviewed
+installer; no Git clone, host Python or image build:
 
 ```bash
-docker version
-docker compose version
-df -h /data
-findmnt /data
+SETUP_REF=REPLACE_WITH_REVIEWED_DEP009_FULL_COMMIT_SHA
+curl --proto '=https' --tlsv1.2 --fail --location \
+  "https://raw.githubusercontent.com/miragesu/sut-reservation-management/$SETUP_REF/setup.sh" -o setup.sh
+less setup.sh
+bash setup.sh
 ```
 
-**Stop if `/data` is not the intended mounted persistent filesystem**, is full or
-is read-only. Have the server administrator fix the mount first. Configure host
-boot/service ordering so Docker cannot start this application before `/data` is
-mounted. `create_host_path: false` prevents a missing directory from being silently
-created, but cannot detect an unmounted filesystem when a stale directory exists.
+The installer verifies its pinned matching Compose, generates and preserves a
+private secret, confirms LAN address/version, prepares storage, checks deployment
+and securely initializes Super Admin. Never use `curl | bash`. Invoke reruns from
+the same directory; configuration is retained in its private `sut-deployment/`.
+Use `bash setup.sh --upgrade VERSION` only to deliberately upgrade after backup.
 
-### B — Create persistent database directory
+`stable` is the recommended selection once approved/published. **Currently 1.0.0 is
+the verified published release**; absent stable/latest requires confirmed fallback.
+Planned 1.0.1 is not published by this task. Low-security passwords default to false,
+require explicit risk acceptance and a new supporting image;1.0.0 cannot provide
+that feature. When enabled,1-character passwords substantially increase the risk
+of unauthorized access. SECRET_KEY, hashing and all other protections stay strong.
 
-For a **new installation only**, after checking `/data`:
-
-```bash
-sudo mkdir -p /data/sut-reservation-data
-sudo chown 10001:10001 /data/sut-reservation-data
-sudo chmod 700 /data/sut-reservation-data
-```
-
-The container runs as UID/GID **10001:10001**. Linux checks these numeric IDs, so
-this ownership allows SQLite to create its database, journal and lock files while
-mode 700 excludes other host users. Do not use chmod 777 or run the app as root.
-Existing deployments must follow the migration section before switching storage.
-
-### C — Download deployment Compose
-
-Create an administrator-owned directory outside any public checkout:
-
-```bash
-mkdir -p "$HOME/sut-deployment"
-cd "$HOME/sut-deployment"
-chmod 700 .
-# Replace this with the FULL reviewed DEP-008 merge/source commit SHA.
-DEPLOY_REF=REPLACE_WITH_REVIEWED_DEP008_COMMIT_SHA
-curl --fail --location "https://raw.githubusercontent.com/miragesu/sut-reservation-management/$DEPLOY_REF/compose.deploy.yaml" -o compose.deploy.yaml
-```
-
-The replacement is intentional: do not use an unreviewed moving branch or the
-historical v1.0.0 Compose. Record the chosen revision. You need only this YAML and
-private settings, not the entire repository.
-
-### D — Configure environment
-
-The address below is an example for the intended server. Replace it with your
-server's actual trusted LAN interface. Run this **once in a new install directory**;
-it refuses to overwrite an existing `.env`. It uses the existing image's Python
-inside a one-off container to generate a random secret without installing Python:
-
-```bash
-IMAGE='mirage315/sut-reservation-management@sha256:56b9e9ad2e5fb60b852fe214a7d79679875f526045e2d722d589fc472791cae6'
-docker pull "$IMAGE"
-( set -eu; umask 077; set -C
-  {
-    printf '%s\n' 'COMPOSE_PROJECT_NAME=sut-reservation'
-    printf 'SUT_IMAGE=%s\n' "$IMAGE"
-    printf '%s\n' 'APP_BIND=10.88.26.99' 'APP_PORT=5088' 'COOKIE_SECURE=false'
-    printf 'SECRET_KEY='
-    docker run --rm --network none --entrypoint python "$IMAGE" -c 'import secrets; print(secrets.token_urlsafe(48))'
-  } > .env
-)
-chmod 600 .env
-```
-
-Check that the command succeeded before continuing; if interrupted, remove only
-the incomplete new `.env` and repeat. Keep the secret persistent across restarts
-and upgrades. Do not print `.env`, paste it into tickets, commit it to public
-GitHub, or store publisher Docker Hub credentials on this server. Keep an
-encrypted recovery copy separately. `COOKIE_SECURE=false` is required for trusted
-LAN HTTP; use true with correctly configured HTTPS. Do not expose this service to
-the public Internet. Prefer HTTPS for sensitive internal traffic.
-
-### E — Start application
-
-Run all subsequent Compose commands from this directory:
-
-```bash
-docker compose -f compose.deploy.yaml config --quiet
-docker compose -f compose.deploy.yaml pull
-docker compose -f compose.deploy.yaml up -d --no-build
-docker compose -f compose.deploy.yaml ps
-docker compose -f compose.deploy.yaml logs --tail=100 sut-management
-curl --fail http://10.88.26.99:5088/health
-```
-
-Use `config --quiet`: full rendered config includes the secret. Wait for healthy
-status. Startup runs Alembic migrations before Uvicorn listens on `0.0.0.0:80`.
-Host **5088 → container 80** is preserved, with a single worker and enabled
-background deadline processor. UID/GID 10001, all capabilities dropped,
-no-new-privileges, private bridge network and container-local unprivileged-port
-threshold 80 remain mandatory. Do not change the host sysctl or use host networking.
-
-### F — Initialize Super Admin (one time)
-
-```bash
-docker compose -f compose.deploy.yaml exec sut-management \
-  python -m app.scripts.bootstrap_admin
-```
-
-Answer the interactive prompts: **Username** (login identifier), **Display name**,
-**Team**, **Work email** (unique), and **Temporary password**, entered twice without
-echo (12–128 characters). Choose organization-approved values; no default password
-exists. Bootstrap works only before a Super Admin exists. Do not rerun it to reset
-an existing administrator. First login forces a password change; that change
-signs out all sessions, so log in again with the new password.
-
-### G — Open application
-
-Open **http://10.88.26.99:5088/** from an authorized internal browser. The server
-firewall must permit TCP 5088 from approved internal clients; ask the network
-administrator for the organization's specific rule rather than opening it publicly.
-In-app notifications work over LAN HTTP. Browser desktop notifications usually
-require HTTPS, explicit permission and an open page; Inbox is the fallback.
-
-### H — Verify database persistence
-
-```bash
-sudo stat -c '%u:%g %a %n' /data/sut-reservation-data
-sudo ls -ln /data/sut-reservation-data/sut.db*
-docker inspect "$(docker compose -f compose.deploy.yaml ps -q sut-management)" \
-  --format '{{range .Mounts}}{{if eq .Destination "/app/data"}}{{.Type}} {{.Source}} -> {{.Destination}}{{end}}{{end}}'
-```
-
-Expect directory `10001:10001 700`, database
-`/data/sut-reservation-data/sut.db`, and `bind /data/sut-reservation-data -> /app/data`.
-WAL/SHM files may appear or disappear normally. Do not directly edit SQLite files.
-After creating initial records, use `docker compose -f compose.deploy.yaml restart`
-and verify records remain. Permanent deletion of this directory **loses production
-data**; neither images nor GitHub contain a recovery copy.
-
-
-For initial web administration, SQLite backup/restore, upgrades, Named Volume migration and troubleshooting, see the [complete administrator deployment guide](docs/deployment.md).
-
-**Production administrators:** use [image-only Docker Hub deployment](docs/deployment.md) with `compose.deploy.yaml`. The GitHub Remote Build guide below is retained as an optional developer/alternative path. The verified v1.0.0 image is published; DEP-008 changes only deployment configuration and documentation.
-
-Read [AGENTS.md](AGENTS.md), [SPEC.md](SPEC.md), [PLAN.md](PLAN.md), [TASKS.md](TASKS.md), [SPRINT_3DAY.md](SPRINT_3DAY.md), [CODEX_START_PROMPT.md](CODEX_START_PROMPT.md) and [confirmed decisions](docs/decisions.md) before implementation. [Domain states](docs/domain-states.md) describe constraints and transaction boundaries.
+Read the [complete administrator guide](docs/deployment.md) for version selection,
+boot ordering, first web operations, backups/restores, upgrades/rollback, manual
+Named Volume migration and troubleshooting. GitHub Remote Build below is an
+optional developer path. Production LAN/owner acceptance remains external.
 
 ## Local development
 
@@ -189,7 +65,7 @@ The development seed is repeatable and creates only two fictional labs and 20 fi
 
 ## Authentication and API
 
-Signed HttpOnly SameSite=Lax cookies carry an opaque session token. Only its SHA-256 digest is stored server-side; expiry, logout, password changes/resets and deactivation revoke authorization. Argon2id hashes passwords. Default minimum length is 12, maximum 128 (`MINIMUM_PASSWORD_LENGTH` can raise the minimum). Use a stable random `SECRET_KEY` of at least 32 characters. `COOKIE_SECURE=true` is the default; explicitly set false for trusted local/LAN HTTP, and use true behind HTTPS. Do not expose this application on the Internet.
+Signed HttpOnly SameSite=Lax cookies carry an opaque session token. Only its SHA-256 digest is stored server-side; expiry, logout, password changes/resets and deactivation revoke authorization. Argon2id hashes passwords. Default minimum length is 12, maximum 128 (`MINIMUM_PASSWORD_LENGTH` can raise the minimum). Explicit `LOW_SECURITY_PASSWD=true` permits 1–128 nonblank characters, requires a supporting release, and substantially increases access risk; default false. Use a stable random `SECRET_KEY` of at least 32 characters. `COOKIE_SECURE=true` is the default; explicitly set false for trusted local/LAN HTTP, and use true behind HTTPS. Do not expose this application on the Internet.
 
 Browser forms include CSRF fields. JSON clients first GET `/api/v1/auth/csrf`, retain the cookie, then send `X-CSRF-Token` for **every mutation**, including login/logout/password changes. Login rotates the CSRF token, so fetch a new one after login. Login accepts `username,password`; `/api/v1/auth/change-password` accepts `current_password,new_password`. Before mandatory password change, only authentication/logout/password-change functions are allowed. Twenty login attempts per client address per minute are permitted in the single-worker deployment; forwarded headers are not trusted by default.
 
@@ -312,12 +188,10 @@ Run `.venv/bin/python scripts/browser_day3.py` for modal/layout/keyboard/mobile/
 Windows development may use Docker Desktop with Linux containers and `docker compose -f compose.yaml -f compose.local.yaml up -d --build` from the checkout (PowerShell environment variables or a host-only `.env`). Production uses the image-only bind-mount deployment described above; no GitHub push automatically updates a running server.
 
 
-## DEP-008: primary production deployment
+## DEP-009 production deployment
 
-Use the published digest with image-only `compose.deploy.yaml` and host bind mount
-`/data/sut-reservation-data:/app/data`; the directory must already exist on the
-verified persistent filesystem and be owned by 10001:10001. No source checkout or
-image rebuild is needed. See the [complete administrator guide](docs/deployment.md)
-for private configuration, first-time operations, backup, upgrade, troubleshooting
-and a separate manual migration from older Named Volumes. Never delete an existing
-volume automatically. GitHub Remote Build remains an optional alternative.
+Use the reviewed `setup.sh` and image-only Compose. Operator version choices are
+stable/latest/explicit versions; the installer records and retains the resolved
+immutable digest internally. Storage is the UID10001-owned bind directory
+`/data/sut-reservation-data`, separate from source and images. Existing Named
+Volumes require the separate manual migration guide and are never deleted by setup.
