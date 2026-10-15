@@ -1,7 +1,7 @@
 # Administrator installation and maintenance — DEP-009
 
 Use the one-file installer on Linux x86-64 with Docker Engine, Docker Compose v2,
-Docker daemon access, curl and normal Linux utilities (`findmnt`, `ss`, `ip`, `flock`,
+Docker daemon access, root or sudo rights for preparing storage/backups, curl and normal Linux utilities (`findmnt`, `ss`, `ip`, `flock`,
 `sha256sum`). No Git clone, host Python, source build or manual digest entry is
 required. Installation needs Internet access to public GitHub and Docker Hub, a
 trusted internal network, and an intended persistent filesystem mounted at `/data`

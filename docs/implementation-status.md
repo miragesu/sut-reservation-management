@@ -246,3 +246,32 @@ owners retain publishing credentials only in Actions secrets. A real production
 persistent /data mount and reboot ordering, host UID/SELinux, firewall/two LAN clients,
 real administrator inventory workflow, disk/backup sizing and bind-directory restore
 rehearsal remain unverified. Full MVP production acceptance is not declared.
+
+### DEP-009 delivery / hosted verification
+
+Implementation `ebe6efbb44ff45f4ac0ba8cb4cb3656ada32dee1` and local acceptance/report
+commit `3227642` are pushed to `feat/dep009-setup-password-mode`.
+
+PR creation was attempted with:
+
+```bash
+gh pr create --repo miragesu/sut-reservation-management --base main \
+  --head feat/dep009-setup-password-mode \
+  --title 'DEP-009: one-file installer, password policy and safe release aliases' \
+  --body-file docs/dep009-pr.md
+```
+
+Exact error: **`Post "https://api.github.com/graphql": Forbidden`**. No PR was created
+or merged. The pushed branch and [reviewable PR body](dep009-pr.md) are retained for
+[manual PR creation](https://github.com/miragesu/sut-reservation-management/pull/new/feat/dep009-setup-password-mode).
+Hosted implementation checks are monitored separately:
+[run38775191083](https://github.com/miragesu/sut-reservation-management/actions/runs/38775191083).
+No release workflow, version tag or registry publishing was triggered by this work.
+
+Hosted result for implementation SHA `ebe6efbb44ff45f4ac0ba8cb4cb3656ada32dee1`:
+**SUCCESS,6m11s**, run38775191083. Public job statuses confirm every step passed:
+Ruff/Bash, full pytest, all three native browsers, Docker source/default-mode smoke,
+low-security image-only smoke and actual installer fresh/rerun/backup-upgrade
+rehearsal. Subsequent commits change documentation/delivery evidence only; this
+observed result is explicitly tied to the tested implementation SHA rather than
+assuming a later documentation commit's CI result.
