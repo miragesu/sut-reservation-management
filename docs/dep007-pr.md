@@ -9,7 +9,7 @@ The image-only deployment preserves 5088:80, UID10001, zero capabilities/no-new-
 - 122 pytest cases pass (103 retained, 19 release-ref cases); Ruff, format, compile and official checksum-verified actionlint pass.
 - Baseline/Day 2/Day 3 Chromium flows pass.
 - Source build and source-free image-only Compose pass actual port/privilege/health/login/browser, session/data recreation persistence, deadlines/restart deduplication and independent-volume cold restore. Image mode also passes with Git deliberately unavailable; missing image/secret fail closed.
-- Hosted application CI / optional Remote Build results are recorded in implementation status before handoff.
+- Optional pinned GitHub Remote Build **PASS** at `c6c3065158f088ff3c8224ef2177b7f6d7882e0a`; hosted Application checks also **PASS** at that SHA: https://github.com/miragesu/sut-reservation-management/actions/runs/38744064962 (5m 10s).
 
 ## External acceptance
 

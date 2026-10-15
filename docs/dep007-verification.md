@@ -14,7 +14,7 @@ Base: latest main `3b59e2e` (merged Day 3/DEP-006). Branch: `feat/dep007-dockerh
 | Operator deployment without source/build | Loaded local candidate is deployed from a fresh directory containing only compose.deploy.yaml; config asserts no build/source/.git/Dockerfile, up uses --no-build. A second run succeeds with a failing Git executable placed first on PATH, proving image mode does not invoke Git. |
 | Port/privileges/migrations/login/persistence/recovery | Both source-build and image-only runs assert actual 5088→80, EXPOSE/healthcheck80, UID10001, CapEff/Prm/Bnd=0, NoNewPrivs=1, container namespace threshold80 and port79 denied. They exercise startup migration rejection, login/password gate, Chromium UI, existing data/session retention across recreation, background catch-up/live deadlines/deduplication and cold restore into another empty volume. |
 | First-time/upgrade/rollback documentation | `docs/deployment.md`: one Compose plus secure export/optional private .env, pull/up/bootstrap, project/volume identity when switching files, provenance, backup/empty-volume restore and schema-compatible rollback. No untested cross-version rollback or production-host restore is claimed. |
-| Preserve Remote Build | Existing compose.yaml/local override remain; the generic runner retains remote-ref mode. Latest branch remote-ref run to be recorded after push. |
+| Preserve Remote Build | Existing compose.yaml/local override remain; the generic runner retains remote-ref mode. Published branch Remote Build **PASS** at `c6c3065158f088ff3c8224ef2177b7f6d7882e0a` with the full port/privilege/browser/background/persistence/backup-restore runner. |
 | Actual publication/separate server/LAN | **NOT VERIFIED**. No version tag or registry write was created in this task. Secret values are absent in the cloud environment; GitHub secret-name query is Forbidden and Docker Hub metadata HTTP tunneling is Forbidden. Repository secret setup/public visibility and a real accepted tag release with anonymous pull must be verified externally. |
 
 ## Commands observed locally
@@ -37,7 +37,7 @@ DOCKER_CONFIG=/tmp/sut-docker-config \
 
 Both PASS, including browser/background/persistence/independent-volume restore. The local validation tag was **not pushed**. Image mode is rerun with Git deliberately unavailable and passes. The source builder uses the cloud's inherited proxy and approved CA as an ephemeral BuildKit secret; TLS and package hashes stay verified. Image-only mode does not need those build settings. Only random synthetic test volumes are deleted.
 
-Hosted application CI and optional pinned Remote Build results are recorded in `implementation-status.md` after branch publication. These do not establish a registry release; the version-tag release workflow itself remains untriggered until authorized secrets/version setup.
+Optional pinned Remote Build also passes at the implementation SHA above. Hosted Application checks also **PASS** at that SHA: [run 38744064962](https://github.com/miragesu/sut-reservation-management/actions/runs/38744064962), conclusion SUCCESS, 5m 10s, including all pytest/browser/source/image-only checks. These do not establish a registry release; the version-tag release workflow itself remains untriggered until authorized secrets/version setup.
 
 ## External release gates
 

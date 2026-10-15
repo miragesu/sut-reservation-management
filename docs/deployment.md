@@ -44,6 +44,14 @@ export SUT_IMAGE='mirage315/sut-reservation-management@sha256:REPLACE_WITH_SUCCE
 
 Record and reuse the **same project name**. It determines the default volume name, e.g. `sut-reservation_sut-data`. When migrating an existing Remote Build deployment, use its existing Compose project name and verify the actual `/app/data` named volume before switching files. Both files use the same `sut-management` service and `sut-data` volume key; inventing a new project name can attach an empty database instead of the existing one.
 
+For an existing application container, inspect only the non-secret project/volume identity before changing deployment files:
+
+```bash
+docker inspect EXISTING_CONTAINER_ID --format '{{index .Config.Labels "com.docker.compose.project"}}'
+docker inspect EXISTING_CONTAINER_ID --format '{{range .Mounts}}{{if eq .Destination "/app/data"}}{{.Name}}{{end}}{{end}}'
+# Set COMPOSE_PROJECT_NAME to that existing project; verify the same volume is attached after recreation.
+```
+
 Supply a strong persistent `SECRET_KEY` (at least 32 random characters, preferably generated in a password manager). An image/public Compose cannot safely contain a shared secret. A single Compose file is enough on disk if configuration is securely exported for **each management shell**:
 
 ```bash

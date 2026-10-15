@@ -15,12 +15,22 @@ Primary operators use image-only `compose.deploy.yaml` and a private SECRET_KEY.
 | Image-only Compose in source-free temp directory, --no-build | PASS: actual 5088→80, UID/capabilities/sysctl, migrations/login/browser, data/session persistence, deadline recovery/dedupe and independent-volume cold restore |
 | Image-only rerun with Git unavailable | PASS |
 | Required image / SECRET_KEY missing | Both fail closed; valid image-only config needs no Git ref/build |
-| Hosted application CI / optional latest-branch Remote Build | Pending push/run; not yet claimed |
+| Optional latest-branch GitHub Remote Build | **PASS** at implementation SHA `c6c3065158f088ff3c8224ef2177b7f6d7882e0a`, complete source-free Compose/5088:80/privilege/login/background/persistence/backup-restore runner |
+| Hosted application CI | **PASS** at implementation SHA `c6c3065`: [run 38744064962](https://github.com/miragesu/sut-reservation-management/actions/runs/38744064962), public conclusion SUCCESS, **5m 10s**. Runs all pytest/browser/source-build and image-only deployment checks; this is not a version-tag publishing run. |
 | Docker Hub version publishing / anonymous public pull | NOT RUN: no authorized release version/tag selected; cloud has no registry credential bindings, GitHub secrets metadata query returns Forbidden and Docker Hub metadata tunnel returns Forbidden |
 
 GitHub Secrets may exist remotely but cannot be verified through the blocked API. The owner must securely configure/verify DOCKERHUB_USERNAME=mirage315 and a scoped DOCKERHUB_TOKEN, public repository visibility, then publish an explicit reviewed version tag after merge. Never supply token values in chat/source/server configuration. A successful loaded-image test is not evidence of a public Docker Hub release.
 
-Delivery branch/PR results will be recorded after push. Company LAN access, separate production Linux server, firewall/two-client access and production restore/cross-version rollback remain unverified. No production data/secrets or hardware-control code is added.
+Implementation branch is pushed at `c6c3065158f088ff3c8224ef2177b7f6d7882e0a`; delivery metadata commits change documentation only. Actual creation attempt:
+
+```bash
+gh pr create --repo miragesu/sut-reservation-management --base main \
+  --head feat/dep007-dockerhub-release \
+  --title 'DEP-007: versioned Docker Hub releases and image-only deployment' \
+  --body-file docs/dep007-pr.md
+```
+
+returned **`Post "https://api.github.com/graphql": Forbidden`**. **No PR was created.** The pushed branch and [PR body](dep007-pr.md) remain available for connected GitHub tooling: https://github.com/miragesu/sut-reservation-management/pull/new/feat/dep007-dockerhub-release . Company LAN access, separate production Linux server, firewall/two-client access and production restore/cross-version rollback remain unverified. No production data/secrets or hardware-control code is added.
 
 ---
 

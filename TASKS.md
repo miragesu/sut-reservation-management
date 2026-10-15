@@ -295,9 +295,9 @@ Day 3 application evidence is distinct from full MVP production acceptance. Full
 - [x] Administrator guide: single YAML plus secure local secret, pull/up/bootstrap, provenance, project/volume continuity, backup/empty-volume restore and compatible rollback.
 - [x] 122 pytest cases, three browser runners, source-build and source-free locally loaded image deployment; port/privilege/persistence/deadline/backup-restore checks pass.
 - [x] Image mode passes with Git deliberately unavailable; missing image/secret configuration fails closed.
-- [ ] Latest branch hosted CI / optional Remote Build and delivery evidence recorded after push.
+- [x] Implementation `c6c3065` pushed; hosted Application checks PASS (run 38744064962, 5m 10s), optional pinned Remote Build PASS and delivery/PR failure evidence recorded.
 - [ ] Actual Docker Hub secret configuration, accepted version-tag push, anonymous public registry pull and separate-server deployment verified.
 - [ ] Production company LAN/firewall/two clients and production recovery accepted.
-- [ ] PR created (or actual GraphQL failure recorded with pushed branch).
+- [x] PR creation attempted and actual GraphQL Forbidden recorded; **no PR created**, implementation branch pushed with reviewable body.
 
 DEP-007 implementation verification does not establish image publication or production acceptance. See docs/dep007-verification.md and docs/implementation-status.md.
