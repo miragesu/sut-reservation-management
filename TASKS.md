@@ -1,6 +1,7 @@
 # Implementation Checklist
 
 > Check boxes only after successful verification. Link PR or test evidence in the PR description.
+> Day 1 evidence: `docs/implementation-status.md`. Checked deployment items refer to local Compose validation, not the actual LAN host or clean-host GitHub Remote Build. Mixed Day 2/3 acceptance items stay unchecked even where the Day 1 subset exists.
 
 ## Phase 0 — Decision gate
 - [x] Confirm BR-008: Lab Admin manages both labs, creates/deletes labs and SUTs, force-releases records and clears queues; user management remains Super Admin only
@@ -19,28 +20,29 @@
 - [x] Record confirmed BR-001/002/003 in `SPEC.md` and `docs/decisions.md` (other Phase 0 decisions remain open)
 
 - [x] Confirm BR-020: Super Admin creates local accounts, issues temporary password, and first login requires password change; no public registration
-- [ ] BR-020 tests: CLI bootstrap, temporary password hashed, forced password change for web/API, create/reset role enforcement and audit hygiene
+- [x] BR-020 tests: CLI bootstrap, temporary password hashed, forced password change for web/API, create/reset role enforcement and audit hygiene
 
 ## Phase 1 — Foundation
-- [ ] App factory/main, settings and `/health`
-- [ ] SQLAlchemy 2.x models/relationships/constraints
-- [ ] Alembic initial migration
-- [ ] Local auth (password hash, login/logout, secure session, CSRF)
-- [ ] Role-based authorization dependencies (no lab assignment mapping)
-- [ ] Shared Bootstrap template and error pages
-- [ ] Admin bootstrap CLI and dev seed script
-- [ ] Dockerfile, compose, persistent SQLite data volume
-- [ ] `.env.example`, `.gitignore`, README
-- [ ] Pytest fixtures and CI smoke tests
+- [x] App factory/main, settings and `/health`
+- [x] SQLAlchemy 2.x models/relationships/constraints
+- [x] Alembic initial migration
+- [x] Local auth (password hash, login/logout, secure session, CSRF)
+- [x] Role-based authorization dependencies (no lab assignment mapping)
+- [x] Shared Bootstrap template and error pages
+- [x] Admin bootstrap CLI and dev seed script
+- [x] Dockerfile, compose, persistent SQLite data volume
+- [x] `.env.example`, `.gitignore`, README
+- [x] Pytest fixtures and local test/smoke runners (see Day 1 evidence)
+- [ ] Hosted GitHub Actions execution verified (workflow added; remote run not yet observed)
 
 ## Phase 2 — Inventory
-- [ ] Lab HTML and JSON CRUD with role-based all-lab access (BR-008)
-- [ ] SUT HTML and JSON CRUD: archive-only DELETE, blocked-conflict 409, admin restore, include_archived admin filter, historical linkage preserved (BR-009)
+- [x] Lab HTML and JSON CRUD with role-based all-lab access (BR-008)
+- [x] SUT HTML and JSON CRUD: archive-only DELETE, blocked-conflict 409, admin restore, include_archived admin filter, historical linkage preserved (BR-009)
 - [ ] Test archive/restore role permissions, archive conflicts, history retention, exclusion from KPIs and inability to Claim/Queue/Reserve archived devices
-- [ ] Dashboard KPIs and Lab-grouped Card default plus Table toggle (BR-025)
+- [x] Dashboard KPIs and Lab-grouped Card default plus Table toggle (BR-025)
 - [ ] SUT list search/filter/pagination
-- [ ] SUT detail basic information
-- [ ] Test BR-010: create same name in different Labs succeeds; case-insensitive/trim-equivalent duplicate in same Lab returns 409 / user-friendly form error; rename conflict rejected; archived names remain reserved; DB uniqueness handles concurrent submissions; FK protections and missing resource 404
+- [x] SUT detail basic information
+- [x] Test BR-010: create same name in different Labs succeeds; case-insensitive/trim-equivalent duplicate in same Lab returns 409 / user-friendly form error; rename conflict rejected; archived names remain reserved; DB uniqueness handles concurrent submissions; FK protections and missing resource 404
 - [ ] Test Lab Admin editing/force-releasing/clearing queues in either lab; User denied; Super Admin user management only
 
 ## Phase 3 — Usage & queue
@@ -87,7 +89,7 @@
 - [ ] No TODOs for MVP requirements, no exposed credentials
 - [ ] Final acceptance checklist signed off by project owner
 
-- [x] BR-014: owner can edit/cancel own upcoming confirmed reservation; admins can edit/cancel any; validate edited booking and audit changes
+- [x] Confirm BR-014 business policy (implementation tracked below): owner can edit/cancel own upcoming confirmed reservation; admins can edit/cancel any; validate edited booking and audit changes
 
 - [ ] BR-014 Phase 4: reservation update and cancellation APIs/UI; owner/admin authorization, validation against BR-012/013, overlap, state guard, audit, queue refresh, boundary/race tests
 
@@ -102,8 +104,8 @@
 
 
 ## BR-017 — Maintenance / Out of Service acceptance checks (confirmed)
-- [ ] Migration adds operational state, reason, update timestamp and actor to SUT; default `normal`.
-- [ ] Only Lab Admin/Super Admin may change the state; non-normal states require an explanatory reason and changes are audited.
+- [x] Migration adds operational state, reason, update timestamp and actor to SUT; default `normal`.
+- [x] Only Lab Admin/Super Admin may change the state; non-normal states require an explanatory reason and changes are audited.
 - [ ] Dashboard, detail, list, calendar and relevant filters show `Maintenance` / `Out of Service` and reason, with active use conflicts still visible.
 - [ ] New Claim, Queue join and Reservation creation fail with an actionable `409` for non-normal SUTs (also when racing with a state change).
 - [ ] Existing usage/history/queue/reservations are not silently deleted or released; Release/leave Queue remain possible.
@@ -133,9 +135,9 @@
 
 ## BR-021 — Account deactivation with admin resource review (confirmed)
 - [x] Confirm Option B: disable login and show affected resources; do not auto Release/leave Queue/cancel Reservations.
-- [ ] Super Admin-only disable/reactivate API + UI, audit actor/time/reason, and last active Super Admin protection.
-- [ ] Disable invalidates/rejects all existing sessions and mutations for affected user; historical references intact.
-- [ ] Impact preview and Admin `Needs attention` list active usages, queue entries and upcoming reservations with SUT/Lab context.
+- [x] Super Admin-only disable/reactivate API + UI, audit actor/time/reason, and last active Super Admin protection.
+- [x] Disable invalidates/rejects all existing sessions and mutations for affected user; historical references intact.
+- [x] Impact preview and Admin `Needs attention` list active usages, queue entries and upcoming reservations with SUT/Lab context.
 - [ ] Verify disabling user leaves existing usage/queue/reservation data untouched, while authorized admins can take explicit audited actions.
 - [ ] Queue notification skips inactive users without silently deleting history or blocking subsequent eligible people.
 - [ ] Tests for role authorization, session rejection, no auto cleanup, reactivation, retention and race/expiry paths.
@@ -150,12 +152,12 @@
 
 ## BR-023 — User profile self-service (Confirmed)
 - [x] Confirm Option B: RD can edit own display name, team, work email and password; no self-service username/role/permission change.
-- [ ] Build `/profile` edit form and authenticated `GET/PATCH /api/v1/users/me`; allowlist editable fields on server.
-- [ ] Reuse secure password-change endpoint, require current password and invalidate other sessions where applicable.
-- [ ] Validate required fields, work-email format and unique normalized email; show clear UI/API errors.
-- [ ] Enforce first-login password-change gate and reject attempts to edit others or mass-assign username/role/status.
+- [x] Build `/profile` edit form and authenticated `GET/PATCH /api/v1/users/me`; allowlist editable fields on server.
+- [x] Reuse secure password-change endpoint, require current password and invalidate other sessions where applicable.
+- [x] Validate required fields, work-email format and unique normalized email; show clear UI/API errors.
+- [x] Enforce first-login password-change gate and reject attempts to edit others or mass-assign username/role/status.
 - [ ] Audit safe field changes and verify SUT/Queue/Reservation contact info reflects updated profile without mutating historical user IDs.
-- [ ] Tests for successful updates, invalid/duplicate email, forbidden fields, authentication, CSRF, and password changes.
+- [x] Tests for successful updates, invalid/duplicate email, forbidden fields, authentication, CSRF, and password changes.
 
 
 ## BR-024 — Usage History retention (Confirmed: Option A)
@@ -199,9 +201,9 @@
 
 ## BR-028 — Dashboard sorting (Confirmed: customized C)
 - [x] Confirm only `Name` and `Status` options; default is Name.
-- [ ] Name uses case-insensitive natural ascending order within Lab; tie-break by SUT ID.
-- [ ] Status uses Available → Reserved → In Use → Maintenance → Out of Service, then name/ID, within Lab.
-- [ ] Card/Table, filtering and 30s polling retain the selected sort choice.
+- [x] Name uses case-insensitive natural ascending order within Lab; tie-break by SUT ID.
+- [x] Status uses Available → Reserved → In Use → Maintenance → Out of Service, then name/ID, within Lab.
+- [x] Card/Table, filtering and 30s polling retain the selected sort choice.
 - [ ] Cover Name/Status, cross-Lab groups, archived filtering, overdue indicator and stable ties with tests.
 
 ## Three-day sprint checkpoint
@@ -219,23 +221,23 @@
 
 ## DEP-001 — LAN deployment acceptance (all required)
 - [ ] Supply deployable Dockerfile + compose.yaml and complete repository/image prerequisites.
-- [ ] Map host TCP 5088 to container 8000 (configurable without changing Python code).
-- [ ] Serve login/root page and 200 `/health`; FastAPI binds 0.0.0.0 in container.
-- [ ] Fresh Alembic migration succeeds and fails startup visibly on error.
-- [ ] SQLite data persists across container restart and image rebuild, never stored only in writable container layer.
-- [ ] Bootstrap and secrets configured via env securely; no default hard-coded credentials.
+- [x] Map host TCP 5088 to container 8000 (configurable without changing Python code).
+- [x] Serve login/root page and 200 `/health`; FastAPI binds 0.0.0.0 in container.
+- [x] Fresh Alembic migration succeeds and fails startup visibly on error.
+- [x] SQLite data persists across container restart and image rebuild, never stored only in writable container layer.
+- [x] Bootstrap and secrets configured via env securely; no default hard-coded credentials.
 - [ ] 15-minute queue/no-show deadlines run without browser open and do not duplicate on restart.
-- [ ] Provide deploy/update/log/backup/restore instructions and LAN/firewall prerequisites.
+- [x] Provide deploy/update/log/backup/restore instructions and LAN/firewall prerequisites.
 - [ ] Verify browser can reach `http://<server-ip>:5088/` on actual internal host; if host not accessible, mark unverified, not passed.
 - [ ] In-app notifications work over LAN HTTP; desktop notifications degrade gracefully when browser requires secure context.
 
 
 ## DEP-002 — GitHub Remote Build acceptance
 - [ ] Production `compose.yaml` obtains source + Dockerfile from pinned GitHub Git context, with no source checkout on server.
-- [ ] Container start does not clone/pull Git, and runtime contains no embedded Git credentials.
+- [x] Container start does not clone/pull Git, and runtime contains no embedded Git credentials.
 - [ ] Clean Linux host deploy with only Compose + local configuration succeeds via `docker compose up -d --build`.
-- [ ] Published `:5088`, `/health`, login, migrations and browser UI verified.
-- [ ] Named volume keeps SQLite data through rebuild and recreate; backup and rollback are documented.
+- [x] Published `:5088`, `/health`, login, migrations and browser UI verified.
+- [x] Named volume keeps SQLite data through rebuild and recreate; backup and rollback are documented.
 - [ ] Public vs private repo network/authentication requirements documented and tested as applicable.
 - [ ] Windows Docker local development override documented; production remains Linux remote-context build.
 - [ ] Explicit redeploy required after GitHub changes; release revision pinned for repeatability.
@@ -243,8 +245,8 @@
 ## DEP-004 — Public repository acceptance checklist
 
 - [ ] Compose performs GitHub remote build using a pinned public tag/commit and requires no token.
-- [ ] `.gitignore`, `.dockerignore`, `.env.example` exist and production `.env` is not committed.
+- [x] `.gitignore`, `.dockerignore`, `.env.example` exist and production `.env` is not committed.
 - [ ] Git history and tracked files contain no actual secrets, RD contacts, production BMC/Host IP addresses, DB files, exports, or backups.
-- [ ] Example seed data is fictional and safe for public distribution.
-- [ ] SQLite persists in a Docker named volume, survives container rebuild, and is never committed.
+- [x] Example seed data is fictional and safe for public distribution.
+- [x] SQLite persists in a Docker named volume, survives container rebuild, and is never committed.
 - [ ] Port 5088 is available to trusted LAN users only, with login enforcement; public repository visibility does not imply a public service.

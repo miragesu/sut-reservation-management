@@ -1,0 +1,5 @@
+.auth-form { max-width: 32rem; }
+label { display: block; margin-top: .5rem; }
+[hidden] { display: none !important; }
+.sut-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 1rem; }
+.card { overflow-wrap: anywhere; }

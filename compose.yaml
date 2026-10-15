@@ -1,0 +1,24 @@
+services:
+  sut-management:
+    build:
+      # Set a full, reviewed commit SHA containing the application; never track main.
+      context: "https://github.com/miragesu/sut-reservation-management.git#${SUT_GIT_REF:?Set SUT_GIT_REF to a reviewed full commit SHA}"
+      dockerfile: Dockerfile
+    ports:
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-5088}:8000"
+    environment:
+      APP_ENV: production
+      SECRET_KEY: "${SECRET_KEY:?Generate a random SECRET_KEY locally}"
+      DATABASE_URL: sqlite:////app/data/sut.db
+      COOKIE_SECURE: "${COOKIE_SECURE:-true}"
+      TZ: Asia/Taipei
+    volumes:
+      - sut-data:/app/data
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 15s
+volumes:
+  sut-data:

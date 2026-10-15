@@ -1,0 +1,6 @@
+# Development/CI build override; production uses compose.yaml remote context.
+services:
+  sut-management:
+    build:
+      context: .
+      dockerfile: Dockerfile

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}{% block content %}<h1>Dashboard</h1>
+<form id="filters" class="row g-2 mb-3" role="search">
+<div class="col-md-3">
+<label for="search">SUT name</label>
+<input class="form-control" id="search" name="search" type="search">
+</div>
+<div class="col-md-2">
+<label for="lab_id">Lab</label>
+<select class="form-select" id="lab_id" name="lab_id">
+<option value="">All labs</option>{% for lab in labs %}<option value="{{ lab.id }}">{{ lab.name }}</option>{% endfor %}</select>
+</div>
+<div class="col-md-2">
+<label for="platform">Platform</label>
+<input class="form-control" id="platform" name="platform">
+</div>
+<div class="col-md-2">
+<label for="owner_team">Owner team</label>
+<input class="form-control" id="owner_team" name="owner_team">
+</div>
+<div class="col-md-2">
+<label for="status">Status</label>
+<select class="form-select" id="status" name="status">
+<option value="">All statuses</option>{% for s in ['Available','Reserved','In Use','Maintenance','Out of Service'] %}<option>{{ s }}</option>{% endfor %}</select>
+</div>
+<div class="col-md-1">
+<label for="sort">Sort</label>
+<select class="form-select" id="sort" name="sort">
+<option value="name">Name</option>
+<option value="status">Status</option>
+</select>
+</div>
+<div class="col-12">
+<button class="btn btn-primary">Apply filters</button>
+</div>
+</form>
+<div class="btn-group mb-3" role="group" aria-label="Dashboard layout">
+<button class="btn btn-outline-primary" id="card-view" type="button" aria-pressed="true">Card</button>
+<button class="btn btn-outline-primary" id="table-view" type="button" aria-pressed="false">Table</button>
+</div>
+<p id="refresh-status" role="status" aria-live="polite">Updated {{ data.as_of|taipei }} · Refreshes every 30 seconds</p>
+<div id="dashboard-content">{% include 'dashboard_content.html' %}</div>{% endblock %}

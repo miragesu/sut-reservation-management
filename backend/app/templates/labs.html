@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% block content %}<h1>Labs</h1>{% for lab in labs %}<section class="card p-3 mb-3">
+<h2>{{ lab.name }}</h2>
+<p>{{ lab.location }} · {{ lab.description }}</p>{% if user.role != 'user' %}<form method="post" action="/labs/{{ lab.id }}/edit">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">{% for name in ['name','location','description'] %}<label class="form-label" for="{{ name }}-{{ lab.id }}">{{ name|title }}</label>
+<input class="form-control mb-2" id="{{ name }}-{{ lab.id }}" name="{{ name }}" value="{{ lab[name] }}" {% if name != 'description' %}required{% endif %}>{% endfor %}<button class="btn btn-primary">Save lab</button>
+</form>
+<form method="post" action="/labs/{{ lab.id }}/delete" class="mt-2">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<button class="btn btn-outline-danger">Delete empty lab</button>
+</form>{% endif %}</section>{% else %}<p>No labs registered.</p>{% endfor %}
+{% if user.role != 'user' %}<h2>Create lab</h2>
+<form method="post" action="/labs">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">{% for name in ['name','location','description'] %}<label class="form-label" for="new-{{ name }}">{{ name|title }}</label>
+<input class="form-control mb-2" id="new-{{ name }}" name="{{ name }}" {% if name != 'description' %}required{% endif %}>{% endfor %}<button class="btn btn-primary">Create lab</button>
+</form>{% endif %}{% endblock %}
