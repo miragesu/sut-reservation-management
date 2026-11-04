@@ -4,6 +4,8 @@
 
 Version: 1.5-draft | Scope: MVP | Source: user-provided v1.0 requirements
 
+> CONSOLE-001 scope addition is owner-approved separately in [the complete Q1–Q83 baseline](docs/CONSOLE_001_REQUIREMENTS.md). [Phase A design](docs/console001/README.md) is proposed and awaits review; implementation has not started. [Compatibility amendment](docs/console001/compatibility.md) records conflicts with this document's coordination-only/SSH/WebSocket restrictions instead of silently overriding them. Console authorization/revocation applies only to gateway-owned attachments; existing scheduling/usage and physical-access guarantees remain unchanged. Design approval and later production authorization are separate gates.
+
 > **Status: review required before implementation.** Items tagged `DECISION` below are proposed defaults, not confirmed business requirements. Do not silently reinterpret them.
 
 ## 1. Purpose and scope

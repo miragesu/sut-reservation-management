@@ -1,0 +1,45 @@
+# Scope amendment, conflicts and engineering assumptions
+
+This is a proposed, reviewable scope amendment. Owner-confirmed Console decisions are already authoritative for the new feature; this PR does not reopen Q1–Q83 or assert design approval. Earlier coordination-only rules remain binding for coordination features. No auto-merge or production authorization follows from this document.
+
+## Existing-specification conflict register
+
+| ID / existing source | New approved requirement | Proposed resolution and limit |
+|---|---|---|
+| C1 AGENTS Explicit product boundary and coding standards; SPEC §5/BR-017; PLAN device-control exclusions | Q1–9, direct SSH/UART Console | Add explicit opt-in Console debug-access scope. Existing Claim/Release/Queue/Reservation remain recordkeeping only; do not retrofit physical exclusion, automatic handoff, power/firmware APIs or disconnect PuTTY. Web attachment revocation is allowed only for Console links. |
+| C2 AGENTS/PLAN/SPEC BR-018 no WebSocket/SSE | Console authenticated terminal WS | Carve out standalone terminal WS only; retain 30-second read-only polling on existing coordination/Inbox pages. No notification WebSocket rewrite or SPA. |
+| C3 SPEC roles and `inventory.sut_save` admin-only SUT edits | All active RD edit/clear UART/BMC mapping and trust | Separate Console mapping/trust services with explicit allowlists, do not widen SUT CRUD or Client network/credential ownership. Lab Admin still all-Lab; no lab-RBAC assignment table. |
+| C4 Existing `SUT.bmc_ip` permits IPv4/IPv6 and is inventory metadata | Q5/Q25 RD IPv4 direct target, port22 | Separate versioned executable endpoint; no migration auto-copy/probe, no existing inventory data loss. Clear UI distinction. |
+| C5 Existing SECRET_KEY signs cookies; account passwords are Argon2 hashes | Q9 Client SSH secrets must be recoverable to authenticate | Independent broker AEAD root/keyring; not cookie key or password hash. App login hashing unchanged; no reveal even Super Admin. |
+| C6 Existing HTTP deployment and COOKIE_SECURE true default | Approved HTTP/WS exception, explicit opt-in | Preserve port5088 and LAN HTTP; Console rejects HTTP unless explicit insecure flag and coherent operator cookie configuration. Disclose plaintext browser leg; do not silently impose HTTPS-only or disable cookie security. |
+| C7 BR-017 rejects new Claim/Queue/Reservation in Maintenance/OOS | Q76–83 Console and maintenance grants | Distinct Console authorization; no fake Claim or coordination record changes. State returning Normal invalidates grants; evaluate remaining Console rights. |
+| C8 BR-021/023 disable/reset invalidates HTTP sessions only in current code | Immediate live Console revocation | Add post-commit fenced revocation hooks and expiry checks in future; do not auto-release recorded usage or alter queue/reservations. |
+| C9 BR-007 no per-user Claim limit | Q29 ten Console sessions/user | Count Web Console attachments/reservations only, not Claim records or external PuTTY. Multi-SUT Claim policy unchanged. |
+| C10 Old no physical disconnect promise; owner requires affected link invalidation | Q4/Q56/Q68/Q74/Q75 | Close gateway-owned SSH/WS only, with transport-specific scope. Never terminate tmux/minicom, external SSH or a remote host. |
+| C11 DEP-007/008/009 one image-only service, single worker, SQLite bind, non-root | Privilege-separated Console broker/keyring | Propose reviewed future same-image sidecar/private socket and independent key mount. Preserve gateway5088:80, existing DB bind and non-root limits. No Compose or production changes now; no multi-node support. |
+| C12 SPEC audit/history versus Q10 no terminal recording | Metadata events required for trust/mapping/grants/connections | Allowlisted metadata audit/revisions only; no terminal data, passwords, key bytes, clipboard, recordings or transcript download. Remote logging remains outside app control. |
+
+Known earlier manual-check-in/filter contradictions are already covered by the 2026-10-16 Demo amendment; this feature neither revives them nor uses them as Console requirements. Read current source/current_usages as authority for current Claim, not old display labels or expected-end expiry.
+
+## Requirement ambiguity requiring explicit review
+
+**D1 — public IPv4 wording:** Q5 explicitly permits any syntactically valid BMC IPv4 without Lab CIDR allowlist, subject to dangerous/self/special-target denial. Requirements §5 also says “deny public/self-sensitive targets.” If “public” means globally routable destination addresses, that adds an address-class restriction not stated in Q5; if it means publicly exposed gateway access, the two statements align. This design preserves no Lab allowlist, bans sensitive/special targets and public gateway exposure, and does NOT silently choose between interpretations for globally routable BMC destinations. Resolve and record in reviewed requirements/design before enabling BMC network connections in Phase C/E. Phase B may build deny-category fixtures with this case explicitly pending, not mark the matrix fully passing. No new owner decision is invented here.
+
+## Engineering assumptions and proof obligations (not owner decisions)
+
+| ID | Proposed assumption | Gate / consequence if false |
+|---|---|---|
+| H1 | Restricted helper/control-mode adapter can attach only to an existing tmux/socket/pane, forward literal terminal bytes and native sizing, without exposing tmux command escape or creating/killing remote objects | Phase C blocker. Ordinary attach may start server and exposes prefix commands; do not ship it as a fallback. Validate versions/socket permissions and minicom signal behavior in isolated fixture. If impossible without changing owner constraints, request reviewed design resolution, not silently create/kill sessions or rewrite remote config. |
+| H2 | `binding_active` means enabled SUT UART mapping, not Client enabled state; disabled Client retains mapping reservation, archived SUT deactivates pair, restore requires conflict revalidation | Review before Phase B schema. Distinguishes Q21 disabled binding from Q59 disabled Client. Never silently steal/revive an occupied pair or drop retained history. |
+| H3 | Early grant revoke UX is confirm-then-immediate, reevaluating other rights | Q84 was NOT confirmed; proposed only. Review UX, no invented cooldown, mandatory reason or grant notification. |
+| H4 | Conservative tmux name syntax `[A-Za-z0-9_][A-Za-z0-9_-]*`, length1..128 matches existing lab session naming | Review against anonymized examples before Phase B validator. Broader names need safe exact helper encoding, not shell interpolation; do not silently rename existing tmux sessions. |
+| H5 | Same-image non-root broker sidecar/private Unix socket, independent key mount, no broker DB mount is operationally supportable | Architecture review before implementation; future Compose/installer change requires separate tests and approval. No privileged all-in-one fallback without review. |
+| H6 | Proposed reconnect3 retries/30s grace, heartbeat15s/45s cleanup, proof60s/ticket30s, lease1s and queue/frame budgets are sufficient | Phase B/C stress/crash tests refine documented numeric engineering defaults without changing fixed owner limits10 sessions/10-second connect/3 auth attempts/24h grants/10k lines. |
+| H7 | Console audit/session metadata retained indefinitely initially, transient flow/ticket rows pruned after expiry when no longer referenced | Storage review; never purge existing usage/audit history or retain terminal content. Snapshot before retention change. |
+| H8 | An authorized direct BMC shell can execute its normal remote commands; “no power/automatic firmware commands” prohibits app-supplied automated controls, not an unimplementable universal command filter inside an interactive shell | Review wording/security acceptance before direct BMC rollout. Do not promise prevention of user-typed destructive commands or BMC-side pivoting; if owner expects such prevention, scope/design must change. |
+
+Remaining production evidence: trustworthy fingerprint source per Client/BMC, restricted helper account/socket provisioning, host self/NAT/metadata deny inventory, intranet firewall/bind policy, root-key backup custody, supported tmux/SSH algorithms and HTTP risk acknowledgement. These are operator facts to validate with explicit pilot authorization, not a fresh 83-question product questionnaire.
+
+## Phase B readiness statement
+
+Ready for owner design review, not automatically approved for implementation. Once reviewed, Phase B can implement isolated additive models/migrations, crypto/keyring abstractions, authorization, versions/quotas and mock contracts behind feature OFF. H2/H4/H5 affect foundational schema/validation/topology and must be recorded before those pieces lock in. D1 and H1/H8 block live BMC/UART adapters and production enablement, not writing mock tests or preserving existing DB fixtures. All security and transport residual risks remain visible; no claim of production readiness, SSH compatibility or risk elimination is made by this PR.

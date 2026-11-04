@@ -4,6 +4,15 @@
 > Day 1/2/3 evidence: `docs/implementation-status.md`, `docs/day2-verification.md` and `docs/day3-verification.md`. Checked deployment items refer to local Compose and source-free pinned GitHub Remote Build on the cloud daemon, not the actual LAN host or a newly provisioned production OS. External/owner gates remain unchecked; local automated/browser/deployment evidence is distinguished in the status document.
 
 ## Phase 0 — Decision gate
+The independent CONSOLE-001 feature is tracked in the [Phase A package](docs/console001/README.md); it does not change historical MVP checkmarks below.
+
+- [ ] CONSOLE-001 Phase A design approved by owner (documentation completion is not approval).
+- [ ] Resolve public-target wording D1 and review foundational H2/H4/H5 assumptions.
+- [ ] Phase B foundations implemented and isolated preservation/security tests pass.
+- [ ] Phase C helper confinement, SSH/WS/revocation and mock integration gates pass; D1/H1/H8 resolved.
+- [ ] Phase D terminal/admin UX and Chromium matrix pass.
+- [ ] Phase E hardening, operator HTTP acknowledgement, recovery and separately authorized production pilot accepted.
+
 - [x] Confirm BR-008: Lab Admin manages both labs, creates/deletes labs and SUTs, force-releases records and clears queues; user management remains Super Admin only
 - [x] Confirm FIFO queue temporary-use rule before an upcoming reservation
 - [x] Confirm manual reservation claim and 15-minute no-show expiration
