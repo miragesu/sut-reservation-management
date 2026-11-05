@@ -1,3 +1,5 @@
+> **Phase E review:** [deployment integration](phase-e-implementation.md), [actual isolated verification](phase-e-verification.md), [operator runbook](operator-runbook.md) and [recovery](rollback-and-recovery.md). C3/C4/C5 production gates remain OPEN; historical phase statements below do not authorize production.
+
 > **Phase D review:** terminal/admin implementation and mock acceptance are recorded in [implementation](phase-d-implementation.md) and [verification](phase-d-verification.md). Earlier phase restrictions and planned contracts below are historical; actual Phase B/C routes remain authoritative. No production or Phase E approval is implied.
 
 > **Phase C:** [Broker/Gateway implementation](phase-c-implementation.md) and [verification](phase-c-verification.md) describe the current backend review scope. Historical design/Phase B exclusions remain milestone-specific; default OFF and production/D/E gates remain.

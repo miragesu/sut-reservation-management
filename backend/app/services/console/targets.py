@@ -2,6 +2,7 @@
 
 from ipaddress import IPv4Address, IPv4Network
 from pathlib import Path
+import os
 import socket
 import struct
 
@@ -44,6 +45,14 @@ def validate_ipv4(value, *, bmc=False, sensitive=(), local=None):
             raise ValueError()
     except (ValueError, TypeError):
         raise HTTPException(422, "Console target requires canonical dotted-quad IPv4") from None
+    if policy := os.environ.get("CONSOLE_NETWORK_POLICY_FILE"):
+        from app.console_deployment import denies_target
+
+        try:
+            if denies_target(policy, str(address)):
+                raise HTTPException(422, "Console target denied by deployment policy")
+        except ValueError:
+            raise HTTPException(503, "Console deployment network policy unavailable") from None
     denied = (local_denials() if local is None else set(local)) | set(sensitive)
     if (
         not address.is_global

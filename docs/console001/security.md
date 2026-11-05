@@ -1,3 +1,5 @@
+> **Phase E review:** [deployment integration](phase-e-implementation.md), [actual isolated verification](phase-e-verification.md), [operator runbook](operator-runbook.md) and [recovery](rollback-and-recovery.md). C3/C4/C5 production gates remain OPEN; historical phase statements below do not authorize production.
+
 # Security threat model and deployment exception
 
 This is a privileged debug gateway, not just status UI. Approved risk choices are

@@ -1,0 +1,112 @@
+# Explicit operator opt-in overlay. Never used by setup.sh automatically.
+# Use with compose.deploy.yaml and a separately reviewed console.env; see operator-runbook.
+services:
+  sut-management:
+    image: "${CONSOLE_IMAGE:?Set one reviewed immutable image digest for all Console services}"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m,mode=1777
+    environment:
+      CONSOLE_ENABLED: "${CONSOLE_ENABLED:-false}"
+      CONSOLE_ACCESS_POLICY: "${CONSOLE_ACCESS_POLICY:-claim_only}"
+      CONSOLE_ALLOW_INSECURE_HTTP: "${CONSOLE_ALLOW_INSECURE_HTTP:-false}"
+      CONSOLE_HTTP_RISK_ACK: "${CONSOLE_HTTP_RISK_ACK:-}"
+      CONSOLE_ALLOWED_ORIGINS: "${CONSOLE_ALLOWED_ORIGINS:-[]}"
+      CONSOLE_BROKER_SOCKET: /run/console/broker.sock
+      CONSOLE_BROKER_IPC_KEY_FILE: /run/console-auth
+      CONSOLE_BROKER_UID: "10002"
+      CONSOLE_DEPLOYMENT_PREFLIGHT: "true"
+      CONSOLE_DEPLOY_BIND: "${APP_BIND:-127.0.0.1}"
+      CONSOLE_NETWORK_POLICY_FILE: /run/console-policy.json
+    volumes:
+      - type: bind
+        source: "${CONSOLE_ROOT:?Set independent private Console directory}/ipc"
+        target: /run/console
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: "${CONSOLE_ROOT:?Set independent private Console directory}/ipc-auth"
+        target: /run/console-auth
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: "${CONSOLE_POLICY_FILE:?Set reviewed host and sensitive endpoint policy file}"
+        target: /run/console-policy.json
+        read_only: true
+        bind: {create_host_path: false}
+    depends_on:
+      console-broker: {condition: service_healthy}
+    # Web never needs SSH or external network access. Published-port ingress stays
+    # on the base network; host firewall must independently restrict LAN ingress.
+  console-network:
+    image: "${CONSOLE_IMAGE:?Set reviewed immutable image digest}"
+    platform: linux/amd64
+    user: "0:0"
+    entrypoint: ["python", "-m", "app.console_deployment", "network", "--path", "/run/console-policy.json"]
+    read_only: true
+    cap_drop: [ALL]
+    # Only the namespace initializer; drops to 10003 with zero capabilities before healthy.
+    cap_add: [NET_ADMIN, SETUID, SETGID]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=1m,mode=1777"]
+    volumes:
+      - type: bind
+        source: "${CONSOLE_POLICY_FILE:?Set reviewed network policy}"
+        target: /run/console-policy.json
+        read_only: true
+        bind: {create_host_path: false}
+    healthcheck:
+      test: [CMD, python, -c, "import os; os.setgroups([]); os.setgid(10003); os.setuid(10003); from pathlib import Path; assert Path('/tmp/network-ready').read_text()=='ready'"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    restart: "no"
+    stop_grace_period: 5s
+    networks: [console-egress]
+  console-broker:
+    image: "${CONSOLE_IMAGE:?Set reviewed immutable image digest}"
+    platform: linux/amd64
+    user: "10002:10002"
+    group_add: ["10001"]
+    entrypoint: [python, -m, app.console_broker, --socket, /run/console/broker.sock, --ipc-key, /run/console-auth, --keyring, /run/console-keys/keyring]
+    network_mode: "service:console-network"
+    depends_on:
+      console-network: {condition: service_healthy}
+    environment:
+      CONSOLE_NETWORK_POLICY_FILE: /run/console-policy.json
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=16m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    volumes:
+      - type: bind
+        source: "${CONSOLE_ROOT:?Set private Console directory}/ipc"
+        target: /run/console
+        bind: {create_host_path: false}
+      - type: bind
+        source: "${CONSOLE_ROOT:?Set private Console directory}/ipc-auth"
+        target: /run/console-auth
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: "${CONSOLE_ROOT:?Set private Console directory}/keys"
+        target: /run/console-keys
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: "${CONSOLE_POLICY_FILE:?Set reviewed network policy}"
+        target: /run/console-policy.json
+        read_only: true
+        bind: {create_host_path: false}
+    # No TCP listener; Web performs actual authenticated IPC before migrations/startup.
+    healthcheck:
+      test: [CMD, python, -c, "import socket; s=socket.socket(socket.AF_UNIX); s.settimeout(1); s.connect('/run/console/broker.sock'); s.close()"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    restart: unless-stopped
+    stop_grace_period: 10s
+networks:
+  console-egress:
+    driver: bridge
+    enable_ipv6: false

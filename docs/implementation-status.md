@@ -1,3 +1,22 @@
+# Current review scope — CONSOLE-001 Phase E
+
+Deployment integration and isolated pre-release acceptance are implemented on latest
+main00776f9, branch `feature/console001-phase-e`. **Production acceptance/release is
+NOT DONE.** [Full actual results](console001/phase-e-verification.md),
+[operator prerequisites](console001/operator-runbook.md),
+[paired recovery/rotation](console001/rollback-and-recovery.md).
+
+Passed:358 pytest, Ruff/format/shell/module/actionlint, three legacy Chromium suites,
+34 Console Chromium checkpoints, actual mock SSH/tmux/BMC, source Docker, ordinary
+image-only Compose/installer lifecycle, and seven new Console deployment checkpoint
+groups (fresh install, identity/mount/IPC/5088:80, raw-socket egress, populated old-main
+upgrade/cold restore, compatible old-image rollback, wrong-KEK rejection/independent
+backup recovery and startup fail-closed). No new migration or coordination changes.
+Defaults remain false/claim_only/insecure HTTP false. No company resources, registry
+publication/promotion, production activation or automatic merge. C3/C4/C5, real
+LAN/Client/BMC/reboot, TLS/WSS and independent review/hosted CI remain open. Historical
+milestone evidence below does not override these production gates.
+
 # Current review scope — CONSOLE-001 Phase D
 
 Terminal/admin UI implemented on merged Phase C main `0ad530a`, branch `feature/console001-phase-d`. **Local mock verification passed; production/Phase E not accepted.** Full results: [Phase D verification](console001/phase-d-verification.md). 346 pytest (including nine new UI cases), Ruff, three legacy Chromium suites, 34 new actual-SSH Console Chromium checkpoints, source/container Compose, image-only Compose and installer upgrade/recovery passed. No migration or production configuration change; Console remains default OFF. No Docker publication, company-host access or production data was used. Historical deployment/release records follow and are not current publication claims.

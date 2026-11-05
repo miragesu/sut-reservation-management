@@ -37,6 +37,15 @@ jobs:
         run: |
           docker tag mirage315/sut-reservation-management:ci-${{ github.sha }} sut-console001-c:local
           SUT_CONSOLE_BROWSER=1 python scripts/console_mock_smoke.py
+      - name: Verify Console image-only deployment and compatible pre-upgrade rollback
+        run: |
+          docker tag mirage315/sut-reservation-management:ci-${{ github.sha }} sut-console001-e:local
+          git fetch --no-tags origin 00776f9b4b3bd4b7ee468899a9832b1036c1afd8
+          previous_context=$(mktemp -d)
+          git archive 00776f9b4b3bd4b7ee468899a9832b1036c1afd8 | tar -x -C "$previous_context"
+          docker build -t sut-console001-e:previous "$previous_context"
+          rm -rf "$previous_context"
+          python scripts/console_deployment_smoke.py
       - name: Validate operator image-only Compose without build or checkout
         env:
           SUT_SMOKE_IMAGE: mirage315/sut-reservation-management:ci-${{ github.sha }}

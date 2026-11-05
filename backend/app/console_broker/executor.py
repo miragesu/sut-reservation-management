@@ -102,6 +102,13 @@ class Executor:
                 ):
                     raise BrokerError("keyring_unavailable")
                 return {"protocol": "console-broker.v1", "sessions": len(self.sessions)}
+            if op == "verify_credential":
+                self.shape(args, {"envelope", "aad"}, {"envelope", "aad"})
+                value = dict(args["envelope"])
+                for key in ("ciphertext", "nonce", "wrapped_data_key", "wrap_nonce"):
+                    value[key] = base64.b64decode(value[key], validate=True)
+                self.cipher.decrypt(Envelope(**value), self.cipher.aad(*args["aad"]))
+                return {"verified": True}  # Never return decrypted credentials.
             if op == "probe_key":
                 self.shape(args, {"host", "port", "transport"}, {"host", "port", "transport"})
                 return await self.transport.probe(**args)
