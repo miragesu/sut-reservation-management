@@ -110,6 +110,13 @@ mechanisms, boundaries and unresolved gates. Read [architecture](architecture.md
 | X7 | HTTP/WS allowed only explicit opt-in with transport warning and LAN rules; approved HTTP clipboard fallback. HTTPS/WSS through trusted proxy, forged forwarded headers, no downgrade, CSP same-origin and secret nonlogging tested independently. |
 | X8 | Existing pytest/Ruff/three Chromium/container/image-only/backup-restore/installer regression gates remain green with Console off and synthetic Console on; approved Demo UI and reservation deadlines do not change. No real host/credentials in CI. |
 
+Additional retained cross-cutting cases from the earlier remote draft:
+
+| ID | Acceptance gate |
+| --- | --- |
+| X9 | No real Client/BMC CI, no automatic power/firmware actions, no remote tmux/minicom start/kill, no external PuTTY disruption or transcript; prove constrained Client helper, not an ordinary-attach assumption. |
+| X10 | Phase A scope remains Markdown-only, with no migration/code/Compose/secret/pilot/image change or auto-merge; design review does not imply implementation/production approval. |
+
 ## Fixtures and evidence design
 
 - Temporary migrated SQLite: two fictional Labs, each with multiple Clients; one

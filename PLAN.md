@@ -9,6 +9,9 @@ Version: 1.4-draft | Execution strategy: small verified pull requests
 ## Ground rules
 Read `SPEC.md`, `AGENTS.md`, `TASKS.md` before coding. Stop and ask when a requirement marked `DECISION` is unresolved and implementation would lock in a policy. Do not implement future enhancements. Each phase ends with passing tests, updated docs, and a runnable application. Create one PR per phase or independently testable slice. Never claim commands were executed unless they were run.
 
+## CONSOLE-001 independent phase plan (design proposal)
+Read [the complete authoritative baseline](docs/CONSOLE_001_REQUIREMENTS.md) and [Phase A package](docs/console001/README.md), not prior conversation context. Phase A is documentation only: architecture, schema/migration plan, security, contracts, explicit compatibility amendment and 83-decision acceptance matrix. It does not require changing the runnable app. Submit for review; do not auto-merge. Subsequent B foundations, C constrained SSH/WS, D terminal/admin UI and E hardening/authorized pilot have separate [milestones and production gates](docs/console001/acceptance.md). Resolve C1–C5 and relevant A assumptions (prior D1/H mappings retained) as recorded in [compatibility](docs/console001/compatibility.md); never silently substitute a Lab CIDR allowlist, admin-only host trust, HTTPS-only deployment, writer lock or tmux lifecycle management for the confirmed policies. Existing coordination phases below remain unchanged.
+
 ## Phase 0 — Requirement freeze & decisions
 **Goal:** turn proposed policy into confirmed business rules.
 - Review and resolve the eight open decisions in `SPEC.md` §11.

@@ -146,7 +146,7 @@ Do not quietly implement RFC1918-only or permit all public targets as 'confirmed
 
 ## tmux and remote privilege limits
 
-UART executor may only perform exact existing-session lookup and attachment via a
+UART executor may only perform exact existing-session lookup and attachment **without starting a missing server** via a
 reviewed constrained helper; no new-session, kill-session/server, minicom, login
 shell, SSH exec passthrough or socket path chosen by RD. Quote fixed argv safely
 for SSH's string exec boundary; exact tmux target (`=name`) avoids prefix matching.
@@ -201,3 +201,19 @@ insecure-browser flag or read clipboard on load. Multiline CR/LF/control handlin
 is covered in [contracts](contracts.md). Client output cannot trigger OSC52 writes,
 automatic clipboard reads or arbitrary hyperlinks/downloads. No browser storage
 or server transcript; a tab's RAM buffer survives reconnect only, capped10k lines.
+
+## Technical references retained for implementation review
+
+These support engineering choices, not the owner policy. The prior remote draft
+recorded reading them; this consolidation does not claim new external validation
+of a particular library/version or remote helper:
+
+- [AsyncSSH API](https://asyncssh.readthedocs.io/en/latest/api.html): verify key-check/userauth ordering and denied forwarding/subsystems.
+- [tmux manual](https://man.openbsd.org/tmux): prove exact existing target, no-start-server and isolation on the supported version; ordinary attach is not confinement.
+- [cryptography AEAD API](https://cryptography.io/en/stable/hazmat/primitives/aead/): nonce/AAD correctness and migration of envelopes.
+- [xterm.js security guide](https://xtermjs.org/docs/guides/security/): hostile output, addons, clipboard and renderer boundaries.
+
+A separately committed existing-Client trust replacement is not rolled back just
+because a later credential validation fails. UI distinguishes that deliberate
+trust operation from the combined new-Client initial trust/auth/create transaction,
+which must leave no orphan Client/credential/trust record on failure.

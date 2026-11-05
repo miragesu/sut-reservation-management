@@ -27,3 +27,8 @@ Phase B is ready for **reviewed, mock-only foundation work after approval of thi
 scope amendment**, not live connectivity. C1/C2/C3 in the review register block
 live connector approval. No production readiness is asserted by documentation or
 by the existing application's historical passing tests.
+
+The pre-existing remote draft `06d23f8` is preserved as a merge parent. Its schema/
+validation entry paths redirect to the consolidated package; alternatives and
+unresolved differences are recorded in the [reconciliation register](compatibility.md#reconciliation-of-the-existing-remote-draft).
+No owner baseline or remote commit was overwritten.

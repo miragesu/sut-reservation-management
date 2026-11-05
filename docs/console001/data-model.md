@@ -41,6 +41,9 @@ Never expose that digest in UI/API/audit. User/SUT attribution remains retained.
   `sqlite_where=active_slot=1` enforces one **active** UART binding, not uniqueness
   of names globally. `active_slot = configured AND NOT sut.is_archived AND
   client.enabled`; derived field is never accepted from an API payload.
+- The alternative prior-draft interpretation retains a disabled Client binding's
+  unique slot; see A14. This materialized-slot recommendation is not settled owner
+  policy. Phase B must resolve it before implementing triggers/reenable behavior.
 - SQLite triggers for new mapping insert/update and Client Lab updates enforce
   `Client.lab_id == SUT.lab_id`. SUT Lab is already immutable via service; defensive
   trigger rejects a raw incompatible move. This avoids rebuilding existing SUTs
@@ -101,6 +104,10 @@ actual Alembic head before implementation and never silently branch migrations.
    reviewed reversal. Normal rollback uses matching pre-upgrade backup + prior
    image + independent keyring, never overlay live SQLite/WAL or old image on a
    newer schema. New writes require reconciliation before rollback acceptance.
+
+BMC target IPv4 is not globally unique across SUTs: the owner imposes global IPv4
+uniqueness on Clients only. Multiple SUT endpoint records may intentionally point
+to the same BMC; warn safely if useful, do not invent a uniqueness rejection.
 
 ## Backup, retention and recovery
 

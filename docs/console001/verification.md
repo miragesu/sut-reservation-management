@@ -25,7 +25,7 @@ Executed with a temporary Python standard-library checker outside the repository
 | --- | --- |
 | Q1–Q83 matrix | PASS:83 unique rows, IDs1–83 exactly once, every decision title exactly matches owner baseline. |
 | Baseline immutability | PASS: embedded baseline byte SHA256 matches; `git diff --exit-code origin/main -- docs/CONSOLE_001_REQUIREMENTS.md` empty. |
-| Markdown references | PASS:13 files,52 local file links resolve, fenced code balanced. |
+| Markdown references | PASS:15 files,64 local file links resolve, fenced code balanced. |
 | Contract examples | PASS: both JSON code blocks parse. This is syntax validation, not implemented API/schema validation. |
 | Change boundary | PASS: only Markdown files changed/added; no runtime/dependency/Compose/migration/workflow file changes. |
 | Obvious private-key blocks / NUL | PASS: none in changed/new documents; this narrow check is not a claim of a full repository-history secret audit. |
@@ -43,10 +43,18 @@ feature completion, owner design approval or production readiness.
 
 [Compatibility register](compatibility.md) names legacy no-SSH/no-WS vs newly
 approved scope, and unresolved C1–C5 (tmux confinement/topology, public IPv4 wording,
-OOB key-trust process, plaintext transport acceptance). Assumptions A1–A12 remain
+OOB key-trust process, plaintext transport acceptance). Assumptions A1–A15 remain
 proposals, including unconfirmed Q84 UX. Phase B mock-only foundations may begin
 only after design/scope review; live connector/pilot gates remain blocked.
 
 ## Delivery
 
-PR creation and push outcome will be recorded after validation. No auto-merge.
+Initial documentation commit `8f6cabb` could not push because remote branch already
+contained `06d23f8` on the same base (`fetch first`, non-fast-forward rejection).
+Read that draft, normally merged its history, retained schema.md/validation.md
+entry paths, and explicitly recorded proposal differences (A13–A15 and prior H/D
+mapping) rather than force-push or silently choose an engineering policy.
+The consolidated validator passed83 exact Q rows,10 cross-cutting rows,15 Markdown
+files,64 local file links,2 JSON examples, unchanged baseline, no conflict markers
+and whitespace checks. Existing remote validation claims are historical, not new
+runtime tests. Push/PR outcome follows below; no auto-merge.

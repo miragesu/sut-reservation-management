@@ -118,7 +118,7 @@ No physical exclusive-access guarantee.
    Fixed10s establish timeout covers TCP/KEX/auth; human prompts run outside that
    deadline and a fresh handshake revalidates the approved key afterward.
 4. UART uses the Client's fixed encrypted identity, constrained existing-session
-   check/attach only. Never create/kill tmux/minicom or fall back to a Client shell.
+   check/attach only, with no-start-server behavior. Never create/kill tmux/minicom or fall back to a Client shell.
    Read [tmux confinement gate C1](compatibility.md) before implementing this path.
    Direct BMC uses supplied per-attempt username/password and fixed22, independent
    PTY/shell; no gateway-supplied diagnostic/firmware/power command.

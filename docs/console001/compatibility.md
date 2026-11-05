@@ -31,7 +31,7 @@ not actually added/enabled.
 | ID | Conflict / missing proof | Required resolution and blocking scope |
 | --- | --- | --- |
 | C1 | Existing tmux attachment and native controls/shared writes vs requirement to prevent Client shell pivot, cross-SUT session control or create/kill tmux; usual writable tmux socket/prefix can do those things. Existing daemon-owned tmux/minicom must not be modified. | Prove a constrained account/helper and supported tmux client isolation satisfy both, using an operator-supplied mock/representative topology. Do not assume a nonexistent flag or filter terminal commands as a security boundary. If impossible, owner/security must approve a specific scope change or topology; **blocks UART live connector/pilot**, not mock-only B. |
-| C2 | Q5 permits any syntactically valid BMC IPv4 without Lab allowlist, except sensitive non-BMC destinations; baseline§5 additionally says 'deny public/self-sensitive targets'. It is unclear whether all public unicast must be denied. | Review explicit interpretation: (a) public unicast denied as deployment policy without a per-Lab CIDR list, or (b) only public sensitive/non-BMC targets denied with residual risk accepted. Never silently choose either. Special/self/metadata denial is undisputed; disputed classes are not enabled pending resolution. **Blocks live address-policy acceptance in C/E**. |
+| C2 | Q5 permits any syntactically valid BMC IPv4 without Lab allowlist, except sensitive non-BMC destinations; baseline§5 additionally says 'deny public/self-sensitive targets'. It is unclear whether all public unicast must be denied. | Review explicit interpretation: (a) public unicast denied as deployment policy without a per-Lab CIDR list, or (b) only sensitive/non-BMC targets denied, with the phrase referring to public gateway exposure and residual address risk accepted. Never silently choose either. Special/self/metadata denial is undisputed; disputed classes are not enabled pending resolution. **Blocks live address-policy acceptance in C/E**. |
 | C3 | Fixed Client identity spanning many UART sessions requires attachment permission to existing tmux owner/socket. Helper installation and socket ACL/remote principal isolation are not specified. | Operator provides reviewed Client ownership/version/SSH forced-command/ACL contract without creating or killing sessions or modifying tmux/minicom settings. Verify no shell/forwarding or unrestricted socket path. Separate authorized infrastructure work, no production probe in A. **Blocks live UART testing/pilot**. |
 | C4 | HTTP/WS is owner-approved yet exposes reusable Client provisioning credential, BMC password, cookie and console data | No technical contradiction can make plaintext confidential. Operator acknowledgement, bind/firewall/egress and credential sensitivity review required for deployment. Do not reclassify HTTP as safe or require unapproved corporate DNS/certificate. **Blocks production enablement**, not offline design. |
 | C5 | RD can replace a shared Client host key and affect other users; OOB fingerprint source is unspecified | Document independent trusted fingerprint distribution and authorized RD training/incident path. Malicious trusted RD can still poison trust; audit is detection, not prevention. Owner/security must accept residual risk. **Blocks trust pilot acceptance**. |
@@ -56,11 +56,37 @@ an invitation to rewrite the83 decisions or make real network connections.
 | A11 | REST/frame/queue/paste/resize/scrollback byte limits as contracts; safe OSC/link behavior | Need Chromium and throughput testing; user-approved10k lines and14px/10–24 controls remain fixed. |
 | A12 | Extension API accepts an explicit later UTC expiry bounded by original24h; UI offers clearly labelled presets | Exact extension form not owner-decided; no silent clamping/renewal. |
 
+## Reconciliation of the existing remote draft
+
+Initial push was rejected non-fast-forward because `06d23f8` already contained a
+Phase A proposal on the same base. This branch normally merges that commit with
+`8f6cabb`; neither history is rewritten. The83 owner decisions remain unchanged.
+The following **engineering alternatives** were present in that draft and are
+preserved for explicit review rather than silently promoted to owner policy:
+
+| Prior item | Consolidated treatment |
+| --- | --- |
+| H1 helper confinement / no-start-server | C1/C3 retain and strengthen the proof gate. No control-mode adapter is assumed implemented or compliant by merely naming it. |
+| D1 public-target ambiguity | C2 retains both destination-class versus public-gateway-exposure interpretations. No live enablement pending resolution. |
+| H2 disabled Client retains binding's unique slot | **A14:** alternative to this package's proposed inactive slot while Client disabled. Q21 says disabled bindings free active slots; whether that includes Client disable must be explicitly settled before B schema/trigger semantics. Keep mappings/history in both cases, no silent stealing or revival. |
+| H3 unconfirmed early-revoke UX | A1 retains proposed confirmation only; Q84 is not owner-confirmed. |
+| H4 tmux max128 vs proposed64 | A2 retains both as compatibility choices; grammar/safe exact encoding needs review before validator/schema is frozen. No remote renaming. |
+| H5 broker same UID10001 vs proposed separate UID10002 | A3 retains same-image/private broker option and distinct-UID least-privilege recommendation for review; existing web UID10001 is fixed. Neither alternative changes deployment in A. |
+| H6 proof60s/lease1s and previous frame/resize/rate budgets | A5/A11 are proposals, not fixed owner values. Current contracts recommend proof120s/lease2s and smaller message budgets; benchmark/review before C. Exact login/grant expiry caps and immediate revocation fencing apply whichever values are chosen. |
+| H7 metadata retention | A10 retains no purge of business history; Console metadata/ciphertext disposal remains reviewable. |
+| H8 remote BMC shell privileges | **A13:** app supplies no power/firmware automation; full interactive SSH cannot enforce a universal typed-command/pivot ban. Review this interpretation before BMC live rollout; if owner expects command confinement, resolve design rather than claim enforcement. |
+| Earlier REST/WS routes/protocol and migration placeholder | **A15:** names were never implemented. Consolidated contracts use `sut-console.v1` and the resource paths in contracts.md; proposed migration console001_b01 remains unreserved. Prior `console.v1`/console001_foundation names are historical alternatives, not additional API aliases or two competing migrations. |
+
+The numerical/protocol recommendations are consolidated to avoid two active
+specifications. A13–A15, as with A1–A12, remain proposals requiring review. Existing
+root-document change-control guidance is retained. Old schema.md/validation.md
+links remain valid entry points to the consolidated documents.
+
 ## Phase B readiness
 
 Ready to review additive schema/services contracts and mock-only security invariants.
 Before starting B: approve this scope amendment, choose crypto/library/schema details
-(A3/A4/A8), confirm no hidden current-head migration conflict, and commit fixture
+(A2/A3/A4/A8/A14), confirm no hidden current-head migration conflict, and commit fixture
 plans. C1/C2/C3/C5 are tracked blockers before live connector/trust rollout; they do
 not justify missing foundational tests or declaring production-ready. Phase A
 review is not owner acceptance of assumptions merely because they are documented.
