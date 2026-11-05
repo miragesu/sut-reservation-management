@@ -20,7 +20,7 @@ classifier. A compromised host/root defeats local process separation and key fil
 | Cross-site WS hijack | Exact normalized Origin allowlist, active server session, POST-CSRF-issued one-use ticket, first-frame redemption, no wildcard/null Origin. SameSite alone is insufficient. | C/D forged-origin/replay tests |
 | RD chooses SSH service rather than BMC | RFC1918-only direct BMC IPv4, strict port 22, special/self-target denial, broker egress firewall, pinned key and OOB identity; no Lab-specific CIDR allowlist. Any reachable permitted private SSH host can still be misrepresented as BMC. C2 owner interpretation is resolved, but implementation/egress evidence remains outstanding. | C/E egress approval |
 | RD poisons Client host trust | Deliberate OOB comparison, old/new SHA256 fingerprint and impact warning, CAS/versioned audit and scoped live revocation. RD can authorize an attacker's key if dishonest/mistaken; no cryptographic OOB guarantee. | C trust tests / owner residual-risk review |
-| tmux prefix/socket/shell escape | Restricted SSH account/helper and dedicated socket ACL; fixed command builder, no generic Client shell/forwarding. Normal writable tmux attach alone does NOT prove confinement. | C1 attach-only sandbox proof |
+| Authorized Client shell/tmux native controls | **Owner-approved change 2026-11-05:** UART users may detach to normal Console Client Linux shell and use native tmux commands/windows allowed by the fixed SSH account. A shared account carries access to other files/sessions reachable under its OS permissions; Gateway cannot enforce per-SUT shell command confinement or reliably audit individual commands (Q10). Keep fixed destination/identity, host-key verification, authorization/revocation, no Gateway SSH forwarding and no automatic tmux process creation/kill. | C3 environment privilege review + explicit pilot risk signoff |
 | Stale link writes after remap/revoke | Durable epochs/outbox, precommit barrier, per-input policy/epoch check and short broker lease. Never claim already-delivered bytes can be recalled. | C deterministic race/crash tests |
 | Exfiltration via remote output | xterm text/ANSI only; disable OSC52 clipboard writes, file/download/link execution handlers; sanitize participants/error HTML. Terminal output itself can contain sensitive remote data and remains in browser RAM. | D hostile ANSI fixtures |
 | Credential/terminal recording by infrastructure | Body/frame/SSH debug logging off; allowlisted errors; no APM replay/body capture, core dumps, shell history for gateway commands, temp key files or automatic downloads. Browser memory and remote-side logs remain outside erasure guarantees. | C/D canary audit tests |
@@ -141,31 +141,18 @@ them. A proxy web app cannot securely infer that every remaining IPv4 SSH server
 really a BMC. Without a Lab allowlist the residual pivot/scanning risk is explicit.
 **C2 resolved 2026-11-05 by explicit owner direction:** BMC IPv4 must be RFC1918 private, without a Lab-specific CIDR allowlist. Public/non-RFC1918 BMC addresses must be rejected on Save and on Connect. This is a specific amendment to Q5, not an inference from earlier ambiguous text. Continue to reject sensitive/self/metadata and other unsafe targets even if they fall inside RFC1918. C2 address-policy acceptance still requires implementation/security test evidence before live enablement.
 
-## tmux and remote privilege limits
+## tmux, interactive Client shell and remote privilege scope (owner revision 2026-11-05)
 
-UART executor may only perform exact existing-session lookup and attachment **without starting a missing server** via a
-reviewed constrained helper; no new-session, kill-session/server, minicom, login
-shell, SSH exec passthrough or socket path chosen by RD. Quote fixed argv safely
-for SSH's string exec boundary; exact tmux target (`=name`) avoids prefix matching.
-Backend tmux name grammar excludes whitespace, dots/colons, shell metacharacters,
-newlines and leading options; limits are engineering A2 pending compatibility review.
+The owner expressly allows RD to enter the configured Console Client's ordinary Linux shell by detaching from its pre-existing tmux Session. The initial Gateway connection must open a true interactive SSH PTY under the configured fixed Client account and **automatically attach only the named existing tmux session**; an absent session fails safely and may not trigger creation of tmux or minicom by the Gateway. After user-initiated Detach, the SSH session must remain in the account's shell. Users may use native tmux keybindings, switch/create/kill other sessions/windows and run shell commands as permitted by Linux permissions. Thus a `ForceCommand` wrapper or writable tmux attachment is **not** claimed to confine a user to one SUT; C1's earlier containment objective is explicitly withdrawn. Ensure safe literal target selection/quoting to prevent *unrequested Gateway-side* command injection; do not treat this as a substitute for remote OS authorization.
 
-Constrained account has no port forwarding/agent/X11 and no ordinary SSH shell.
-Existing tmux/minicom ownership/settings must not be modified by gateway. Merely
-allowing tmux attach with a writable server socket is insufficient: prefix-command,
-window/session switching, run-shell or remote pane shell escape can grant Client
-host access or affect another SUT. No unsafe promise that client-side key filtering
-is a boundary. C1 requires demonstrated remote confinement that preserves existing
-sessions, native size behavior, legitimate ANSI keys and shared writes. If that
-cannot be achieved without prohibited tmux changes, stop live rollout and obtain
-owner/security resolution; don't silently create per-SUT processes/servers.
+A named fixed Linux account may already have broad permissions on a shared Client. The operator must review and accept the privilege scope, Linux groups, socket ownership, available files and tmux sessions before live deployment. Since multiple RD share that identity, remote OS logs cannot reliably attribute commands to individual RD; Gateway records only user/session timestamps and target (Q10 prohibits transcripts). Prevent arbitrary browser-selected SSH destination/identity and Gateway-offered generic exec, port-forwarding, agent/X11 forwarding and credential export; but do not block authorized user's normal shell commands. Web Session revocation closes only Gateway-controlled attachment, not processes users may have started in the remote shell. No automatic gateway create/kill/reconfiguration of existing tmux/minicom. Existing external PuTTY sessions must not be intentionally disrupted.
 
 An authorized **direct BMC shell**, or a shell already running in a UART pane, can
 execute commands with that remote account's privilege. The gateway does not provide
 power/firmware buttons or automated commands and blocks its own forwarding API;
 it cannot truthfully prevent every pivot/power command typed into an authorized
 shell. Remote least privilege/network isolation and owner operational rules remain
-necessary. This boundary is distinct from securing the Client attach adapter.
+necessary. This boundary is distinct from enforcing the fixed Console Client SSH account's permissible OS privileges.
 
 ## Approved HTTP/WS intranet exception
 
