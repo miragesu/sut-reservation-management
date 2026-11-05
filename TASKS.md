@@ -344,7 +344,7 @@ Delivery and precise verification evidence: docs/implementation-status.md, DEP-0
 - [x] Distinguish approved feature decisions from proposed engineering defaults, including unconfirmed Q84 UX.
 - [x] Identify legacy MVP conflicts and initial gates C1–C5. Owner later resolved C2 as RFC1918 private-only and C1 by explicitly allowing fixed Client account shell access after tmux Detach; C3 Client socket/account topology, C4 HTTP exposure and C5 host-key OOB review remain pilot gates.
 - [x] Original Phase A static documentation checks reported PASS:83 decision rows, baseline immutability,66 links,2 JSON examples and Markdown-only diff. Later approved C1/C2 owner amendments intentionally changed baseline; follow-up GitHub document review preserved Q1–Q83. Full original checker not rerun for those amendments.
-- [ ] Owner review/approval of Phase A scope amendment, design and engineering assumptions.
+- [x] Phase A documentation/scope amendment reviewed and **closed as design milestone** at owner direction (2026-11-05). Detailed A1–A15 engineering assumptions remain provisional pending implementation reviews. See [closure](docs/console001/phase-a-closure.md).
 - [ ] Phase B mock-only foundations authorized and implemented with tests.
 - [ ] C3/C4/C5 live topology and residual-risk gates resolved; C1/C2 now owner scope-resolved but require implementation/behavior tests. Phase C connector/WS and revocation tests not started.
 - [ ] Phase D terminal UI/Chromium acceptance and Phase E deployment/recovery/rollout approval.
@@ -354,7 +354,7 @@ connectivity or image publication. See docs/console001/verification.md.
 
 - [x] Phase A branch pushed after normal merge preserving existing remote draft; no force-push.
 - [x] PR creation attempted; exact GraphQL Forbidden and reviewable PR text recorded.
-- [ ] PR creation succeeds / owner review: this attempt was blocked; no auto-merge. See docs/console001/verification.md.
+- [x] Phase A PR #13 and C3 research PR #14 created via GitHub connector after Codex GraphQL Forbidden. PR #14 merged into Phase A, with Phase A documentation closure recorded. Historical PR creation failure retained in verification.md.
 
 
 ## CONSOLE-001 Phase A.2 — C3 interactive SSH/tmux research
@@ -366,4 +366,4 @@ connectivity or image publication. See docs/console001/verification.md.
 - [ ] Real Browser/WS/Broker, policy/read-only/quota/revocation/credential lifecycle acceptance (not implemented by research).
 
 No application behavior, production resources, deployment or images changed;
-Phase B is not started and Phase A PR approval/merge is not implied.
+Phase B is not started. C3 research is integrated; Phase A completion is defined by the design closure document, not by production readiness.
