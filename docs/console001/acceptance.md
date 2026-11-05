@@ -177,3 +177,11 @@ or entire Console feature.
    reverting schema/image, restore matching pre-upgrade DB/config/keyring into an
    empty directory and use compatible image. No blind downgrade or overlaid WAL.
    Never destroy an independent key needed for retained backups.
+
+## Separately executed Phase A.2 research
+
+The later [C3 SSH/tmux report](c3-interactive-tmux-validation.md) records30 passing
+mock observations under the approved interactive-shell amendment. This is a subset
+of transport/lifecycle evidence only, not completion of the planned Q-matrix,
+Browser/WS, policy, encrypted credentials, revocation or production gates above.
+C3 actual-host approval and Phase B–E remain open.

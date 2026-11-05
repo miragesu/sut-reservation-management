@@ -38,3 +38,13 @@ unresolved differences are recorded in the [reconciliation register](compatibili
 No owner baseline or remote commit was overwritten.
 
 Reviewable delivery text: [PR body](pr.md).
+
+## Phase A.2 supplemental mock research (2026-11-05)
+
+[C3 interactive SSH/tmux validation](c3-interactive-tmux-validation.md) reports
+**FEASIBLE WITH PREREQUISITES** on an isolated same-owner Linux mock: exact existing
+attach, Detach into the ordinary shell, concurrent writers and process-preserving
+disconnect/reconnect. The research-only harness is separate from application code;
+it does not implement the Console feature, approve production C3, or authorize B.
+The original Phase A Markdown-only/no-SSH statements describe its design delivery,
+not this separately requested disposable experiment. C1/C2 remain scope-resolved.

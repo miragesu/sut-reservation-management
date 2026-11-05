@@ -355,3 +355,15 @@ connectivity or image publication. See docs/console001/verification.md.
 - [x] Phase A branch pushed after normal merge preserving existing remote draft; no force-push.
 - [x] PR creation attempted; exact GraphQL Forbidden and reviewable PR text recorded.
 - [ ] PR creation succeeds / owner review: this attempt was blocked; no auto-merge. See docs/console001/verification.md.
+
+
+## CONSOLE-001 Phase A.2 — C3 interactive SSH/tmux research
+
+- [x] Read latest pushed Phase A baseline144623a and complete owner requirements, including approved2026-11-05 interactive Client shell amendment; C1/C2 not reopened.
+- [x] Run isolated OpenSSH/tmux fixture:30/30 expected observations PASS (including attach-only negative control), with exact attach, Detach-to-shell, PTY resize, two writers, wrong key/pin denial, transport-loss/reconnect/no replay and original process preservation.
+- [x] Commit reproducible research-only harness, sanitized status evidence and [C3 report](docs/console001/c3-interactive-tmux-validation.md); classify FEASIBLE WITH PREREQUISITES.
+- [ ] Production C3 socket/account/SSH policy and privilege review; independently authorized pilot, C4/C5 approval.
+- [ ] Real Browser/WS/Broker, policy/read-only/quota/revocation/credential lifecycle acceptance (not implemented by research).
+
+No application behavior, production resources, deployment or images changed;
+Phase B is not started and Phase A PR approval/merge is not implied.

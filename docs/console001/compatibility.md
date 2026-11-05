@@ -82,6 +82,16 @@ specifications. A13–A15, as with A1–A12, remain proposals requiring review. 
 root-document change-control guidance is retained. Old schema.md/validation.md
 links remain valid entry points to the consolidated documents.
 
+## C3 supplemental evidence (Phase A.2, 2026-11-05)
+
+[Actual isolated SSH/tmux tests](c3-interactive-tmux-validation.md) demonstrate
+**FEASIBLE WITH PREREQUISITES** for a same-owner fixed account: existing-only attach,
+interactive Detach-to-shell, two writers, resize and process-preserving teardown.
+This is technical mock evidence, not resolution of the actual Client ownership,
+SSH policy, credential lifecycle or pilot-risk gate. Cross-owner production socket
+access remains unverified. C1 confinement stays superseded, C2 stays resolved, and
+Phase B is not started or authorized by this experiment.
+
 ## Phase B readiness
 
 Ready to review additive schema/services contracts and mock-only security invariants.
