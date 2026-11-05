@@ -24,7 +24,7 @@ Executed with a temporary Python standard-library checker outside the repository
 | Check | Actual result |
 | --- | --- |
 | Q1–Q83 matrix | PASS:83 unique rows, IDs1–83 exactly once, every decision title exactly matches owner baseline. |
-| Baseline immutability | PASS: embedded baseline byte SHA256 matches; `git diff --exit-code origin/main -- docs/CONSOLE_001_REQUIREMENTS.md` empty. |
+| Baseline immutability (original Phase A check) | HISTORICAL PASS for the initial PR; **superseded by explicit owner C2 amendment 2026-11-05**. Baseline Q5 and cross-cutting safeguards now change in this PR branch; run fresh Q1–Q83 coverage/links/diff checks before merging. |
 | Markdown references | PASS:16 files,66 local file links resolve, fenced code balanced. |
 | Contract examples | PASS: both JSON code blocks parse. This is syntax validation, not implemented API/schema validation. |
 | Change boundary | PASS: only Markdown files changed/added; no runtime/dependency/Compose/migration/workflow file changes. |
@@ -42,8 +42,7 @@ feature completion, owner design approval or production readiness.
 ## Review findings
 
 [Compatibility register](compatibility.md) names legacy no-SSH/no-WS vs newly
-approved scope, and unresolved C1–C5 (tmux confinement/topology, public IPv4 wording,
-OOB key-trust process, plaintext transport acceptance). Assumptions A1–A15 remain
+approved scope, and unresolved C1/C3/C4/C5 (tmux confinement/topology, OOB key-trust process, plaintext transport acceptance). **C2 public IPv4 wording resolved by explicit 2026-11-05 owner clarification**, not yet tested in executable code. Assumptions A1–A15 remain
 proposals, including unconfirmed Q84 UX. Phase B mock-only foundations may begin
 only after design/scope review; live connector/pilot gates remain blocked.
 
