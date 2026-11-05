@@ -4,6 +4,15 @@
 > Day 1/2/3 evidence: `docs/implementation-status.md`, `docs/day2-verification.md` and `docs/day3-verification.md`. Checked deployment items refer to local Compose and source-free pinned GitHub Remote Build on the cloud daemon, not the actual LAN host or a newly provisioned production OS. External/owner gates remain unchecked; local automated/browser/deployment evidence is distinguished in the status document.
 
 ## Phase 0 — Decision gate
+The independent CONSOLE-001 feature is tracked in the [Phase A package](docs/console001/README.md); it does not change historical MVP checkmarks below.
+
+- [ ] CONSOLE-001 Phase A design approved by owner (documentation completion is not approval).
+- [ ] Resolve public-target wording D1 and review foundational H2/H4/H5 assumptions.
+- [ ] Phase B foundations implemented and isolated preservation/security tests pass.
+- [ ] Phase C helper confinement, SSH/WS/revocation and mock integration gates pass; D1/H1/H8 resolved.
+- [ ] Phase D terminal/admin UX and Chromium matrix pass.
+- [ ] Phase E hardening, operator HTTP acknowledgement, recovery and separately authorized production pilot accepted.
+
 - [x] Confirm BR-008: Lab Admin manages both labs, creates/deletes labs and SUTs, force-releases records and clears queues; user management remains Super Admin only
 - [x] Confirm FIFO queue temporary-use rule before an upcoming reservation
 - [x] Confirm manual reservation claim and 15-minute no-show expiration
@@ -326,3 +335,35 @@ Delivery and precise verification evidence: docs/implementation-status.md, DEP-0
 - [ ] DEP-009 PR created: no PR exists; pushed branch and docs/dep009-pr.md retained for manual creation. No merge performed.
 - [ ] Separately approved new image release (tentative1.0.1), hosted promotion/stable environment configuration and production LAN/boot/storage acceptance.
 - [x] Hosted implementation CI at `ebe6efb` PASS: run38775191083,6m11s, including all native browsers, default/low-mode Docker smoke and installer lifecycle.
+
+
+## CONSOLE-001 — Phase A architecture/security design
+
+- [x] Read complete owner Q1–Q83 baseline, Compose policies, HTTP exception and current architecture; owner ledger unchanged.
+- [x] Draft separate architecture, SQLAlchemy/Alembic preservation plan, security model, interface contracts, compatibility amendment and83-row acceptance matrix.
+- [x] Distinguish approved feature decisions from proposed engineering defaults, including unconfirmed Q84 UX.
+- [x] Identify legacy MVP conflicts and initial gates C1–C5. Owner later resolved C2 as RFC1918 private-only and C1 by explicitly allowing fixed Client account shell access after tmux Detach; C3 Client socket/account topology, C4 HTTP exposure and C5 host-key OOB review remain pilot gates.
+- [x] Original Phase A static documentation checks reported PASS:83 decision rows, baseline immutability,66 links,2 JSON examples and Markdown-only diff. Later approved C1/C2 owner amendments intentionally changed baseline; follow-up GitHub document review preserved Q1–Q83. Full original checker not rerun for those amendments.
+- [x] Phase A documentation/scope amendment reviewed and **closed as design milestone** at owner direction (2026-11-05). Detailed A1–A15 engineering assumptions remain provisional pending implementation reviews. See [closure](docs/console001/phase-a-closure.md).
+- [ ] Phase B mock-only foundations authorized and implemented with tests.
+- [ ] C3/C4/C5 live topology and residual-risk gates resolved; C1/C2 now owner scope-resolved but require implementation/behavior tests. Phase C connector/WS and revocation tests not started.
+- [ ] Phase D terminal UI/Chromium acceptance and Phase E deployment/recovery/rollout approval.
+
+These design artifacts are not implementation, migration, SSH validation, production
+connectivity or image publication. See docs/console001/verification.md.
+
+- [x] Phase A branch pushed after normal merge preserving existing remote draft; no force-push.
+- [x] PR creation attempted; exact GraphQL Forbidden and reviewable PR text recorded.
+- [x] Phase A PR #13 and C3 research PR #14 created via GitHub connector after Codex GraphQL Forbidden. PR #14 merged into Phase A, with Phase A documentation closure recorded. Historical PR creation failure retained in verification.md.
+
+
+## CONSOLE-001 Phase A.2 — C3 interactive SSH/tmux research
+
+- [x] Read latest pushed Phase A baseline144623a and complete owner requirements, including approved2026-11-05 interactive Client shell amendment; C1/C2 not reopened.
+- [x] Run isolated OpenSSH/tmux fixture:30/30 expected observations PASS (including attach-only negative control), with exact attach, Detach-to-shell, PTY resize, two writers, wrong key/pin denial, transport-loss/reconnect/no replay and original process preservation.
+- [x] Commit reproducible research-only harness, sanitized status evidence and [C3 report](docs/console001/c3-interactive-tmux-validation.md); classify FEASIBLE WITH PREREQUISITES.
+- [ ] Production C3 socket/account/SSH policy and privilege review; independently authorized pilot, C4/C5 approval.
+- [ ] Real Browser/WS/Broker, policy/read-only/quota/revocation/credential lifecycle acceptance (not implemented by research).
+
+No application behavior, production resources, deployment or images changed;
+Phase B is not started. C3 research is integrated; Phase A completion is defined by the design closure document, not by production readiness.

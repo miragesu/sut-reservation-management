@@ -278,3 +278,37 @@ assuming a later documentation commit's CI result.
 
 ## Isolated Demo automatic-start update — 2026-10-16
 Migration c2026101601 cold-backed-up and applied only to the synthetic Demo SQLite database. Manual attendance removed, readiness/deadline persisted, Start using labels and reservation states updated. 60 selected tests pass, including updated expiry/concurrency boundaries, auth, accounts, inventory, seven new start-window cases, calendar layout and notification translation. Chromium tests verify two-account handoff and real background No show capped at booking end. Evidence is in demo-verification.md and demo-integration.md. Full historical suite not rerun; superseded manual-attendance tests outside this selection may need revision. No production data/server or published release changed.
+
+
+## CONSOLE-001 Phase A — design-only proposal
+
+New owner-confirmed requirements are in [CONSOLE_001_REQUIREMENTS.md](CONSOLE_001_REQUIREMENTS.md).
+[Phase A package](console001/README.md) covers architecture, schema/migration plan,
+credentials/key rotation/recovery, SSH trust, three policies and grants, concurrent
+revocation/quota, HTTP/WS exception, contracts and full Q1–Q83/B–E acceptance.
+Feature implementation remains **NOT STARTED**. Scope amendment/design assumptions
+await owner review; live blockers C1–C5 are explicit. No live SSH, DB migration,
+terminal UI, production deployment/secret change or Docker publication occurred.
+Only documentation checks in [verification](console001/verification.md) may be
+reported passing for Phase A; earlier MVP test results do not validate Console.
+
+
+## CONSOLE-001 Phase A.2 — disposable interactive SSH/tmux research
+
+Owner2026-11-05 amendments resolve C1 by accepting the fixed Client account
+interactive shell and C2 by RFC1918-only BMC IPv4. The preceding Phase A paragraph
+describes historical documentation evidence, not the updated decision status.
+[C3 validation](console001/c3-interactive-tmux-validation.md) on base144623a reports
+**FEASIBLE WITH PREREQUISITES**:30/30 expected isolated SSH/tmux observations pass,
+including existing-only exact attach, ordinary shell after Detach, native controls,
+PTY resize, shared writers and process-preserving disconnect/reconnect without input
+replay. A committed harness and sanitized JSONL make that subset reproducible.
+Production C3 topology/privilege approval, C4/C5 and all real Gateway/browser/Broker/
+credential/revocation acceptance remain open. No runtime implementation or Phase B
+started; no production host, SQLite, credentials, deployment or Docker publication
+was touched.
+
+## CONSOLE-001 Phase A closure (2026-11-05)
+
+The owner requested completing the Phase A design milestone. [Closure decision](console001/phase-a-closure.md) records the scope and independent C3/C4/C5 production gates; engineering assumptions A1–A15 remain provisional. C3 PR #14 is integrated. This does not authorize Phase B, real SSH, changing any Client, publishing a Console Docker image or production rollout. Full application and browser regression gates were not rerun for this
+research-only change.

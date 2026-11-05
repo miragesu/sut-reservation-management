@@ -1,8 +1,12 @@
+> **CONSOLE-001 Phase A scope amendment — proposed for review:** the owner-confirmed [Console requirements](docs/CONSOLE_001_REQUIREMENTS.md) authorize a new independently gated debug Console feature, including SSH/WS and the explicit HTTP exception. Historical coordination-only/no-SSH/no-WS clauses continue to govern the existing MVP; they do not silently erase this new scope or authorize power/firmware automation. See [design and conflict register](docs/console001/README.md). This PR changes documentation only; design assumptions, schema and future implementation still require review. No Console runtime capability or production approval is implied.
+
 > **Effective owner-confirmed update (2026-10-16):** the approved Demo integration supersedes earlier manual Check in / reservation no-show timing and Dashboard filtering requirements in this document. Start using is explicit; availability notification starts a persisted 15-minute window capped at booking end; waiting for release does not consume it. My SUTs is own-only, Calendar is the shared timeline, and navigation/design follow `docs/demo-integration.md`. Earlier conflicting descriptions are historical; use that document and the updated tests for current acceptance. Production deployment constraints remain unchanged.
 
 # SUT Reservation & Queue Management System — Product Specification
 
 Version: 1.5-draft | Scope: MVP | Source: user-provided v1.0 requirements
+
+> CONSOLE-001 scope addition is owner-approved separately in [the complete Q1–Q83 baseline](docs/CONSOLE_001_REQUIREMENTS.md). [Phase A design](docs/console001/README.md) is proposed and awaits review; implementation has not started. [Compatibility amendment](docs/console001/compatibility.md) records conflicts with this document's coordination-only/SSH/WebSocket restrictions instead of silently overriding them. Console authorization/revocation applies only to gateway-owned attachments; existing scheduling/usage and physical-access guarantees remain unchanged. Design approval and later production authorization are separate gates.
 
 > **Status: review required before implementation.** Items tagged `DECISION` below are proposed defaults, not confirmed business requirements. Do not silently reinterpret them.
 
