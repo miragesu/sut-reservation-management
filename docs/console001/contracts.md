@@ -1,3 +1,5 @@
+> **Phase D review:** terminal/admin implementation and mock acceptance are recorded in [implementation](phase-d-implementation.md) and [verification](phase-d-verification.md). Earlier phase restrictions and planned contracts below are historical; actual Phase B/C routes remain authoritative. No production or Phase E approval is implied.
+
 > **Phase C executable subset:** see [current DTOs/routes and deviations](phase-c-implementation.md#gateway-contracts) and [verification](phase-c-verification.md). Proposed descriptions below remain the historical design baseline; full terminal UI is Phase D.
 
 > **Phase B implementation note:** the [mock-only foundation report](phase-b-implementation.md) and [verification](phase-b-verification.md) record the actual implemented subset and provisional choices. The design/proposed assertions below remain the Phase A baseline; do not read “planned” as deployed or mark the full Q-matrix/terminal gates complete. Live validation/SSH/WS/Broker remain unavailable.

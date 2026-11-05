@@ -1,6 +1,7 @@
 {% extends 'base.html' %}{% block content %}<h1>{{ sut.name }}</h1>
 <p>{{ sut.lab_name }} · {{ sut.platform }} · {{ sut.owner_team }}</p>
 <p>{{ sut.description }}</p>
+{% if console_enabled %}<div class="d-flex gap-2 mb-3"><a class="btn btn-primary" href="/suts/{{ sut.id }}/console" target="_blank" rel="noopener noreferrer">Open Remote Console</a><a class="btn btn-outline-primary" href="/suts/{{ sut.id }}/connections">Edit Connection / History</a></div><p id="console-detail-summary" data-sut-id="{{ sut.id }}" role="status">Loading Console configuration…</p><script type="module" src="/static/console-detail.js"></script>{% endif %}
 <p>Lifecycle: {{ 'Archived' if sut.is_archived else 'Active inventory' }}</p>
 <p>BMC IP: {{ sut.bmc_ip or '—' }} · Host IP: {{ sut.host_ip or '—' }}</p>
 {% if user.role != 'user' %}<a href="/suts/{{ sut.id }}/edit" class="btn btn-outline-primary">Edit inventory</a>

@@ -38,6 +38,7 @@ def render(request, name, user=None, **context):
             "user": user,
             "csrf_token": csrf_token(request),
             "password_minimum": request.app.state.settings.password_minimum,
+            "console_enabled": request.app.state.settings.console_enabled,
             **context,
         },
     )

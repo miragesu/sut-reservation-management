@@ -1,0 +1,133 @@
+.console-prewrap {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.console-dialog {
+  border: 1px solid #a3b1c5;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: min(640px, 94vw);
+  max-height: 90vh;
+}
+.console-dialog::backdrop {
+  background: rgb(9 20 35 / 65%);
+}
+.console-preview {
+  max-height: 220px;
+  overflow: auto;
+  background: #edf1f7;
+  color: #15263d;
+  padding: 1rem;
+}
+.console-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1rem 0;
+}
+.console-stage {
+  background: #000;
+  padding: 12px;
+  border-radius: 8px;
+}
+.console-stage:fullscreen {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+.console-stage:fullscreen #terminal {
+  flex: 1;
+  height: auto;
+}
+.console-stage:fullscreen .console-toolbar {
+  color: white;
+}
+.console-stage:fullscreen .console-toolbar button {
+  background: #fff;
+  color: #15263d;
+}
+#terminal {
+  height: 62vh;
+  min-height: 240px;
+  max-width: 100%;
+}
+.console-state {
+  font-weight: 700;
+}
+.console-wide {
+  max-width: 1600px;
+}
+.console-forms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 1.5rem;
+}
+.console-panel {
+  padding: 1.3rem;
+  border: 1px solid #c9d4e3;
+  border-radius: 10px;
+}
+.console-panel label {
+  display: block;
+  margin-top: 0.75rem;
+}
+.console-table {
+  overflow: auto;
+}
+.console-form-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+.console-feedback {
+  white-space: pre-wrap;
+  margin: 1rem 0;
+}
+.console-terminal-page main.container {
+  max-width: 1600px;
+}
+.console-search {
+  color: #15263d;
+  background: #f1f4fa;
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.console-search[hidden] {
+  display: none;
+}
+.console-warning {
+  border-left: 4px solid #b66b00;
+  background: #fff4dd;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+.console-bmc-form {
+  max-width: 520px;
+}
+.console-bmc-form[hidden] {
+  display: none;
+}
+.console-help {
+  font-size: 0.95rem;
+  color: #485c76;
+}
+.console-transport {
+  min-width: 140px;
+}
+.console-secret {
+  font-family: monospace;
+}
+.console-entry {
+  margin-top: 1rem;
+}
+#participants {
+  overflow-wrap: anywhere;
+}
+#console-feedback:empty {
+  display: none;
+}

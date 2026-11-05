@@ -1,3 +1,7 @@
+# Current review scope — CONSOLE-001 Phase D
+
+Terminal/admin UI implemented on merged Phase C main `0ad530a`, branch `feature/console001-phase-d`. **Local mock verification passed; production/Phase E not accepted.** Full results: [Phase D verification](console001/phase-d-verification.md). 346 pytest (including nine new UI cases), Ruff, three legacy Chromium suites, 34 new actual-SSH Console Chromium checkpoints, source/container Compose, image-only Compose and installer upgrade/recovery passed. No migration or production configuration change; Console remains default OFF. No Docker publication, company-host access or production data was used. Historical deployment/release records follow and are not current publication claims.
+
 # Current implementation status — DEP-007 / Issue #6
 
 **Registry release / production acceptance: NOT DONE.** Started from latest main `3b59e2e` on `feat/dep007-dockerhub-release`. Day 3/DEP-006 is now merged; its historical verification is retained below.

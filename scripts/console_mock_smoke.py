@@ -243,6 +243,10 @@ def main():
             end="",
         )
         print("PASS: SIGKILL/restart recovers owned stale socket; fresh explicit IPC/SSH succeeds")
+        if os.environ.get("SUT_CONSOLE_BROWSER") == "1":
+            from console_browser_smoke import run_browser_checks
+
+            run_browser_checks(docker, name, fixture, web_mounts, containers)
         sessions = docker(
             "exec",
             mock,
