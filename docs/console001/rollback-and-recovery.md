@@ -62,15 +62,25 @@ as command arguments, echo them or derive from SECRET_KEY. Back up old and stage
 keyring independently before changing anything.
 
 The image includes this offline CLI. Mount an existing stopped DB directory at
-/app/data and the staged keyring read-only at /run/custody/keyring. Use the trusted
+/app/data and the staged keyring read-only at /run/custody/keyring. **Also mount a
+separate backup-manager-controlled private directory read/write at /run/backup.**
+Prepare that host directory with mode0700 and access for the authorized maintenance
+identity. It must be outside the live SQLite and KEK directories, not an alias or
+subdirectory of either; do not mount it into Web or Broker. The CLI creates the
+new backup file with mode0600 and refuses an existing path. Use the trusted
 custodian identity with filesystem access (an explicitly authorized root one-shot
 may be needed; Web/Broker themselves remain non-root). No Docker socket/network:
 
 ```sh
-# Conceptual command after explicitly adding the two reviewed bind mounts:
-# docker run --rm --network none --user 0:0 <mounts> --entrypoint python "$IMAGE" \
+# DB_DIR, STAGED_KEYRING and BACKUP_DIR are separately reviewed host paths.
+# All three bind mounts are required; BACKUP_DIR is controlled by the backup manager.
+# docker run --rm --network none --user 0:0 \
+#   --mount "type=bind,src=$DB_DIR,dst=/app/data" \
+#   --mount "type=bind,src=$STAGED_KEYRING,dst=/run/custody/keyring,readonly" \
+#   --mount "type=bind,src=$BACKUP_DIR,dst=/run/backup" \
+#   --entrypoint python "$IMAGE" \
 #   -m app.console_keyring rewrap --database /app/data/sut.db \
-#   --keyring /run/custody/keyring --backup /app/data/pre-rewrap.db
+#   --keyring /run/custody/keyring --backup /run/backup/pre-rewrap.db
 ```
 
 `rewrap` refuses an existing backup path or active logical sessions, requires the

@@ -94,7 +94,11 @@ def test_offline_rewrap_recovery_and_wrong_keys(tmp_path):
     from alembic import command
     from alembic.config import Config
 
-    dbpath = tmp_path / "test.db"
+    data_dir = tmp_path / "data"
+    data_dir.mkdir(mode=0o700)
+    backup_dir = tmp_path / "private-backups"
+    backup_dir.mkdir(mode=0o700)
+    dbpath = data_dir / "test.db"
     config = Config(str(Path(__file__).parents[1] / "alembic.ini"))
     config.set_main_option("script_location", str(Path(__file__).parents[1] / "alembic"))
     config.set_main_option("sqlalchemy.url", "sqlite:///" + str(dbpath))
@@ -141,7 +145,7 @@ def test_offline_rewrap_recovery_and_wrong_keys(tmp_path):
         )
     with pytest.raises(SecretUnavailable):
         maintain(dbpath, newfile)
-    backup = tmp_path / "before.db"
+    backup = backup_dir / "before.db"
     assert maintain(dbpath, both, backup=backup) == 1
     assert maintain(dbpath, newfile) == 0
     assert maintain(backup, oldfile) == 0
@@ -161,7 +165,7 @@ def test_offline_rewrap_recovery_and_wrong_keys(tmp_path):
         )
     staged = keyring(tmp_path / "third", {"new": new, "third": secrets.token_bytes(32)}, "third")
     with pytest.raises(SecretUnavailable):
-        maintain(dbpath, staged, backup=tmp_path / "failed-before.db")
+        maintain(dbpath, staged, backup=backup_dir / "failed-before.db")
     with sqlite3.connect(dbpath) as db:
         assert db.execute(
             "select key_id,crypto_revision from console_credentials where security_id='credential'"
