@@ -1,6 +1,6 @@
 # CONSOLE-001 pre-release GO / NO-GO
 
-> **R1 post-fix disposition (2026-11-05):** R1 is resolved for code integration by reviewed [PR #21](https://github.com/miragesu/sut-reservation-management/pull/21), merge `4efd996aab8dd454e6b2a4494fd73149b64949bd`, and exact-head hosted [CI #42010195632](https://github.com/miragesu/sut-reservation-management/actions/runs/42010195632) SUCCESS. Original failed RC run remains recorded as historical evidence. The release-gate decision below stays **NO-GO** because separate exact RC source/version approval, release workflow/artifact verification and live-pilot C3/C4/C5 operator gates are not complete.
+> **R1 post-fix disposition (2026-11-05):** R1 is resolved for code integration by reviewed [PR #21](https://github.com/miragesu/sut-reservation-management/pull/21), merge `4efd996aab8dd454e6b2a4494fd73149b64949bd`, and fix-head (`6dc4b07`) hosted [CI #42010195632](https://github.com/miragesu/sut-reservation-management/actions/runs/42010195632) SUCCESS. Original failed RC run remains recorded as historical evidence. The release-gate decision below stays **NO-GO** because separate exact RC source/version approval, release workflow/artifact verification and live-pilot C3/C4/C5 operator gates are not complete.
 
 Review date2026-11-05 (Asia/Taipei). Proposed **v1.1.0-rc.1**, not created/published.
 [Readiness/evidence](rc-readiness.md), [operator checklist](production-acceptance-checklist.md),

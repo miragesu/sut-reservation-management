@@ -36,7 +36,7 @@ jobs:
       - name: Verify isolated Console Broker, OpenSSH and tmux (no production endpoints)
         run: |
           docker tag mirage315/sut-reservation-management:ci-${{ github.sha }} sut-console001-c:local
-          SUT_CONSOLE_BROWSER=1 python scripts/console_mock_smoke.py
+          SUT_CONSOLE_R1_LOGIN_DELAY=1.2 SUT_CONSOLE_BROWSER=1 python scripts/console_mock_smoke.py
       - name: Verify Console image-only deployment and compatible pre-upgrade rollback
         run: |
           docker tag mirage315/sut-reservation-management:ci-${{ github.sha }} sut-console001-e:local

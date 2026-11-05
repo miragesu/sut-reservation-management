@@ -1,6 +1,12 @@
 # Current review scope — CONSOLE-001 RC preparation
 
-Based on merged A–E main69b4496, branch `release/console001-rc-preparation`.
+Originally based on merged A–E main69b4496, branch `release/console001-rc-preparation`;
+now integrates latest main `4efd996aab8dd454e6b2a4494fd73149b64949bd` while retaining
+branch head4b0cef9 and all readiness documents. Runtime/tests match main exactly.
+Integration verification:361 pytest passed in117.00s (one existing deprecation
+warning), Ruff/format100 files, actionlint, shell/Node syntax,62 local links,
+Q1–Q83/hash and diff checks passed. Browser/container tests were not repeated for
+this documentation-only delta. This branch's hosted CI/review remains pending.
 **GO for readiness review only; NO-GO for RC publication or live pilot.**
 [Readiness and83-decision crosswalk](console001/rc-readiness.md),
 [operator acceptance](console001/production-acceptance-checklist.md),
@@ -11,16 +17,38 @@ observations show1.0.2 latest official tag and latest manifest; stable and propo
 RC absent. Current main is unreleased Console integration. Defaults remain OFF /
 claim_only / insecure HTTP false, coordination available without Broker/keys.
 
-Current verification:358 pytest, lint/format/shell/module/actionlint/pip, three legacy
+Historical pre-fix readiness verification:358 pytest, lint/format/shell/module/actionlint/pip, three legacy
 browsers, seven Console deployment groups, source Docker, image-only Compose and
 installer lifecycle PASS. First Console Chromium run failed participant counting;
-unchanged repeat passed34 checks. **R1 remains an unresolved validation blocker**,
-with a documented diagnostic/corrective plan. Passing repeat does not erase failure.
+unchanged repeat passed34 checks. **This is retained pre-fix evidence**, superseded for current R1 disposition by
+reviewed PR #21 (merge4efd996), fix-head hosted CI #42010195632 SUCCESS, and the
+R1 investigation below. Passing repeat alone did not resolve the original failure.
 No product/test assertion/deployment/release configuration changed. No public image
 pull/publication, company access, production DB write, insecure-mode activation or
-merge. C3/C4/C5, hosted CI, release authorization and operator pilot remain pending.
+merge was performed during that historical review. C3/C4/C5, final RC-source
+CI/approval, release authorization and operator pilot remain pending.
 
 Historical milestone results below are retained, not current all-green acceptance.
+
+# Current review scope — CONSOLE-001 R1
+
+Branch `fix/console001-r1-participants` starts from main
+`69b44960c0deaab007a43eaa4afd061804a430d6`. The two-RD failure is reproduced
+with controlled competing login writes: synchronous SQLite acquisition in the
+ASGI participant pump stalls the loop (focused negative control5.09s). Complete
+snapshot transactions now run in a worker; database errors revoke fail-closed.
+Participant assertions, authorization, generations, quotas and leases are preserved.
+
+Verified locally:361 pytest, three focused regressions, five independent complete
+Console Chromium runs (three slow-login plus two normal,34 checkpoints each),
+three legacy Chromium suites, source Docker/container, image-only Compose and
+installer lifecycle checks. See [sanitized evidence and complete ledger](console001/r1-participants-investigation.md).
+R1 was independently reviewed and merged via PR #21 as
+`4efd996aab8dd454e6b2a4494fd73149b64949bd`; fix-head `6dc4b07` hosted
+[Application checks #42010195632](https://github.com/miragesu/sut-reservation-management/actions/runs/42010195632)
+passed. This is not proof of CI for the later integration/final RC commit. No RC publication,
+production access/activation or merge; defaults remain OFF/claim_only/insecure HTTP
+false. C3/C4/C5 and actual LAN/Client/BMC/load/recovery acceptance remain open.
 
 # Current review scope — CONSOLE-001 Phase E
 

@@ -427,8 +427,28 @@ Phase B is not started. C3 research is integrated; Phase A completion is defined
 - [x] Review all83 decisions in [current crosswalk](docs/console001/rc-readiness.md), historical conflicts/assumptions and actual source/test evidence; no83-case production PASS claim.
 - [x] Inventory remote Git v1.0.0/1/2 and anonymous registry manifests; propose v1.1.0-rc.1, presently absent. latest equals1.0.2, stable absent. No tag/image/alias mutation.
 - [x] Verify false/claim_only/insecure HTTP false defaults and coordination without Broker/custody; run358 pytest, three legacy browsers, actual SSH/browser/deployment/Docker/image-only/installer checks and record exact outcomes.
-- [x] Record first Console browser participant-count failure and unchanged34-check rerun PASS; **R1 remains OPEN**, not silently marked fixed or all-green.
+- [x] Record first Console browser participant-count failure and unchanged34-check rerun PASS; **Historical pre-fix R1 failure retained**; reviewed fix is now merged in PR #21 (main4efd996), hosted CI #42010195632 SUCCESS.
 - [x] Prepare detailed unchecked [operator acceptance](docs/console001/production-acceptance-checklist.md), one-Client/one-test-SUT [pilot](docs/console001/pilot-plan.md), and [GO/NO-GO](docs/console001/release-go-no-go.md).
-- [ ] Resolve/disposition R1 with reviewed root-cause/regression evidence; exact-source hosted CI and independent PR review.
+- [x] R1 resolved by reviewed PR #21, merge4efd996; fix-head6dc4b07 hosted CI #42010195632 passed.
+- [ ] Exact final RC source approval/hosted CI and independent readiness PR review remain required.
 - [ ] Separately authorized RC tag/publish/public digest validation, C3/C4/C5 actual site approvals and pilot; no activation/merge/expansion follows from this review.
 - [x] Readiness2d3c6a0 pushed; PR creation attempted once and failed with `Post "https://api.github.com/graphql": Forbidden`; comparison retained in readiness. No PR created by Codex, no merge or release.
+
+## CONSOLE-001 R1 — participant-count flakiness
+
+- [x] Reproduce unchanged two-distinct-RD assertion with disposable SSH/tmux/Gateway/Chromium and sanitized lifecycle/generation/count evidence.
+- [x] Demonstrate SQLite writer contention blocking the ASGI pump (5.09s focused negative control); move complete snapshot transaction to a worker and fail closed on DB errors. Preserve authorization, generation fencing, quotas and lease durations.
+- [x] Add focused contention/failure/privacy regressions;361 pytest and three legacy Chromium suites pass.
+- [x] Five independent complete actual Console Chromium runs pass (three controlled slow-login, two ordinary;34 checkpoints each); source Docker, image-only Compose and installer lifecycle regressions pass.
+- [x] Record negative controls, exact scope, timing and limitations in [R1 investigation](docs/console001/r1-participants-investigation.md).
+- [x] R1 independently reviewed and merged via PR #21 as4efd996; fix-head6dc4b07 hosted CI #42010195632 SUCCESS.
+- [ ] This integrated readiness branch hosted CI/review and exact final release-source approval; no automatic merge or RC publication.
+- [ ] C3/C4/C5 operator acceptance and real production/load/recovery gates remain open; synthetic results do not close them.
+
+
+### PR #19 latest-main integration
+
+- [x] Retain4b0cef9, merge latest main4efd996 into the same readiness branch; resolve only TASKS/status conflicts preserving both milestone records.
+- [x] Preserve Pilot/Acceptance byte-for-byte and all R1 source/tests exactly as main; retain original failure with current reviewed/merged/hosted-CI disposition.
+- [x] Integration checks:361 pytest (117.00s, one existing deprecation warning), Ruff/format100 files, actionlint, shell/Node syntax,62 local links, Q1–Q83/hash and diff checks PASS. Browser/container runs not repeated for the documentation-only delta to main.
+- [ ] Integrated branch hosted CI/independent PR #19 review and final RC-source approval remain pending; release/pilot NO-GO, C3/C4/C5 OPEN.

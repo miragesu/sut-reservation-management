@@ -1,6 +1,32 @@
 # CONSOLE-001 RC readiness review
 
-> **Post-review update (2026-11-05, after PR #21):** R1 code-level blocker is RESOLVED by independently reviewed [PR #21](https://github.com/miragesu/sut-reservation-management/pull/21), merged as `4efd996aab8dd454e6b2a4494fd73149b64949bd`. Its exact-head hosted [Application checks #42010195632](https://github.com/miragesu/sut-reservation-management/actions/runs/42010195632) passed, after documented pre-fix 5.09s event-loop stall and post-fix 5 independent 34-checkpoint Chromium runs. [Issue #20](https://github.com/miragesu/sut-reservation-management/issues/20) is closed. The original first-run failure remains faithfully documented below as *historical pre-fix evidence*, not an unresolved current root cause. This RC-readiness document was written against earlier main and is not itself the release-source approval. **RC tag/image publication and live pilot remain NO-GO** pending exact final source/release validation and separate owner/operator approvals; C3/C4/C5 real-world gates remain OPEN. No RC version was tagged or published.
+> **Post-review update (2026-11-05, after PR #21):** R1 code-level blocker is RESOLVED by independently reviewed [PR #21](https://github.com/miragesu/sut-reservation-management/pull/21), merged as `4efd996aab8dd454e6b2a4494fd73149b64949bd`. Its fix-head (`6dc4b07d939127384f1e41744f78144328ca04c9`) hosted [Application checks #42010195632](https://github.com/miragesu/sut-reservation-management/actions/runs/42010195632) passed, after documented pre-fix 5.09s event-loop stall and post-fix 5 independent 34-checkpoint Chromium runs. [Issue #20](https://github.com/miragesu/sut-reservation-management/issues/20) is closed. The original first-run failure remains faithfully documented below as *historical pre-fix evidence*, not an unresolved current root cause. This RC-readiness document was written against earlier main and is not itself the release-source approval. **RC tag/image publication and live pilot remain NO-GO** pending exact final source/release validation and separate owner/operator approvals; C3/C4/C5 real-world gates remain OPEN. No RC version was tagged or published.
+
+## PR #19 branch integration (2026-11-05)
+
+Updated `release/console001-rc-preparation` from reviewed branch head
+`4b0cef91cec690e439a6dc476d831376073902f1` and integrated latest main
+`4efd996aab8dd454e6b2a4494fd73149b64949bd` with a merge commit on this branch
+(not a GitHub PR merge). Only `TASKS.md` and `docs/implementation-status.md`
+conflicted; both readiness and R1 records were retained, with historical versus
+current status made explicit. Pilot and operator acceptance files are byte-identical
+to4b0cef9; readiness/GO-NO-GO changes clarify status without removing old failures.
+Application, tests, test fixtures, workflows and deployment files match merged main
+exactly; no R1 implementation or regression is lost or modified.
+
+Hosted R1 CI #42010195632 was verified from its public Actions page as Success for
+fix head6dc4b07. The REST CLI query returned Forbidden; the public page is the
+observed evidence. It is not CI for this subsequent integration commit or an
+approved RC release source. Integration validation: full `pytest -q` **361 passed** in117.00s (one existing
+Starlette TestClient deprecation warning); Ruff check and format **100 files**,
+actionlint, `bash -n setup.sh scripts/entrypoint.sh`, Node diagnostic-fixture syntax,
+62 local Markdown links, ordered83-decision crosswalk, unchanged owner-ledger hash,
+and `git diff --check` / staged diff check all PASS. Pilot and Acceptance documents
+were additionally compared byte-for-byte to4b0cef9. The full suite includes the R1
+contention, DB-failure fail-closed and metadata-only diagnostic regressions.
+No browser/container suite is re-run for this documentation-only merge relative
+to main; those suites' prior R1 results remain historical evidence, not new runs.
+
 
 Review date2026-11-05 (Asia/Taipei). Base main
 `69b44960c0deaab007a43eaa4afd061804a430d6` (merged Phase A–E and PR18 backup-path
@@ -8,8 +34,8 @@ follow-up), branch `release/console001-rc-preparation`. **Documentation/readines
 only: no product, deployment, release configuration or owner decision changes.**
 
 Disposition: ready to submit for independent review; **NO-GO for RC publication or
-live pilot today**. R1 validation instability, exact-source hosted CI/release
-approval and actual operator C3/C4/C5 gates remain open. See
+live pilot today**. R1 code-level instability is resolved; final RC-source hosted
+CI/release approval and actual operator C3/C4/C5 gates remain open. See
 [GO/NO-GO](release-go-no-go.md), [operator acceptance](production-acceptance-checklist.md)
 and [staged pilot](pilot-plan.md). This review does not authorize the next step.
 
@@ -131,8 +157,8 @@ real browser/remote topology and bounded emulator limitations are explicit.
 | Q11 | Separate terminal page/tab (B). | U | Implemented path and related isolated assertions reviewed; applicable operator AUTH/UI/C3 cases remain pending. |
 | Q12 | No keyboard-idle cutoff (B). | G/T, U | No keyboard-idle cutoff; login/lease expiry still applies. Real output-only soak pending. |
 | Q13 | Bounded auto reconnect (B). | G/T, U | Browser-close/HTTP-abort injection is UI evidence, separate real SSH failure tests; no replay. |
-| Q14 | RD names and unique user count (B). | G/T, U | R1 OPEN: first participant assertion failed; rerun success is not root-cause resolution. |
-| Q15 | Shared writable UART warning (B). | G/T, U | Shared writers/no writer lock retained; R1 and actual C3-05 evidence pending. |
+| Q14 | RD names and unique user count (B). | G/T, U | Historical first participant assertion failed; reviewed R1 fix merged in PR #21 and fix-head hosted CI passed. Actual operator acceptance remains pending. |
+| Q15 | Shared writable UART warning (B). | G/T, U | Shared writers/no writer lock retained; R1 fix merged/CI passed, actual C3-05 acceptance pending. |
 | Q16 | Copy/paste and multiline confirmation (B). | G/T, U | Implemented path and related isolated assertions reviewed; applicable operator AUTH/UI/C3 cases remain pending. |
 | Q17 | In-tab output survives reconnect (B). | U | Same xterm/tab instance retained; remote ANSI/alternate-screen redraw can replace visible rows. No transcript guarantee; review actual reconnect-buffer behavior in C3-08/UI-02. |
 | Q18 | On-demand connectivity checks only (A). | G/T, U | GET/save do not probe; explicit Client auth validation remains the Q70–72 exception. |
@@ -267,7 +293,12 @@ published-digest pull/OCI/source/Console-overlay validation remains a future gat
 Static document validation:83 unique ordered decision rows,59 local links, shell
 example syntax, owner-ledger immutability and vendor hashes PASS.
 
-## Findings, blockers and corrective actions
+## Historical pre-fix findings, blockers and corrective actions
+
+The R1 OPEN status and inconclusive root-cause statement in this original table
+are retained as pre-fix evidence, not the current disposition. PR #21 now resolves
+the demonstrated application lock cycle; see the post-review update above and
+[R1 investigation](r1-participants-investigation.md).
 
 | ID | Finding / impact | Status and next action |
 | --- | --- | --- |
@@ -291,6 +322,7 @@ Post "https://api.github.com/graphql": Forbidden
 
 No PR created by this session. [Create/review comparison](https://github.com/miragesu/sut-reservation-management/compare/main...release/console001-rc-preparation?expand=1).
 No alternate attempt or merge. Documentation-only delivery follow-up records the
-outcome; R1 remains OPEN and publishing/pilot NO-GO remains unchanged. No Git release tag, image push/alias change,
+outcome; R1 was OPEN at that historical delivery. It is now resolved for code
+integration by PR #21; publishing/pilot NO-GO remains unchanged. No Git release tag, image push/alias change,
 company access/deployment, production DB write, insecure-mode activation or automatic
 merge. Review preparation completion does not authorize RC publication or pilot.
