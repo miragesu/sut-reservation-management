@@ -25,7 +25,7 @@ Executed with a temporary Python standard-library checker outside the repository
 | --- | --- |
 | Q1–Q83 matrix | PASS:83 unique rows, IDs1–83 exactly once, every decision title exactly matches owner baseline. |
 | Baseline immutability | PASS: embedded baseline byte SHA256 matches; `git diff --exit-code origin/main -- docs/CONSOLE_001_REQUIREMENTS.md` empty. |
-| Markdown references | PASS:15 files,64 local file links resolve, fenced code balanced. |
+| Markdown references | PASS:16 files,66 local file links resolve, fenced code balanced. |
 | Contract examples | PASS: both JSON code blocks parse. This is syntax validation, not implemented API/schema validation. |
 | Change boundary | PASS: only Markdown files changed/added; no runtime/dependency/Compose/migration/workflow file changes. |
 | Obvious private-key blocks / NUL | PASS: none in changed/new documents; this narrow check is not a claim of a full repository-history secret audit. |
@@ -58,3 +58,21 @@ The consolidated validator passed83 exact Q rows,10 cross-cutting rows,15 Markdo
 files,64 local file links,2 JSON examples, unchanged baseline, no conflict markers
 and whitespace checks. Existing remote validation claims are historical, not new
 runtime tests. Push/PR outcome follows below; no auto-merge.
+
+
+### Actual GitHub delivery outcome
+
+Normal merge `c9c4a4d` includes prior remote `06d23f8` and initial documentation
+`8f6cabb`; branch successfully pushed without force. The merge remains design-only.
+
+Executed PR creation against main with `gh pr create --repo miragesu/sut-reservation-management --base main --head feature/console001-phase-a --title 'CONSOLE-001 Phase A: architecture and security design' --body-file /tmp/console001-pr.md`.
+It returned exact error **`Post "https://api.github.com/graphql": Forbidden`**.
+This attempt did not create a PR. No alternate credential or permission bypass was
+attempted. The branch is retained with [reviewable PR text](pr.md) for
+[manual PR creation](https://github.com/miragesu/sut-reservation-management/pull/new/feature/console001-phase-a).
+No merge/release/production action was taken.
+
+Final delivery adds only this evidence and PR text; final documentation assertions
+are rerun for the merged package. Automatic hosted baseline application CI, if
+triggered by branch pushes, is not evidence of unimplemented Console behavior and
+is not reported passing here.

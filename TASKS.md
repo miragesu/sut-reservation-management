@@ -343,7 +343,7 @@ Delivery and precise verification evidence: docs/implementation-status.md, DEP-0
 - [x] Draft separate architecture, SQLAlchemy/Alembic preservation plan, security model, interface contracts, compatibility amendment and83-row acceptance matrix.
 - [x] Distinguish approved feature decisions from proposed engineering defaults, including unconfirmed Q84 UX.
 - [x] Identify legacy MVP conflicts and live gates C1–C5 (tmux confinement/topology, public IPv4 ambiguity, OOB trust and plaintext transport acceptance).
-- [x] Phase A static documentation validation PASS:83 exact decision rows, baseline hash/unchanged ledger,64 links,2 JSON examples, Markdown-only diff and whitespace checks. Delivery outcome recorded separately.
+- [x] Phase A static documentation validation PASS:83 exact decision rows, baseline hash/unchanged ledger,66 links,2 JSON examples, Markdown-only diff and whitespace checks. Delivery outcome recorded separately.
 - [ ] Owner review/approval of Phase A scope amendment, design and engineering assumptions.
 - [ ] Phase B mock-only foundations authorized and implemented with tests.
 - [ ] C1–C5 resolved for intended live topology; Phase C connector/WS and revocation tests.
@@ -351,3 +351,7 @@ Delivery and precise verification evidence: docs/implementation-status.md, DEP-0
 
 These design artifacts are not implementation, migration, SSH validation, production
 connectivity or image publication. See docs/console001/verification.md.
+
+- [x] Phase A branch pushed after normal merge preserving existing remote draft; no force-push.
+- [x] PR creation attempted; exact GraphQL Forbidden and reviewable PR text recorded.
+- [ ] PR creation succeeds / owner review: this attempt was blocked; no auto-merge. See docs/console001/verification.md.

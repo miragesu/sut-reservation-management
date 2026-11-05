@@ -32,3 +32,5 @@ The pre-existing remote draft `06d23f8` is preserved as a merge parent. Its sche
 validation entry paths redirect to the consolidated package; alternatives and
 unresolved differences are recorded in the [reconciliation register](compatibility.md#reconciliation-of-the-existing-remote-draft).
 No owner baseline or remote commit was overwritten.
+
+Reviewable delivery text: [PR body](pr.md).
