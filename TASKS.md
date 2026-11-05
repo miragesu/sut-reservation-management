@@ -396,6 +396,7 @@ Phase B is not started. C3 research is integrated; Phase A completion is defined
 - [x] Disposable actual OpenSSH/tmux/BMC, distinct UID/mount-custody and full HTTP/WS/Broker/SSH pipeline verification; mock-only, not production acceptance.
 - [x] Three existing Chromium regression runners PASS; source Docker/Compose security/5088→80/migration/persistence/cold-recovery PASS.
 - [x] Final337-case suite,33 Gateway cases, final mock/image-only/installer reruns and documentation checks PASS; actual commands, scope and limitations in [Phase C verification](docs/console001/phase-c-verification.md).
-- [ ] Push and PR against main; record exact permission failure if blocked. No automatic merge.
+- [x] Branch pushed and PR against main attempted; exact GraphQL Forbidden recorded with [review-ready fallback](docs/console001/phase-c-pr.md). No automatic merge.
+- [ ] PR creation/hosted CI/review: PR command was Forbidden; branch remains pushed for manual creation.
 - [ ] Phase C review, C3/C4/C5 real operator prerequisites, production key/recovery/load and real-device acceptance.
 - [ ] Phase D full terminal UI and Phase E rollout; neither started nor authorized automatically.

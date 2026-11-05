@@ -181,3 +181,13 @@ code, including cancellation-safe cleanup and exact validated-candidate guards.
 All preexisting runtime dependency pins are preserved; only AsyncSSH2.23.1,
 bcrypt5.0.0 and websockets15.0.1 are added. The bcrypt extra is SSH key support,
 not a replacement for application Argon2id hashing.
+
+## GitHub delivery
+
+Implementation commit `81b08c0065393f86218eb0db91d267740fd93c5e` was pushed
+successfully to `feature/console001-phase-c`. PR creation against main returned
+exit1: `Post "https://api.github.com/graphql": Forbidden`. No PR was created by
+that command; no merge or permission bypass attempted. See [exact fallback and
+review-ready PR body](phase-c-pr.md) and the [comparison](https://github.com/miragesu/sut-reservation-management/compare/main...feature/console001-phase-c?expand=1).
+Hosted post-push CI remains unverified; local results above are independently
+executed evidence, not a claim of GitHub Actions completion.
