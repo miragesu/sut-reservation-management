@@ -23,8 +23,10 @@ JavaScript, migrations, dependencies, image, installer, Compose or secrets are
 changed in Phase A. No SSH, terminal, external host probe or production pilot runs.
 The existing coordination UI and approved Demo behavior remain unchanged.
 
+**Owner C2 clarification (2026-11-05):** Direct BMC SSH supports RFC1918 private IPv4 only, without any per-Lab CIDR allowlist. Public IPv4 is disallowed. See [requirements](../CONSOLE_001_REQUIREMENTS.md), [compatibility](compatibility.md) and [security](security.md). This is a decision update, not an implemented check.
+
 Phase B is ready for **reviewed, mock-only foundation work after approval of this
-scope amendment**, not live connectivity. C1/C2/C3 in the review register block
+scope amendment**, not live connectivity. C1/C3 in the review register block
 live connector approval. No production readiness is asserted by documentation or
 by the existing application's historical passing tests.
 
