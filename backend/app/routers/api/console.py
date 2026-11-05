@@ -101,8 +101,10 @@ def connections(sut_id: int, request: Request, db: DB, actor: Actor):
         },
         "bmc": service.mapping_view(service.mapping_row(db, sut_id, "bmc"), "bmc"),
         "access": service.authorization(db, actor, login(request), sut, request.app.state.settings),
-        "terminal_available": False,
-        "phase": "B_mock_only",
+        "terminal_available": bool(
+            request.app.state.console_runtime and request.app.state.console_runtime.ready
+        ),
+        "phase": "C_broker_gateway" if request.app.state.console_runtime else "B_mock_only",
     }
 
 

@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     console_access_policy: Literal["claim_only", "shared_readonly", "all_authenticated"] = "claim_only"
     console_allow_insecure_http: bool = False
     console_keyring_file: str | None = None
+    console_broker_socket: str | None = None
+    console_broker_ipc_key_file: str | None = None
+    console_broker_uid: int = Field(default=10002, ge=1)
+    console_allowed_origins: list[str] = Field(default_factory=list)
     console_sensitive_ipv4: list[str] = Field(default_factory=list)
     deadline_processor_enabled: bool = True
     deadline_poll_seconds: float = Field(default=1.0, ge=0.1, le=60)

@@ -1,3 +1,5 @@
+> **Phase C evidence:** [actual backend/SSH tests and remaining gates](phase-c-verification.md). The matrix below is the preserved design plan, not an assertion that every Q1–Q83 UI/production case has passed.
+
 > **Phase B implementation note:** the [mock-only foundation report](phase-b-implementation.md) and [verification](phase-b-verification.md) record the actual implemented subset and provisional choices. The design/proposed assertions below remain the Phase A baseline; do not read “planned” as deployed or mark the full Q-matrix/terminal gates complete. Live validation/SSH/WS/Broker remain unavailable.
 
 # Acceptance traceability and Phase B–E milestones
