@@ -12,7 +12,7 @@ production access, release tags or Docker publication. Alembic head remains
 | Check | Actual result |
 | --- | --- |
 | Existing baseline pytest | 337 passed |
-| Final full pytest | **346 passed**, 129.57s; one existing TestClient deprecation warning; nine new HTML/authorization/vendor cases included |
+| Final full pytest | **346 passed**, 149.98s; one existing TestClient deprecation warning; nine new HTML/authorization/vendor cases included |
 | Ruff / module syntax / Prettier / pip dependency consistency | PASS |
 | Locked npm install and local asset regeneration | PASS; xterm6.0.0/Fit0.11.0/Search0.16.0/noble hashes2.4.0; package lock, licenses and file SHA256 manifest committed |
 | Three retained Chromium suites | PASS: baseline auth/dashboard/polling; Day2 coordination/calendar/history; Day3 modals/mobile/notification fallback |
@@ -147,5 +147,16 @@ Console runner passed all 34 checkpoints after this correction. No required case
 
 ## GitHub delivery
 
-Pending final branch push and one PR creation attempt. The branch targets `main`;
-Phase E is not started by this PR. Exact delivery outcome will be recorded below.
+Implementation commit: `8b3436b` (documentation delivery follow-up may follow).
+Branch **pushed successfully**: `feature/console001-phase-d`, targeting `main`.
+One `gh pr create` attempt with a prepared body file failed (exit1):
+
+```text
+Post "https://api.github.com/graphql": Forbidden
+```
+
+No workaround or repeat creation attempt was made. Create/review the PR using
+[main comparison](https://github.com/miragesu/sut-reservation-management/compare/main...feature/console001-phase-d?expand=1).
+The branch is reviewable; **no PR was created by this session**, no merge performed.
+Phase E is not started by this change. The documentation follow-up records delivery
+only and does not change tested runtime code.
