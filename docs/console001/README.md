@@ -25,7 +25,7 @@ The existing coordination UI and approved Demo behavior remain unchanged.
 
 **Owner UART shell clarification (2026-11-05):** RD may detach a preconfigured existing tmux attachment into the configured Console Client SSH account's ordinary interactive Linux shell, with native tmux control permissions. No strict per-session command isolation is intended; the Gateway still must never automatically start/kill tmux/minicom. C1 scope ambiguity is resolved; C3 account/socket/shell topology and broad shared-account privilege risks remain pilot gates.
 
-**Owner C2 clarification (2026-11-05): Direct BMC SSH supports RFC1918 private IPv4 only, without any per-Lab CIDR allowlist. Public IPv4 is disallowed. See [requirements](../CONSOLE_001_REQUIREMENTS.md), [compatibility](compatibility.md) and [security](security.md). This is a decision update, not an implemented check.
+**Owner C2 clarification (2026-11-05):** Direct BMC SSH supports RFC1918 private IPv4 only, without any per-Lab CIDR allowlist. Public IPv4 is disallowed. See [requirements](../CONSOLE_001_REQUIREMENTS.md), [compatibility](compatibility.md) and [security](security.md). This is a decision update, not an implemented check.
 
 Phase B is ready for **reviewed, mock-only foundation work after approval of this
 scope amendment**, not live connectivity. C3 in the review register blocks
