@@ -1,0 +1,32 @@
+{"versions": {"tmux": "tmux 3.3a", "openssh": "OpenSSH_9.2p1 Debian-2+deb12u10, OpenSSL 3.0.22 25 Aug 2026", "debian": "12.15", "python": "Python 3.11.2"}, "socket": "console:console 600", "uid": 1000}
+{"test": "incorrect-key-denied", "pass": true, "evidence": "synthetic untrusted Ed25519 key rejected"}
+{"test": "incorrect-host-key-denied", "pass": true, "evidence": "mismatched pinned host key rejected; StrictHostKeyChecking=yes"}
+{"test": "missing-exact-session:missing", "pass": true, "evidence": "exit44, no prefix match/fallback/create/delete, original pane PIDs unchanged"}
+{"test": "missing-exact-session:target_e", "pass": true, "evidence": "exit44, no prefix match/fallback/create/delete, original pane PIDs unchanged"}
+{"test": "missing-server-not-created", "pass": true, "evidence": "tmux -N failed; no missing socket/server created"}
+{"test": "other-unix-account-denied", "pass": true, "evidence": "directory0700/socket0600 deny unrelated UID; no chmod/ACL repair"}
+{"test": "attach-only-negative-control", "pass": true, "evidence": "plain attach terminates SSH after Detach; wrapper is necessary"}
+{"test": "interactive-ssh-exact-attach", "pass": true, "evidence": "two live SSH PTYs attached to exact target, not target_extra"}
+{"test": "ssh-pty-resize", "pass": true, "evidence": "SIGWINCH/TIOCSWINSZ reached remote tmux client:132x44; no window-size option change"}
+{"test": "shared-concurrent-read-write", "pass": true, "evidence": "both SSH clients received both synthetic writers; no writer lock"}
+{"test": "native-session-switch-allowed", "pass": true, "evidence": "user Ctrl+B : switch-client succeeded as explicitly approved; no per-SUT confinement"}
+{"test": "native-window-create-allowed", "pass": true, "evidence": "user-initiated native tmux new-window allowed; NOT Gateway startup"}
+{"test": "native-window-close-allowed", "pass": true, "evidence": "user removed own test window; original mock processes unchanged"}
+{"test": "detach-to-ordinary-shell", "pass": true, "evidence": "Detach leaves same SSH alive in bash -i as non-root console, TERM=xterm-256color"}
+{"test": "detached-shell-pty-resize", "pass": true, "evidence": "ordinary shell stty reports37 rows117 columns after resize"}
+{"test": "linux-account-commands-allowed", "pass": true, "evidence": "authorized user shell command ran with fixed account privilege, no sudo/root"}
+{"test": "disconnect-preserves-peer", "pass": true, "evidence": "intent=deliberate_disconnect; only local first SSH closed; peer and pane PIDs unchanged"}
+{"test": "all-disconnect-preserves-mocks", "pass": true, "evidence": "zero attachments, original three tmux sessions and mock UART processes preserved"}
+{"test": "fresh-reconnect-no-replay", "pass": true, "evidence": "fresh SSH client reattached exact target; input byte counter did not increase"}
+{"test": "fresh-input-only-on-reconnect", "pass": true, "evidence": "new explicit input counted once; no prior input queue replay"}
+{"test": "relay-connection-attached", "pass": true, "evidence": "SSH through loopback-only disposable fault injector attached"}
+{"test": "abrupt-transport-loss", "pass": true, "evidence": "intent absent; injected TCP loss yielded SSH255; persistent sessions survived"}
+{"test": "reconnect-after-loss", "pass": true, "evidence": "new pinned-key SSH attachment succeeds, no synthetic input replay"}
+{"test": "gateway-forward-channel-denied", "pass": true, "evidence": "server rejects direct-tcpip even with client forwarding safeguards removed"}
+{"test": "gateway-remote-forward-denied", "pass": true, "evidence": "server rejects remote forwarding; Gateway SSH uses ClearAllForwardings=yes"}
+{"test": "sftp-subsystem-not-enabled", "pass": true, "evidence": "no SFTP subsystem configured; interactive shell still intentionally available"}
+{"test": "startup-target-injection-rejected", "pass": true, "evidence": "five malformed target names rejected before SSH; fixed quoted startup template"}
+{"test": "automatic-commands-attach-only", "pass": true, "evidence": "every automatic startup uses existing-session attach then shell only; user inputs separate"}
+{"test": "final-original-process-preservation", "pass": true, "evidence": "original three pane processes alive with identical PIDs after lifecycle tests"}
+{"test": "ephemeral-key-permissions", "pass": true, "evidence": "keys generated only inside disposable tmpfs; never emitted, exported or committed"}
+{"summary": "PASS", "checks": 30, "classification": "FEASIBLE WITH PREREQUISITES", "scope": "SSH/tmux mock transport only; no browser/Gateway/security acceptance"}

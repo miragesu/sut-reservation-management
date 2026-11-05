@@ -291,3 +291,20 @@ await owner review; live blockers C1–C5 are explicit. No live SSH, DB migratio
 terminal UI, production deployment/secret change or Docker publication occurred.
 Only documentation checks in [verification](console001/verification.md) may be
 reported passing for Phase A; earlier MVP test results do not validate Console.
+
+
+## CONSOLE-001 Phase A.2 — disposable interactive SSH/tmux research
+
+Owner2026-11-05 amendments resolve C1 by accepting the fixed Client account
+interactive shell and C2 by RFC1918-only BMC IPv4. The preceding Phase A paragraph
+describes historical documentation evidence, not the updated decision status.
+[C3 validation](console001/c3-interactive-tmux-validation.md) on base144623a reports
+**FEASIBLE WITH PREREQUISITES**:30/30 expected isolated SSH/tmux observations pass,
+including existing-only exact attach, ordinary shell after Detach, native controls,
+PTY resize, shared writers and process-preserving disconnect/reconnect without input
+replay. A committed harness and sanitized JSONL make that subset reproducible.
+Production C3 topology/privilege approval, C4/C5 and all real Gateway/browser/Broker/
+credential/revocation acceptance remain open. No runtime implementation or Phase B
+started; no production host, SQLite, credentials, deployment or Docker publication
+was touched. Full application and browser regression gates were not rerun for this
+research-only change.
