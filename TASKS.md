@@ -417,3 +417,5 @@ Phase B is not started. C3 research is integrated; Phase A completion is defined
 - [ ] C4 actual LAN ingress/egress/mount/reboot and explicit plaintext HTTP/WS operator risk approval.
 - [ ] C5 independently controlled fingerprint distribution/process and residual RD trust-risk acceptance.
 - [ ] Real BMC/physical UART, production backup/restore/load, reviewed TLS/WSS end-to-end and separately authorized release/activation. No image publication or next phase.
+
+- [x] Phase E implementation c96a219 pushed; one PR attempt failed with `Post "https://api.github.com/graphql": Forbidden`; comparison and review-ready body retained in Phase E verification. No PR created by Codex, no automatic merge.
