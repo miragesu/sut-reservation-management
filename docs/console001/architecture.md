@@ -13,7 +13,7 @@ flowchart LR
     W -->|short SQLAlchemy units of work| D[(Existing persistent SQLite + additive Console tables)]
     W <-->|private authenticated Unix socket; typed protocol| R[Separate non-root Console broker]
     K[Operator-managed encryption keyring, outside DB backup] --> R
-    R -->|pinned SSH, fixed identity, constrained attach adapter| C[Console Client: pre-existing tmux + minicom]
+    R -->|pinned SSH, fixed identity, interactive PTY + existing tmux auto-attach and shell after Detach| C[Console Client: pre-existing tmux + minicom]
     R -->|pinned SSH, per-attempt RD credentials, port 22| M[Direct BMC SSH]
 ```
 
