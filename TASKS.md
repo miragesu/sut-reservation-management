@@ -9,8 +9,8 @@ The independent CONSOLE-001 feature is tracked in the [Phase A package](docs/con
 - [x] CONSOLE-001 Phase A design milestone closed at owner direction; A1–A15 remain provisional (see closure and Phase B review).
 - [x] D1/C2 resolved RFC1918-only; H2/H4/H5 provisional Phase B choices documented, not owner-numbered decisions.
 - [x] Phase B mock-only foundations implemented and isolated preservation/security tests pass; pending live validation is explicit.
-- [ ] Phase C SSH/WS/revocation and mock integration gates pass; old helper confinement superseded by approved interactive shell.
-- [ ] Phase D terminal/admin UX and Chromium matrix pass.
+- [x] Phase C SSH/WS/revocation mock gates pass (merged; Phase C verification); production gates remain separate.
+- [x] Phase D terminal/admin UX and Chromium mock matrix pass; 346 pytest, 34 Console browser checks, three legacy browser suites and local deployment/installer regressions. See [actual evidence and limitations](docs/console001/phase-d-verification.md).
 - [ ] Phase E hardening, operator HTTP acknowledgement, recovery and separately authorized production pilot accepted.
 
 - [x] Confirm BR-008: Lab Admin manages both labs, creates/deletes labs and SUTs, force-releases records and clears queues; user management remains Super Admin only

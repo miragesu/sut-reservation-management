@@ -1,3 +1,5 @@
+> **Phase D review:** terminal/admin implementation and mock acceptance are recorded in [implementation](phase-d-implementation.md) and [verification](phase-d-verification.md). Earlier phase restrictions and planned contracts below are historical; actual Phase B/C routes remain authoritative. No production or Phase E approval is implied.
+
 > **Phase C:** [Broker/Gateway implementation](phase-c-implementation.md) and [verification](phase-c-verification.md) describe the current backend review scope. Historical design/Phase B exclusions remain milestone-specific; default OFF and production/D/E gates remain.
 
 # CONSOLE-001 Phase A design review

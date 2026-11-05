@@ -8,7 +8,7 @@ from sqlalchemy import select
 from app.core.csrf import check_csrf
 from app.core.dependencies import current_user, database
 from app.models.console import ConsoleClient, ConsoleGrant, ConsoleMappingEvent, ConsoleSession
-from app.models.domain import SUT, User
+from app.models.domain import Lab, SUT, User
 from app.schemas.console import (
     BmcInput,
     ClientInput,
@@ -145,8 +145,11 @@ def history(
     return {
         "items": [
             {
-                key: getattr(row, key)
-                for key in ("id", "actor_id", "transport", "old", "new", "reason", "created_at")
+                **{
+                    key: getattr(row, key)
+                    for key in ("id", "actor_id", "transport", "old", "new", "reason", "created_at")
+                },
+                "actor_display_name": db.get(User, row.actor_id).display_name if row.actor_id else "System",
             }
             for row in rows
         ]
@@ -186,7 +189,7 @@ def own_grant(sut_id: int, db: DB, actor: Actor):
 
 
 @router.get("/sessions/me")
-def sessions(db: DB, actor: Actor):
+def sessions(request: Request, db: DB, actor: Actor):
     rows = list(
         db.scalars(
             select(ConsoleSession)
@@ -197,12 +200,69 @@ def sessions(db: DB, actor: Actor):
     return {
         "usage": len(rows),
         "limit": 10,
-        "terminal_available": False,
+        "terminal_available": bool(
+            request.app.state.console_runtime and request.app.state.console_runtime.ready
+        ),
         "items": [
             {
-                key: getattr(row, key)
-                for key in ("id", "sut_id", "transport", "mode", "state", "created_at", "lease_until")
+                **{
+                    key: getattr(row, key)
+                    for key in (
+                        "id",
+                        "sut_id",
+                        "transport",
+                        "mode",
+                        "state",
+                        "created_at",
+                        "lease_until",
+                        "connected_at",
+                    )
+                },
+                "sut_name": db.get(SUT, row.sut_id).name,
+                "lab_name": db.get(Lab, db.get(SUT, row.sut_id).lab_id).name,
             }
             for row in rows
+        ],
+    }
+
+
+@router.get("/admin/grants")
+def admin_grants(db: DB, actor: Actor, page: int = Query(1, ge=1), page_size: int = Query(25, ge=1, le=100)):
+    require_role(actor, *service.ADMIN)
+    rows = db.scalars(
+        select(ConsoleGrant).order_by(ConsoleGrant.id.desc()).offset((page - 1) * page_size).limit(page_size)
+    )
+    return {
+        "items": [
+            {
+                **service.grant_view(row),
+                "display_name": db.get(User, row.user_id).display_name,
+                "sut_name": db.get(SUT, row.sut_id).name,
+            }
+            for row in rows
+        ]
+    }
+
+
+@router.get("/admin/grant-options")
+def grant_options(db: DB, actor: Actor):
+    require_role(actor, *service.ADMIN)
+    # Safe provisioning picker, distinct from Super Admin account/security management.
+    return {
+        "users": [
+            {"id": u.id, "display_name": u.display_name, "team": u.team}
+            for u in db.scalars(
+                select(User)
+                .where(User.is_active.is_(True), User.must_change_password.is_(False))
+                .order_by(User.display_name)
+            )
+        ],
+        "suts": [
+            {"id": sut.id, "name": sut.name, "operational_state": sut.operational_state}
+            for sut in db.scalars(
+                select(SUT)
+                .where(SUT.is_archived.is_(False), SUT.operational_state != "normal")
+                .order_by(SUT.name)
+            )
         ],
     }

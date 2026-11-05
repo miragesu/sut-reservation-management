@@ -13,6 +13,7 @@
 <script defer src="/static/app.js">
 </script>
 <script defer src="/static/coordination.js"></script>
+{% block extra_head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}"{% if user %} data-user-id="{{ user.id }}"{% endif %}>
 <a class="visually-hidden-focusable" href="#main-content">Skip to content</a>
@@ -22,6 +23,7 @@
 {% if user %}
 <a class="text-white" href="/my-suts">My SUTs</a>
 <a class="text-white" href="/calendar">Calendar</a>
+{% if console_enabled %}<a class="text-white" href="/console/sessions">My Console Sessions</a>{% endif %}
 <a class="text-white" href="/history">History</a>
 <a class="text-white inbox-link" href="/notifications" aria-label="Notification center">Inbox <span id="unread-count" class="inbox-count" aria-live="polite" hidden></span></a>
 {% if user.role != 'user' %}<a class="text-white" href="/admin">Admin</a>{% endif %}

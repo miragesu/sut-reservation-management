@@ -1,0 +1,17 @@
+{% extends 'base.html' %}{% block extra_head %}<link rel="stylesheet" href="/static/console.css"><script type="module" src="/static/console-clients.js"></script>{% endblock %}
+{% block content %}<h1>Console Clients</h1><p>Lab Admin and Super Admin manage fixed SSH identities. Replacement only: stored secrets cannot be viewed or exported. Do not place secrets in names or notes.</p>
+<p id="console-feedback" class="console-feedback" role="status"></p><div class="console-form-buttons"><button id="new-client" class="btn btn-outline-primary">New Client</button><button id="reload-clients" class="btn btn-outline-secondary">Reload Clients</button></div>
+<div class="console-forms mt-3"><form id="client-form" class="console-panel" autocomplete="off"><fieldset id="client-fields"><h2 id="client-heading">New Client</h2>
+<label for="client-name">Client name</label><input id="client-name" class="form-control" maxlength="120" required>
+<label for="client-lab">Lab</label><select id="client-lab" class="form-select" required>{% for lab in labs %}<option value="{{ lab.id }}">{{ lab.name }}</option>{% endfor %}</select>
+<label for="client-ip">Client IPv4</label><input id="client-ip" class="form-control" maxlength="15" required>
+<label for="client-port">SSH port</label><input id="client-port" class="form-control" type="number" min="1" max="65535" value="22" required>
+<label for="client-user">Fixed SSH username</label><input id="client-user" class="form-control" maxlength="256" autocomplete="off" required>
+<label for="client-method">Authentication method</label><select id="client-method" class="form-select"><option value="password">Password</option><option value="private_key">Private key</option></select>
+<label for="client-password">New / replacement SSH password</label><input id="client-password" class="form-control console-secret" type="password" autocomplete="new-password" maxlength="1024">
+<label for="client-key">New / replacement private key</label><textarea id="client-key" class="form-control console-secret" rows="3" maxlength="65536" autocomplete="off" spellcheck="false"></textarea>
+<label for="client-passphrase">Private-key passphrase (if needed)</label><input id="client-passphrase" class="form-control console-secret" type="password" autocomplete="new-password" maxlength="1024">
+<p class="console-help">Leave replacement fields empty to retain existing credentials. SSH endpoint or credential changes authenticate before saving; name/notes-only edits do not probe.</p>
+<label for="client-notes">Notes (optional, no secrets)</label><textarea id="client-notes" class="form-control" maxlength="2000"></textarea>
+<div class="console-form-buttons"><button class="btn btn-primary">Save Client</button><button id="client-toggle" type="button" class="btn btn-outline-danger" hidden>Disable Client</button></div></fieldset></form>
+<section class="console-panel"><h2>Registered Clients</h2><p>Choose Edit to replace credentials or move an unbound Client. Disabled bindings and history remain retained.</p><div class="console-table"><table class="table"><thead><tr><th>Name / Lab</th><th>IPv4 / SSH</th><th>Status / Method</th><th>Notes</th><th></th></tr></thead><tbody id="client-list"></tbody></table></div></section></div>{% include 'console_dialog.html' %}{% endblock %}

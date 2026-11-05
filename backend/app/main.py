@@ -81,6 +81,7 @@ def create_app(settings=None):
     app.state.engine = make_engine(settings.database_url)
     app.state.login_limiter = LoginLimiter()
     app.state.templates = Jinja2Templates(directory=str(ROOT / "templates"))
+    app.state.templates.env.globals["console_enabled"] = settings.console_enabled
     app.state.templates.env.filters["taipei"] = lambda value: (
         value.astimezone(ZoneInfo("Asia/Taipei")).strftime("%Y-%m-%d %H:%M") if value else "—"
     )
@@ -109,6 +110,14 @@ def create_app(settings=None):
                 "Content-Security-Policy": "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; frame-ancestors 'none'; form-action 'self'; base-uri 'self'",
             }
         )
+        if request.url.path.startswith("/suts/") and request.url.path.endswith("/console"):
+            # xterm's maintained renderer generates styles; scripts remain self-only.
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+                "connect-src 'self'; img-src 'self' data:; object-src 'none'; "
+                "frame-ancestors 'none'; form-action 'self'; base-uri 'self'"
+            )
+            response.headers["Referrer-Policy"] = "no-referrer"
         if not request.url.path.startswith("/static/"):
             response.headers["Cache-Control"] = "no-store"
         logger.info("request=%s method=%s status=%s", request_id, request.method, response.status_code)
@@ -174,6 +183,9 @@ def create_app(settings=None):
         app.include_router(live_api)
         app.include_router(ws_router)
     app.include_router(console_api)
+    from app.routers.web.console import router as console_web
+
+    app.include_router(console_web)
     app.include_router(web)
     from app.routers.api.coordination import router as coordination_api
 
