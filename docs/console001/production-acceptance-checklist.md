@@ -21,7 +21,7 @@ to connect, activate HTTP/WS or deploy from Codex Cloud.
 - [ ] No terminal transcript, keystroke/clipboard capture, credential screenshots,
   SSH debug/body logs or secret environment dumps. Use counts, safe reason codes,
   independent fingerprints, session metadata and synthetic marker assertions.
-- [ ] R1 browser validation instability in readiness is resolved by reviewed evidence;
+- [x] R1 browser validation instability in readiness is resolved by reviewed evidence;
   hosted CI at the exact RC source and required isolated checks are green.
 
 ## C3 — actual Client topology and accepted Linux authority
