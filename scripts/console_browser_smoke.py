@@ -7,6 +7,7 @@ Passwords, SSH credentials and terminal payloads are never printed or recorded.
 
 import json
 import os
+from pathlib import Path
 import secrets
 import shutil
 import subprocess
@@ -45,7 +46,11 @@ def run_browser_checks(docker, name, fixture, web_mounts, containers):
         "inspect", "--format", '{{(index (index .NetworkSettings.Ports "8080/tcp") 0).HostPort}}', web
     ).strip()
     base = "http://127.0.0.1:" + port
-    data = {"web_password": secrets.token_urlsafe(30), "login_secret": secrets.token_urlsafe(48)}
+    data = {
+        "web_password": secrets.token_urlsafe(30),
+        "login_secret": secrets.token_urlsafe(48),
+        "r1_login_delay": float(os.environ.get("SUT_CONSOLE_R1_LOGIN_DELAY", "0")),
+    }
     # Server parses stdin once and clears it; no env/argv/file secrets.
     with tempfile.TemporaryFile(mode="w+") as output:
         process = subprocess.Popen(
@@ -71,7 +76,7 @@ def run_browser_checks(docker, name, fixture, web_mounts, containers):
                 browser = p.chromium.launch(**({"executable_path": executable} if executable else {}))
                 context = browser.new_context(viewport={"width": 1440, "height": 1100})
                 context.add_init_script(
-                    """(() => {const Native=window.WebSocket; window.WebSocket=class extends Native{constructor(...args){super(...args);window.__consoleTestSocket=this;}};})()"""
+                    path=str(Path(__file__).resolve().parents[1] / "tests/console_mock/browser_lifecycle.js")
                 )
                 page = context.new_page()
                 for _ in range(120):
@@ -356,10 +361,14 @@ def run_browser_checks(docker, name, fixture, web_mounts, containers):
                 passed(
                     "Connected beforeunload warning handler requests cancellation (native prompt remains browser-controlled)"
                 )
+                terminal.evaluate("window.__r1Trace.length=0")
                 terminal.get_by_role("button", name="Reconnect", exact=True).click()
                 terminal.locator("#dialog-accept").click()
                 expect(terminal.locator("#connection-state")).to_have_text("Connected", timeout=15000)
                 rd_context = browser.new_context(viewport={"width": 1280, "height": 1000})
+                rd_context.add_init_script(
+                    path=str(Path(__file__).resolve().parents[1] / "tests/console_mock/browser_lifecycle.js")
+                )
                 rd = rd_context.new_page()
                 login(rd, "uird")
                 rd.goto(base + f"/suts/{sut}/connections")
@@ -372,7 +381,38 @@ def run_browser_checks(docker, name, fixture, web_mounts, containers):
                 expect(viewer.locator(".xterm-helper-textarea")).not_to_be_focused()
                 paste(viewer, "READONLY_CANNOT_TYPE")
                 expect(viewer.locator("#console-feedback")).to_contain_text("Read-only")
-                expect(terminal.locator("#participants")).to_contain_text("2 distinct Web RD", timeout=5000)
+
+                def r1_diagnostics():
+                    for role, tab in (("writer", terminal), ("viewer", viewer)):
+                        print(
+                            "R1 lifecycle",
+                            role,
+                            json.dumps(tab.evaluate("window.__r1Trace || []")),
+                            flush=True,
+                        )
+                    safe_rows = "import sqlite3,json; c=sqlite3.connect('/db/browser.db'); print(json.dumps(c.execute('select id,user_id,state,attachment_generation,close_reason from console_sessions order by id').fetchall()))"
+                    rows = json.loads(docker("exec", web, "python", "-c", safe_rows))
+                    sanitized = [
+                        {
+                            "session": f"session-{i}",
+                            "rd": f"rd-{r[1]}",
+                            "state": r[2],
+                            "generation": r[3],
+                            "close_reason": r[4],
+                        }
+                        for i, r in enumerate(rows, 1)
+                    ]
+                    print("R1 sessions", json.dumps(sanitized), flush=True)
+
+                try:
+                    expect(terminal.locator("#participants")).to_contain_text(
+                        "2 distinct Web RD", timeout=5000
+                    )
+                except Exception:
+                    r1_diagnostics()
+                    raise
+                if os.environ.get("SUT_CONSOLE_R1_TRACE") == "1":
+                    r1_diagnostics()
                 expect(terminal.locator("#shared-warning")).to_be_visible()
                 passed(
                     "Nonholder read-only terminal, disabled input/paste/keys, separate RD mapping permission and shared warning"

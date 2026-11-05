@@ -3,6 +3,7 @@
 import json
 import os
 import sys
+import time
 
 from alembic import command
 from alembic.config import Config
@@ -64,5 +65,19 @@ with unit_of_work(app.state.engine, write=True) as db:
                 operational_reason="Synthetic maintenance" if name == "UI Maintenance" else None,
             )
         )
+# Disposable-only reproducer: keep the normal login write transaction open
+# while its worker is slow. No terminal data or credential is recorded.
+delay = min(1.2, max(0.0, float(fixture.get("r1_login_delay", 0))))
+if delay:
+    from app.services import accounts
+
+    original_login = accounts.login
+
+    def delayed_login(db, data, settings):
+        if data.username == "uird":
+            time.sleep(delay)
+        return original_login(db, data, settings)
+
+    accounts.login = delayed_login
 fixture.clear()
 uvicorn.run(app, host="0.0.0.0", port=8080, access_log=False, log_level="critical", proxy_headers=False)
