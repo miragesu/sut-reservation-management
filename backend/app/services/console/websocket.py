@@ -9,8 +9,10 @@ import json
 import time
 
 from fastapi import HTTPException
+from starlette.concurrency import run_in_threadpool
 from pydantic import ValidationError
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from starlette.websockets import WebSocketDisconnect
 
 from app.console_broker.ipc import BrokerError
@@ -462,7 +464,7 @@ class TerminalLink:
                 finally:
                     if "credential" in args:
                         args["credential"].clear()
-        except HTTPException:
+        except (HTTPException, SQLAlchemyError):
             self.revoked = "session_revoked"
             await self.emit("revoked", reason_code="session_revoked", manual_connect_required=True)
             await self.close_socket(1008, "session_revoked")
@@ -503,38 +505,50 @@ class TerminalLink:
             await self.rt.broker.call("close", session_id=self.identity, generation=previous)
         self.last_client_seq = self.broker_seq = 0
 
+    def participant_snapshot(self, refresh, generation, auth_flow):
+        # Enter/read/commit/rollback/close all stay in one worker. A concurrent
+        # threaded HTTP transaction must be able to finish on the ASGI loop;
+        # waiting for BEGIN IMMEDIATE here must never block that same loop.
+        # No SSH/IPC await or terminal payload belongs in this transaction.
+        with self.rt.db(write=refresh) as db:
+            proof = self.rt.proof(db, self.identity, self.login_digest, refresh=refresh)
+            if proof["row"].attachment_generation != generation:
+                f.fail(403, "attachment_replaced")
+            until, mode = proof["until"], proof["mode"]
+            if auth_flow:
+                flow = db.get(ConsoleAuthFlow, auth_flow)
+                if not flow or flow.expires_at <= clock_now(db):
+                    f.fail(403, "authentication_flow_expired")
+            participant_rows = db.execute(
+                select(User.id, User.display_name, ConsoleSession.mode)
+                .join(ConsoleSession, ConsoleSession.user_id == User.id)
+                .where(
+                    ConsoleSession.sut_id == proof["row"].sut_id,
+                    ConsoleSession.transport == self.transport,
+                    ConsoleSession.state.in_(("connected", "reconnecting")),
+                )
+            ).all()
+            members = {}
+            for user_id, name, access in participant_rows:
+                previous = members.get(user_id)
+                if previous is None or access == "write":
+                    members[user_id] = {"display_name": name, "mode": access}
+            participants = list(members.values())
+            return until, mode, participants
+
     async def pump(self):
         try:
             while not self.revoked:
                 async with self.rt.gate:
                     refresh = time.monotonic() - self.last_db_refresh >= 1
-                    with self.rt.db(write=refresh) as db:
-                        proof = self.rt.proof(db, self.identity, self.login_digest, refresh=refresh)
-                        generation = proof["row"].attachment_generation
-                        if generation != self.generation:
-                            f.fail(403, "attachment_replaced")
-                        until, mode = proof["until"], proof["mode"]
-                        if self.phase == "auth_required" and self.flow_id:
-                            flow = db.get(ConsoleAuthFlow, self.flow_id)
-                            if not flow or flow.expires_at <= clock_now(db):
-                                f.fail(403, "authentication_flow_expired")
-                        if refresh:
-                            self.last_db_refresh = time.monotonic()
-                        participant_rows = db.execute(
-                            select(User.id, User.display_name, ConsoleSession.mode)
-                            .join(ConsoleSession, ConsoleSession.user_id == User.id)
-                            .where(
-                                ConsoleSession.sut_id == proof["row"].sut_id,
-                                ConsoleSession.transport == self.transport,
-                                ConsoleSession.state.in_(("connected", "reconnecting")),
-                            )
-                        ).all()
-                        members = {}
-                        for user_id, name, access in participant_rows:
-                            previous = members.get(user_id)
-                            if previous is None or access == "write":
-                                members[user_id] = {"display_name": name, "mode": access}
-                        participants = list(members.values())
+                    until, mode, participants = await run_in_threadpool(
+                        self.participant_snapshot,
+                        refresh,
+                        self.generation,
+                        self.flow_id if self.phase == "auth_required" else None,
+                    )
+                    if refresh:
+                        self.last_db_refresh = time.monotonic()
                     try:
                         lease_ack = await self.rt.broker.call(
                             "lease_refresh",
@@ -601,7 +615,7 @@ class TerminalLink:
                     else:
                         raise BrokerError(ended)
                 await asyncio.sleep(0.1)
-        except HTTPException:
+        except (HTTPException, SQLAlchemyError):
             self.revoked = "session_revoked"
         except BrokerError as error:
             self.revoked = error.code

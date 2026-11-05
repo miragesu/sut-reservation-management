@@ -419,3 +419,14 @@ Phase B is not started. C3 research is integrated; Phase A completion is defined
 - [ ] Real BMC/physical UART, production backup/restore/load, reviewed TLS/WSS end-to-end and separately authorized release/activation. No image publication or next phase.
 
 - [x] Phase E implementation c96a219 pushed; one PR attempt failed with `Post "https://api.github.com/graphql": Forbidden`; comparison and review-ready body retained in Phase E verification. No PR created by Codex, no automatic merge.
+
+
+## CONSOLE-001 R1 — participant-count flakiness
+
+- [x] Reproduce unchanged two-distinct-RD assertion with disposable SSH/tmux/Gateway/Chromium and sanitized lifecycle/generation/count evidence.
+- [x] Demonstrate SQLite writer contention blocking the ASGI pump (5.09s focused negative control); move complete snapshot transaction to a worker and fail closed on DB errors. Preserve authorization, generation fencing, quotas and lease durations.
+- [x] Add focused contention/failure/privacy regressions;361 pytest and three legacy Chromium suites pass.
+- [x] Five independent complete actual Console Chromium runs pass (three controlled slow-login, two ordinary;34 checkpoints each); source Docker, image-only Compose and installer lifecycle regressions pass.
+- [x] Record negative controls, exact scope, timing and limitations in [R1 investigation](docs/console001/r1-participants-investigation.md).
+- [ ] Exact-source hosted CI and independent ChatGPT PR review; no automatic merge or RC publication.
+- [ ] C3/C4/C5 operator acceptance and real production/load/recovery gates remain open; synthetic results do not close them.

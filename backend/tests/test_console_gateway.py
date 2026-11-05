@@ -1199,3 +1199,83 @@ def test_new_live_session_invalidates_mapping_confirmation_and_preserves_links(l
                 )
                 message(ws, "input_ack")
                 ws.send_json({"type": "disconnect"})
+
+
+def test_participant_pump_does_not_starve_loop_on_competing_sqlite_writer(live):
+    """A threaded login owns BEGIN IMMEDIATE while the Console pump refreshes.
+
+    The writer can commit only after the ASGI loop resumes the route. Acquiring
+    another write reservation on that same loop must not block its completion.
+    """
+    app, clients, _, sut, _, _ = live
+    onboard(live)
+    data = ticket(clients["root"], sut)
+    acquired, release = threading.Event(), threading.Event()
+
+    def writer():
+        with unit_of_work(app.state.engine, write=True):
+            acquired.set()
+            assert release.wait(8), "test writer was not released"
+
+    with connect(clients["root"], data) as ws:
+        hello(ws, data)
+        message(ws, "connected")
+
+        async def route_completion():
+            while not acquired.is_set():
+                await asyncio.sleep(0.005)
+            app.state.console_runtime.active[data["session_id"]].last_db_refresh = 0
+            started = time.monotonic()
+            await asyncio.sleep(0.2)
+            release.set()  # Represents the route/dependency being able to commit.
+            return time.monotonic() - started
+
+        future = clients["root"].portal.start_task_soon(route_completion)
+        thread = threading.Thread(target=writer)
+        thread.start()
+        try:
+            elapsed = future.result(timeout=7)
+            assert elapsed < 1, f"ASGI loop blocked by competing SQLite writer for {elapsed:.2f}s"
+            peer = ticket(clients["rd"], sut, tab="r1-peer")
+            with connect(clients["rd"], peer) as viewer:
+                hello(viewer, peer, tab="r1-peer")
+                message(viewer, "connected")
+                counts = []
+                for _ in range(3):
+                    counts.append(message(ws, "participants")["unique_user_count"])
+                    if counts[-1] == 2:
+                        break
+                assert counts[-1] == 2
+                viewer.send_json({"type": "disconnect"})
+            ws.send_json({"type": "disconnect"})
+        finally:
+            release.set()
+            thread.join(timeout=3)
+            assert not thread.is_alive()
+
+
+def test_participant_snapshot_database_failure_closes_live_socket(live, monkeypatch):
+    from app.services.console.websocket import TerminalLink
+    from sqlalchemy.exc import OperationalError
+
+    app, clients, _, sut, _, _ = live
+    onboard(live)
+    failed = threading.Event()
+    original = TerminalLink.participant_snapshot
+
+    def snapshot(self, *args):
+        if failed.is_set():
+            raise OperationalError("synthetic unavailable database", (), Exception("synthetic"))
+        return original(self, *args)
+
+    monkeypatch.setattr(TerminalLink, "participant_snapshot", snapshot)
+    data = ticket(clients["root"], sut)
+    with connect(clients["root"], data) as ws:
+        hello(ws, data)
+        message(ws, "connected")
+        failed.set()
+        assert message(ws, "revoked")["reason_code"] == "session_revoked"
+        with pytest.raises(WebSocketDisconnect) as closed:
+            ws.receive_json()
+        assert closed.value.code == 1008
+    assert until(lambda: clients["root"].get("/api/v1/console/sessions/me").json()["usage"] == 0)

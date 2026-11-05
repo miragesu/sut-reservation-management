@@ -1,3 +1,20 @@
+# Current review scope — CONSOLE-001 R1
+
+Branch `fix/console001-r1-participants` starts from main
+`69b44960c0deaab007a43eaa4afd061804a430d6`. The two-RD failure is reproduced
+with controlled competing login writes: synchronous SQLite acquisition in the
+ASGI participant pump stalls the loop (focused negative control5.09s). Complete
+snapshot transactions now run in a worker; database errors revoke fail-closed.
+Participant assertions, authorization, generations, quotas and leases are preserved.
+
+Verified locally:361 pytest, three focused regressions, five independent complete
+Console Chromium runs (three slow-login plus two normal,34 checkpoints each),
+three legacy Chromium suites, source Docker/container, image-only Compose and
+installer lifecycle checks. See [sanitized evidence and complete ledger](console001/r1-participants-investigation.md).
+Exact-source hosted CI and independent PR review remain pending. No RC publication,
+production access/activation or merge; defaults remain OFF/claim_only/insecure HTTP
+false. C3/C4/C5 and actual LAN/Client/BMC/load/recovery acceptance remain open.
+
 # Current review scope — CONSOLE-001 Phase E
 
 Deployment integration and isolated pre-release acceptance are implemented on latest
