@@ -117,9 +117,7 @@ No physical exclusive-access guarantee.
    host-key verification and authentication, then PTY with TERM=xterm-256color.
    Fixed10s establish timeout covers TCP/KEX/auth; human prompts run outside that
    deadline and a fresh handshake revalidates the approved key afterward.
-4. UART uses the Client's fixed encrypted identity, constrained existing-session
-   check/attach only, with no-start-server behavior. Never create/kill tmux/minicom or fall back to a Client shell.
-   Read [tmux confinement gate C1](compatibility.md) before implementing this path.
+4. UART uses the configured Client's fixed encrypted SSH identity to open an **interactive PTY**, automatically attaching the specified **pre-existing** tmux session only (missing session must not auto-create). Native tmux controls remain available. A user may Detach and stay in that Client account's ordinary Linux shell, by explicit owner amendment 2026-11-05. Gateway never automatically starts/kills tmux/minicom; user-initiated shell/tmux operations are governed by remote Linux privileges. Review [C3 Client account/socket topology](compatibility.md) before implementing a live connection.
    Direct BMC uses supplied per-attempt username/password and fixed22, independent
    PTY/shell; no gateway-supplied diagnostic/firmware/power command.
 5. Connected streams bounded bytes and participant status; output is not recorded.
