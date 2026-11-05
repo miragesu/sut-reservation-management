@@ -114,7 +114,7 @@ Additional retained cross-cutting cases from the earlier remote draft:
 
 | ID | Acceptance gate |
 | --- | --- |
-| X9 | No real Client/BMC CI, no automatic power/firmware actions, no remote tmux/minicom start/kill, no external PuTTY disruption or transcript; prove constrained Client helper, not an ordinary-attach assumption. |
+| X9 | No real Client/BMC CI, no **Gateway-initiated** power/firmware actions or tmux/minicom start/kill, no deliberate external PuTTY disruption or transcript. Authorized Client shell users may issue native Linux/tmux commands, including other-session changes and potentially privileged actions allowed by that fixed OS account. Verify automatic attach-only and accepted shell privilege scope; do not claim per-SUT tmux isolation. |
 | X10 | Phase A scope remains Markdown-only, with no migration/code/Compose/secret/pilot/image change or auto-merge; design review does not imply implementation/production approval. |
 
 ## Fixtures and evidence design
@@ -132,10 +132,7 @@ Additional retained cross-cutting cases from the earlier remote draft:
   changed fingerprint, failed authentication, absent tmux, invalid exec, resize,
   high-volume/hostile ANSI. CI asserts command logs only permit declared lookup/
   attach, or zero exec for pre-save authentication. No real Client/BMC commands.
-- Remote isolation fixture for C1 must demonstrate prefix/session-switch/run-shell/
-  socket/escape rejection without altering a representative persistent tmux/minicom
-  setup. A mock which always says 'safe' is insufficient for the production gate;
-  use an explicitly approved disposable topology before any real pilot.
+- C1's old prefix/session-switch/run-shell escape **rejection** test is superseded by explicit owner approval of native Console Client Linux shell access. Use approved disposable topology to verify that authorized users can detach tmux into the fixed SSH account's shell, attach to pre-existing session, share input, and that the Gateway itself does not auto-create/kill tmux/minicom. C3 still requires real socket ownership/account rights review, no unexpected privilege escalation beyond the configured remote OS identity, and proof that Web disconnect does not kill remote session. A mock which always says 'safe' is insufficient for the live pilot.
 - Chromium tests for every Q UI action, two simultaneous writers/RO viewer, duplicate
   tabs, fullscreen/focus/unload, clipboard grant/deny and opted-in insecure context,
   reload/RAM storage loss, >10k lines, CSP/escape attacks, transport states and errors.
@@ -149,7 +146,7 @@ Additional retained cross-cutting cases from the earlier remote draft:
 | --- | --- | --- |
 | A (this PR) | Architecture, schema plan, threat model, contracts,83-row traceability, scope amendment/review register | Documentation checks and owner review; no code/migration/UI/deployment/live network work. Open risks remain visible. |
 | B | Additive schema + strict config OFF, short auth/transaction service boundaries, crypto interfaces with synthetic keyring, mappings/history/Client/grant CRUD validation behind feature flag; broker/SSH mocked | Review Phase A/A3/A4/A8 first. Fresh/populated migration preservation, uniqueness/FK/races/quota/grant bounds, permission/CSRF/secret projection, encryption/rotation/restore unit integration, existing off-mode suite. All new behavior tested without real SSH. No 'Client validation passed' fake production endpoint. |
-| C | Pinned SSH broker/UDS protocol, auth-only Client validation, tickets/WS auth, leases/fencing/outbox, BMC attempts and scoped revocations, constrained UART adapter | Resolve C1/C3, algorithm compatibility and trust process; implement/test resolved C2 RFC1918 restrictions. Mock-server + authorized disposable remote containment proof; TOCTOU/crash/revocation/read-only/10-session/timeout tests; no generic shell/forwarding or real infrastructure access without separate approval. |
+| C | Pinned SSH broker/UDS protocol, auth-only Client validation, tickets/WS auth, leases/fencing/outbox, BMC attempts and scoped revocations, interactive UART PTY+existing-session auto-attach with Detach-to-shell | C1 scope resolved; prove C3 fixed-account/socket/interactive shell topology, algorithm compatibility and trust process; implement/test resolved C2 RFC1918 restrictions. Mock SSH + authorized disposable remote behavior proof; TOCTOU/crash/revocation/read-only/10-session/timeout tests; no arbitrary Gateway destination/forwarding or real infrastructure access without separate approval. |
 | D | Standalone xterm UI, SUT Detail entry/history/edit, Admin Client management, own sessions/grants, participant warnings, all approved controls | Q11–19/26–54 Chromium matrix, font/search/clipboard/ANSI/resize/input RO and high-output budgets, secret/storage/log canaries, approved existing UI and all legacy regression gates. No transcript or additional writer lock. |
 | E | Reviewed opt-in Compose/broker/key mounts/egress documentation, image-only deploy, independent key backup/recovery/rotation, operator training and staged pilot | Feature remains off initially. Synthetic fresh/populated container and install-upgrade/recovery + trusted HTTP/WS and HTTPS/WSS tests. Explicit operator/owner/security approval, production topology and risk signoff before live pilot, separately authorized release. |
 
@@ -161,9 +158,7 @@ or entire Console feature.
 
 ## Production gates and rollback
 
-1. Review scope amendment and explicitly resolve C1–C5 for intended topology. Verify
-   out-of-band host fingerprint source, dedicated restricted identities and tmux
-   ownership/socket constraints. Never repair a remote tmux/minicom daemon silently.
+1. Review scope amendment and C1/C2 owner revisions; resolve C3/C4/C5 pilot gates for intended topology. Verify out-of-band host fingerprint source, fixed Client account's shell privileges and tmux ownership/socket permissions. Never repair a remote tmux/minicom daemon silently.
 2. Approve broker privilege/egress/self-deny design and actual HTTP risk acceptance,
    bind/firewall/boot mount ordering, dependency/security budgets and key custodians.
    Confirm valid config and feature-off deny behavior on the intended image.
