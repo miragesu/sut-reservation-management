@@ -1,3 +1,5 @@
+> **CONSOLE-001 Phase A scope amendment — proposed for review:** the owner-confirmed [Console requirements](docs/CONSOLE_001_REQUIREMENTS.md) authorize a new independently gated debug Console feature, including SSH/WS and the explicit HTTP exception. Historical coordination-only/no-SSH/no-WS clauses continue to govern the existing MVP; they do not silently erase this new scope or authorize power/firmware automation. See [design and conflict register](docs/console001/README.md). This PR changes documentation only; design assumptions, schema and future implementation still require review. No Console runtime capability or production approval is implied.
+
 > **Effective owner-confirmed update (2026-10-16):** the approved Demo integration supersedes earlier manual Check in / reservation no-show timing and Dashboard filtering requirements in this document. Start using is explicit; availability notification starts a persisted 15-minute window capped at booking end; waiting for release does not consume it. My SUTs is own-only, Calendar is the shared timeline, and navigation/design follow `docs/demo-integration.md`. Earlier conflicting descriptions are historical; use that document and the updated tests for current acceptance. Production deployment constraints remain unchanged.
 
 # Codex Implementation Plan — SUT Reservation & Queue Management System
@@ -161,3 +163,17 @@ The project owner's DEP-008 request supersedes Named Volume requirements **only 
 Operator setup is the reviewed root `setup.sh` with pinned/checksummed Compose, no source build or host Python. Preserve the DEP-008 bind path, 5088:80, UID10001, all capabilities dropped, no-new-privileges, private port80 sysctl, Alembic and background deadlines. Verify actual /data mount/disk/boot ordering; never migrate/delete old volumes or silently recreate existing data. Retain private .env/SECRET_KEY and image digest lock on reruns; upgrades require explicit version selection, cold backup and post-upgrade health/migration/record verification. No automatic schema downgrade.
 `LOW_SECURITY_PASSWD` defaults false; only explicit true/false are valid. Default minimum 12 (existing configurable higher minimum retained), low mode minimum 1, maximum 128; reject empty/whitespace-only, no composition rules. Apply to all roles/provision/reset/change/bootstrap and HTML/API. Keep Argon2id, CSRF, rate limits, RBAC, session revocation and mandatory first-login change; SECRET_KEY remains random 32+. Warn/confirm the substantially increased access risk. Published1.0.0 does not support the new mode.
 Primary Compose image is `mirage315/sut-reservation-management:${SUT_VERSION:-stable}`; operator chooses stable/latest/explicit version, installer records actual immutable digest internally. Missing preferred aliases may offer verified1.0.0 only with confirmation; network failures or missing explicit versions stop. No running container automatically follows alias changes. Official version publishing rejects existing explicit tags; latest promotion follows published-digest deployment success, stable additionally requires explicit workflow dispatch and protected environment approval/configuration. Do not publish/overwrite1.0.0 or new images in this development task. Tentative1.0.1 requires reviewed merge and a separately authorized new release. See docs/deployment.md and docs/implementation-status.md for actual verification/external gates.
+
+
+## CONSOLE-001 separate phase sequence (proposed)
+
+See [Phase A design](docs/console001/README.md), [B–E gates and83-row matrix](docs/console001/acceptance.md),
+and [open engineering/security register](docs/console001/compatibility.md).
+A delivers documentation for review only. B adds mock-only additive schema/config/
+authorization/crypto foundations after approval; C implements reviewed broker/SSH/
+WS/fencing against disposable fixtures after resolving live gates; D adds terminal
+UI and full Chromium acceptance; E validates packaging, isolated recovery, explicit
+HTTP/WSS modes and a separately authorized rollout. Existing MVP behavior/tests and
+5088/non-root/SQLite deployment remain unchanged. No Console phase is automatically
+approved by the old completed MVP checkboxes. Do not publish a Console image or
+connect production targets during Phase A.

@@ -326,3 +326,19 @@ Delivery and precise verification evidence: docs/implementation-status.md, DEP-0
 - [ ] DEP-009 PR created: no PR exists; pushed branch and docs/dep009-pr.md retained for manual creation. No merge performed.
 - [ ] Separately approved new image release (tentative1.0.1), hosted promotion/stable environment configuration and production LAN/boot/storage acceptance.
 - [x] Hosted implementation CI at `ebe6efb` PASS: run38775191083,6m11s, including all native browsers, default/low-mode Docker smoke and installer lifecycle.
+
+
+## CONSOLE-001 — Phase A architecture/security design
+
+- [x] Read complete owner Q1–Q83 baseline, Compose policies, HTTP exception and current architecture; owner ledger unchanged.
+- [x] Draft separate architecture, SQLAlchemy/Alembic preservation plan, security model, interface contracts, compatibility amendment and83-row acceptance matrix.
+- [x] Distinguish approved feature decisions from proposed engineering defaults, including unconfirmed Q84 UX.
+- [x] Identify legacy MVP conflicts and live gates C1–C5 (tmux confinement/topology, public IPv4 ambiguity, OOB trust and plaintext transport acceptance).
+- [x] Phase A static documentation validation PASS:83 exact decision rows, baseline hash/unchanged ledger,52 links,2 JSON examples, Markdown-only diff and whitespace checks. Delivery outcome recorded separately.
+- [ ] Owner review/approval of Phase A scope amendment, design and engineering assumptions.
+- [ ] Phase B mock-only foundations authorized and implemented with tests.
+- [ ] C1–C5 resolved for intended live topology; Phase C connector/WS and revocation tests.
+- [ ] Phase D terminal UI/Chromium acceptance and Phase E deployment/recovery/rollout approval.
+
+These design artifacts are not implementation, migration, SSH validation, production
+connectivity or image publication. See docs/console001/verification.md.

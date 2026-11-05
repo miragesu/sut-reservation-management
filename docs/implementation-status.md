@@ -278,3 +278,16 @@ assuming a later documentation commit's CI result.
 
 ## Isolated Demo automatic-start update — 2026-10-16
 Migration c2026101601 cold-backed-up and applied only to the synthetic Demo SQLite database. Manual attendance removed, readiness/deadline persisted, Start using labels and reservation states updated. 60 selected tests pass, including updated expiry/concurrency boundaries, auth, accounts, inventory, seven new start-window cases, calendar layout and notification translation. Chromium tests verify two-account handoff and real background No show capped at booking end. Evidence is in demo-verification.md and demo-integration.md. Full historical suite not rerun; superseded manual-attendance tests outside this selection may need revision. No production data/server or published release changed.
+
+
+## CONSOLE-001 Phase A — design-only proposal
+
+New owner-confirmed requirements are in [CONSOLE_001_REQUIREMENTS.md](CONSOLE_001_REQUIREMENTS.md).
+[Phase A package](console001/README.md) covers architecture, schema/migration plan,
+credentials/key rotation/recovery, SSH trust, three policies and grants, concurrent
+revocation/quota, HTTP/WS exception, contracts and full Q1–Q83/B–E acceptance.
+Feature implementation remains **NOT STARTED**. Scope amendment/design assumptions
+await owner review; live blockers C1–C5 are explicit. No live SSH, DB migration,
+terminal UI, production deployment/secret change or Docker publication occurred.
+Only documentation checks in [verification](console001/verification.md) may be
+reported passing for Phase A; earlier MVP test results do not validate Console.
