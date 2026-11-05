@@ -101,3 +101,12 @@ plans. C3/C5 are tracked blockers before live connector/trust rollout; C1/C2 are
 not justify missing foundational tests or declaring production-ready. Phase A
 review is not owner acceptance of assumptions merely because they are documented.
 No instruction here authorizes a pilot, Docker release, real SSH or secret rotation.
+
+## Phase B provisional implementation review
+
+The owner explicitly authorized Phase B mock-only work after design closure.
+[Phase B implementation](phase-b-implementation.md) records each A1–A15 disposition,
+including A2/A3/A4/A8/A14; these are reviewable engineering choices, not new owner
+answers. [Verification](phase-b-verification.md) covers synthetic schema/crypto/
+metadata and regressions. C1/C2 stay owner-resolved. C3/C4/C5 production gates and
+all real SSH/WS/Broker/fencing acceptance remain open; this does not start C.

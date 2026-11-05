@@ -1,3 +1,5 @@
+> **Phase B implementation note:** the [mock-only foundation report](phase-b-implementation.md) and [verification](phase-b-verification.md) record the actual implemented subset and provisional choices. The design/proposed assertions below remain the Phase A baseline; do not read “planned” as deployed or mark the full Q-matrix/terminal gates complete. Live validation/SSH/WS/Broker remain unavailable.
+
 # Acceptance traceability and Phase B–E milestones
 
 All cases below are **planned**, not implemented/executed Console tests. Phase A
