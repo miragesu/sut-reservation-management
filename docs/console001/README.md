@@ -1,3 +1,5 @@
+> **Phase C:** [Broker/Gateway implementation](phase-c-implementation.md) and [verification](phase-c-verification.md) describe the current backend review scope. Historical design/Phase B exclusions remain milestone-specific; default OFF and production/D/E gates remain.
+
 # CONSOLE-001 Phase A design review
 
 Status: **PHASE A DESIGN COMPLETE / PHASE B MOCK-ONLY FOUNDATIONS IMPLEMENTED; NO TERMINAL**. See [Phase A closure](phase-a-closure.md) for outstanding engineering and production gates.

@@ -13,6 +13,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.exc import IntegrityError, OperationalError
 from starlette.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.core.config import Settings
 from app.core.csrf import csrf_token
@@ -26,7 +27,7 @@ logger = logging.getLogger("sut.requests")
 
 def create_app(settings=None):
     settings = settings or Settings()
-    if settings.console_enabled:
+    if settings.console_enabled and not settings.console_broker_socket:
         from app.services.console.crypto import EnvelopeCipher, SecretUnavailable
 
         if not settings.console_keyring_file:
@@ -48,6 +49,8 @@ def create_app(settings=None):
         stopped = asyncio.Event()
         task = None
         try:
+            if app.state.console_runtime:
+                await app.state.console_runtime.start()
             if settings.deadline_processor_enabled:
                 # Catch up before accepting traffic; a failed initial run is visible.
                 await asyncio.to_thread(process_deadlines, app.state.engine, app.state.clock, settings)
@@ -57,6 +60,8 @@ def create_app(settings=None):
             stopped.set()
             if task:
                 await task
+            if app.state.console_runtime:
+                await app.state.console_runtime.stop()
 
     app = FastAPI(
         title="SUT Reservation Management — Day 2",
@@ -66,6 +71,11 @@ def create_app(settings=None):
         lifespan=lifespan,
     )
     app.state.settings = settings
+    app.state.console_runtime = None
+    if settings.console_enabled and settings.console_broker_socket:
+        from app.services.console.runtime import ConsoleRuntime
+
+        app.state.console_runtime = ConsoleRuntime(app, settings)
     app.state.clock = utcnow
     app.state.deadline_last_success = None
     app.state.engine = make_engine(settings.database_url)
@@ -74,6 +84,8 @@ def create_app(settings=None):
     app.state.templates.env.filters["taipei"] = lambda value: (
         value.astimezone(ZoneInfo("Asia/Taipei")).strftime("%Y-%m-%d %H:%M") if value else "—"
     )
+    if app.state.console_runtime:
+        app.add_middleware(BaseHTTPMiddleware, dispatch=app.state.console_runtime.http_barrier)
     app.add_middleware(
         SessionMiddleware,
         secret_key=settings.secret_key.get_secret_value(),
@@ -156,6 +168,11 @@ def create_app(settings=None):
     app.include_router(api)
     from app.routers.api.console import router as console_api
 
+    if app.state.console_runtime:
+        from app.routers.api.console_live import router as live_api, ws_router
+
+        app.include_router(live_api)
+        app.include_router(ws_router)
     app.include_router(console_api)
     app.include_router(web)
     from app.routers.api.coordination import router as coordination_api

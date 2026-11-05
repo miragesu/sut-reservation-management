@@ -384,3 +384,19 @@ Phase B is not started. C3 research is integrated; Phase A completion is defined
 - [ ] Real Client verification/trust/broker/SSH/WS/fencing, Console UI and production C3/C4/C5 gates (later phases, not Phase B completion claims).
 - [x] Phase B implementation f5b274e pushed and remote ref verified; reviewable PR body retained in docs/console001/phase-b-pr.md.
 - [ ] Phase B PR created: Codex attempt failed with `Post "https://api.github.com/graphql": Forbidden`; manual comparison link retained, no merge performed.
+
+## CONSOLE-001 Phase C — private SSH Broker / WebSocket backend
+
+- [x] Start latest main `c54948a0ad6f8c76761d9bc594147aec73775d70`, branch `feature/console001-phase-c`; retain Q1–Q83/C1/C2 and existing coordination behavior.
+- [x] Non-root separately controlled Broker, peer-UID/HMAC/replay/boot-bound Unix IPC, Broker-only KEK, encrypted Client candidates and auth-before-save.
+- [x] Pinned SSH before auth, password/encrypted-private-key Client methods, RAM-only BMC flows, RFC1918/fixed22/sensitive-target checks.
+- [x] Exact existing default-socket tmux attachment, native Detach-to-shell and concurrent readers/writers; no automatic tmux/minicom create/kill/reconfigure.
+- [x] Authenticated one-use WS tickets, Origin/tab/generation binding, fresh policy/epoch checks, two-layer read-only, ten-slot quota, bounded IO/paste/resize, finite retry/no input replay.
+- [x] Generation-specific acknowledged revocation and pending outbox recovery, independent Broker leases, explicit new Connect after Broker incarnation change.
+- [x] Disposable actual OpenSSH/tmux/BMC, distinct UID/mount-custody and full HTTP/WS/Broker/SSH pipeline verification; mock-only, not production acceptance.
+- [x] Three existing Chromium regression runners PASS; source Docker/Compose security/5088→80/migration/persistence/cold-recovery PASS.
+- [x] Final337-case suite,33 Gateway cases, final mock/image-only/installer reruns and documentation checks PASS; actual commands, scope and limitations in [Phase C verification](docs/console001/phase-c-verification.md).
+- [x] Branch pushed and PR against main attempted; exact GraphQL Forbidden recorded with [review-ready fallback](docs/console001/phase-c-pr.md). No automatic merge.
+- [ ] PR creation/hosted CI/review: PR command was Forbidden; branch remains pushed for manual creation.
+- [ ] Phase C review, C3/C4/C5 real operator prerequisites, production key/recovery/load and real-device acceptance.
+- [ ] Phase D full terminal UI and Phase E rollout; neither started nor authorized automatically.

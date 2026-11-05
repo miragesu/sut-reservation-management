@@ -343,3 +343,36 @@ Current Compose stays feature-off; installer tests use simulated preflight/regis
 transport and temporary host directories. Hosted post-push CI/new-branch Remote Build
 and production LAN acceptance are not inferred from local results. Phase A's Q1–Q83
 and owner C1/C2 ledger is unchanged; A1–A15 remain explicitly provisional.
+
+## CONSOLE-001 Phase C — backend implementation for review (2026-11-05)
+
+Base main `c54948a0ad6f8c76761d9bc594147aec73775d70`; branch
+`feature/console001-phase-c`. See [implementation](console001/phase-c-implementation.md)
+and [exact verification](console001/phase-c-verification.md). Q1–Q83 and approved
+C1/C2 remain unchanged. This supersedes the preceding Phase B unavailable-connector
+status for the separately authorized Phase C backend only.
+
+Implemented independently controlled non-root Broker/KEK custody, authenticated
+private Unix IPC, pinned password/private-key SSH, verified candidate commit,
+scoped host trust, RAM-only BMC flows, ticket-bound WebSocket PTY, exact existing
+tmux/native Detach-to-shell, concurrent writers, two-layer read-only, ten-slot
+quota, acknowledged revocation, finite retry/no replay and restart fail-closed.
+No migration beyond existing console001_b01, full terminal UI or production rollout.
+
+Three existing Chromium suites and source-build/Compose security,5088→80,
+coordination/deadline/persistence/cold-recovery regression PASS.33 Gateway unit
+cases PASS using explicitly FakeSSH plus real IPC/SQLite; actual separate-UID
+Broker and full HTTP/WS→Broker→OpenSSH/tmux pipeline also PASS in an internal
+mock Docker network. Final whole337-case suite PASS (one existing deprecation warning); final
+image-only Compose/installer PASS, including config, credentials, data and backup
+preservation. Exact commands and boundaries are in the verification report; do not infer hosted CI,
+public-registry publication, real-device or production LAN acceptance.
+
+Console defaults remain false/claim_only/insecure-HTTP false. Operator Compose,
+setup/release scripts and production secrets/data are unchanged. Actual C3 socket
+permissions/account privileges, C4 plaintext opt-in risk, C5 OOB fingerprints,
+key recovery/rotation/load, full Phase D UI and Phase E rollout remain gated.
+Phase D must not start automatically from this implementation.
+
+Phase C branch push succeeded (implementation81b08c0). PR create failed exactly
+`Post "https://api.github.com/graphql": Forbidden`; [fallback body and comparison](console001/phase-c-pr.md) are committed. No PR/merge or hosted-CI success is claimed.

@@ -17,7 +17,7 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install --require-hashes -r backend/requirements-dev.txt
-      - run: ruff check backend scripts
+      - run: ruff check backend scripts tests/console_mock
       - run: bash -n setup.sh
       - run: pytest -q
       - run: python -m playwright install --with-deps chromium
@@ -28,6 +28,10 @@ jobs:
         env:
           SUT_SMOKE_EXPORT_IMAGE: mirage315/sut-reservation-management:ci-${{ github.sha }}
         run: python scripts/container_smoke.py
+      - name: Verify isolated Console Broker, OpenSSH and tmux (no production endpoints)
+        run: |
+          docker tag mirage315/sut-reservation-management:ci-${{ github.sha }} sut-console001-c:local
+          python scripts/console_mock_smoke.py
       - name: Validate operator image-only Compose without build or checkout
         env:
           SUT_SMOKE_IMAGE: mirage315/sut-reservation-management:ci-${{ github.sha }}

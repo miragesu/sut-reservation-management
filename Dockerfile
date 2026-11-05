@@ -8,9 +8,12 @@ RUN --mount=type=secret,id=build_ca \
     pip install --require-hashes -r requirements.txt \
     && groupadd --gid 10001 sut \
     && useradd --uid 10001 --gid sut --no-create-home sut \
+    && groupadd --gid 10002 sut-broker \
+    && useradd --uid 10002 --gid sut-broker --groups sut --no-create-home sut-broker \
     && mkdir -p /app/data && chown sut:sut /app/data
-COPY --chown=sut:sut backend/ /app/
-COPY --chown=sut:sut scripts/entrypoint.sh /app/entrypoint.sh
+COPY backend/ /app/
+COPY scripts/entrypoint.sh /app/entrypoint.sh
+RUN chmod -R a+rX /app && chmod 0700 /app/data
 USER 10001:10001
 # Compose grants port 80 binding with a container-network-namespace sysctl; no capabilities.
 EXPOSE 80
