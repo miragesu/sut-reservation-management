@@ -342,11 +342,11 @@ Delivery and precise verification evidence: docs/implementation-status.md, DEP-0
 - [x] Read complete owner Q1–Q83 baseline, Compose policies, HTTP exception and current architecture; owner ledger unchanged.
 - [x] Draft separate architecture, SQLAlchemy/Alembic preservation plan, security model, interface contracts, compatibility amendment and83-row acceptance matrix.
 - [x] Distinguish approved feature decisions from proposed engineering defaults, including unconfirmed Q84 UX.
-- [x] Identify legacy MVP conflicts and live gates C1–C5 (tmux confinement/topology, public IPv4 ambiguity, OOB trust and plaintext transport acceptance).
-- [x] Phase A static documentation validation PASS:83 exact decision rows, baseline hash/unchanged ledger,66 links,2 JSON examples, Markdown-only diff and whitespace checks. Delivery outcome recorded separately.
+- [x] Identify legacy MVP conflicts and initial gates C1–C5. Owner later resolved C2 as RFC1918 private-only and C1 by explicitly allowing fixed Client account shell access after tmux Detach; C3 Client socket/account topology, C4 HTTP exposure and C5 host-key OOB review remain pilot gates.
+- [x] Original Phase A static documentation checks reported PASS:83 decision rows, baseline immutability,66 links,2 JSON examples and Markdown-only diff. Later approved C1/C2 owner amendments intentionally changed baseline; follow-up GitHub document review preserved Q1–Q83. Full original checker not rerun for those amendments.
 - [ ] Owner review/approval of Phase A scope amendment, design and engineering assumptions.
 - [ ] Phase B mock-only foundations authorized and implemented with tests.
-- [ ] C1–C5 resolved for intended live topology; Phase C connector/WS and revocation tests.
+- [ ] C3/C4/C5 live topology and residual-risk gates resolved; C1/C2 now owner scope-resolved but require implementation/behavior tests. Phase C connector/WS and revocation tests not started.
 - [ ] Phase D terminal UI/Chromium acceptance and Phase E deployment/recovery/rollout approval.
 
 These design artifacts are not implementation, migration, SSH validation, production
