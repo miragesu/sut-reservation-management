@@ -75,3 +75,9 @@ Final delivery adds only this evidence and PR text; final documentation assertio
 are rerun for the merged package. Automatic hosted baseline application CI, if
 triggered by branch pushes, is not evidence of unimplemented Console behavior and
 is not reported passing here.
+
+## Owner C2 clarification verification (2026-11-05)
+
+Owner selected **A: direct BMC SSH targets must be RFC1918 private IPv4; no Lab CIDR allowlist**. This explicitly narrows original Q5's unrestricted valid IPv4 phrasing. On the PR branch, the owner baseline Q5, baseline security/acceptance bullets, compatibility C2/D1 register, security target validation, Q5/X6 acceptance, and design README were updated together. This amendment is not a new Q84 decision.
+
+Follow-up GitHub document inspection confirms Q1–Q83 still appear exactly once, in order; C2 is marked resolved by owner; public/non-RFC1918 BMC addresses are prohibited; the intended exception does not create a per-Lab whitelist. Existing verification claims about original baseline byte immutability remain historical and **are no longer true of this amended branch**. Actual Markdown-only edits were made, but no feature build, live SSH, validation against running BMCs, Chromium, migration or Docker deployment was performed in this follow-up. Public/private target enforcement still requires implementation tests before Phase B live-network work.
