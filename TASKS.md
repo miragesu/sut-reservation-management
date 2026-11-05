@@ -431,3 +431,4 @@ Phase B is not started. C3 research is integrated; Phase A completion is defined
 - [x] Prepare detailed unchecked [operator acceptance](docs/console001/production-acceptance-checklist.md), one-Client/one-test-SUT [pilot](docs/console001/pilot-plan.md), and [GO/NO-GO](docs/console001/release-go-no-go.md).
 - [ ] Resolve/disposition R1 with reviewed root-cause/regression evidence; exact-source hosted CI and independent PR review.
 - [ ] Separately authorized RC tag/publish/public digest validation, C3/C4/C5 actual site approvals and pilot; no activation/merge/expansion follows from this review.
+- [x] Readiness2d3c6a0 pushed; PR creation attempted once and failed with `Post "https://api.github.com/graphql": Forbidden`; comparison retained in readiness. No PR created by Codex, no merge or release.

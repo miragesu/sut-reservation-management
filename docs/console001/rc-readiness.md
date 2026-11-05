@@ -280,6 +280,15 @@ this readiness PR. Independent review must resolve its release disposition.
 
 ## Delivery / release readiness
 
-PENDING BRANCH PUSH AND ONE PR ATTEMPT. No Git release tag, image push/alias change,
+Readiness commit: `2d3c6a04f5416ee5e8848eddb1d155561677d283`. Branch `release/console001-rc-preparation`
+pushed successfully. One `gh pr create` attempt exited1:
+
+```text
+Post "https://api.github.com/graphql": Forbidden
+```
+
+No PR created by this session. [Create/review comparison](https://github.com/miragesu/sut-reservation-management/compare/main...release/console001-rc-preparation?expand=1).
+No alternate attempt or merge. Documentation-only delivery follow-up records the
+outcome; R1 remains OPEN and publishing/pilot NO-GO remains unchanged. No Git release tag, image push/alias change,
 company access/deployment, production DB write, insecure-mode activation or automatic
 merge. Review preparation completion does not authorize RC publication or pilot.
