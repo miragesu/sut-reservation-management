@@ -15,6 +15,10 @@ from app.services.console.crypto import EnvelopeCipher
 async def main(args):
     if os.geteuid() == 0 or os.geteuid() == args.web_uid:
         raise SystemExit("Console Broker requires a separately provisioned non-root UID")
+    if policy := os.environ.get("CONSOLE_NETWORK_POLICY_FILE"):
+        from app.console_deployment import policy_file
+
+        policy_file(policy)
     cipher = EnvelopeCipher.from_file(args.keyring, login_secret=b"")
     server = BrokerServer(
         args.socket,

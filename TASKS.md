@@ -400,3 +400,22 @@ Phase B is not started. C3 research is integrated; Phase A completion is defined
 - [ ] PR creation/hosted CI/review: PR command was Forbidden; branch remains pushed for manual creation.
 - [ ] Phase C review, C3/C4/C5 real operator prerequisites, production key/recovery/load and real-device acceptance.
 - [ ] Phase D full terminal UI and Phase E rollout; neither started nor authorized automatically.
+
+
+## CONSOLE-001 Phase E — deployment integration / isolated pre-release acceptance
+
+- [x] Start latest main00776f9 on feature/console001-phase-e; preserve Q1–Q83/C1/C2 and existing BR behavior.
+- [x] Image-only opt-in overlay: Web10001/Broker10002, authenticated private IPC, disjoint DB/KEK mounts, read-only roots, private namespace initializer drops to10003/zero effective capabilities;5088→80 retained.
+- [x] Strict operator deny policy plus actual kernel egress tests, fixed BMC22/RFC1918/no Lab CIDR allowlist, independent sensitive/self protection; defaults OFF/claim_only/insecure HTTP false.
+- [x] Explicit HTTP plaintext risk acknowledgement, exact Origins/private bind and startup fail-closed authenticated retained-envelope checks; installer refuses unpaired Console upgrades.
+- [x] Offline key verify/atomic rewrap, mid-batch corruption rollback, actual wrong-KEK rejection and independent unmounted key-backup recovery, no plaintext output.
+- [x] Actual fresh Console-on install, populated old-main image upgrade, business-table fingerprints/counts, cold empty-directory restore and old-image/pre-upgrade-backup rollback pass; schema/integrity/FKs retained.
+- [x]358 pytest, Ruff/format/shell/module/actionlint/static-doc checks, three legacy Chromium suites,34 Console Chromium checkpoints, actual isolated SSH/tmux/BMC, Docker/source/image-only/installer regressions PASS. See [verification](docs/console001/phase-e-verification.md).
+- [x] [Implementation](docs/console001/phase-e-implementation.md), [operator runbook](docs/console001/operator-runbook.md) and [recovery](docs/console001/rollback-and-recovery.md) distinguish isolated completion from production gates.
+- [ ] Hosted CI, independent PR review and merge; no automatic merge.
+- [ ] C3 actual Client account/default-socket/minicom/shared-shell acceptance.
+- [ ] C4 actual LAN ingress/egress/mount/reboot and explicit plaintext HTTP/WS operator risk approval.
+- [ ] C5 independently controlled fingerprint distribution/process and residual RD trust-risk acceptance.
+- [ ] Real BMC/physical UART, production backup/restore/load, reviewed TLS/WSS end-to-end and separately authorized release/activation. No image publication or next phase.
+
+- [x] Phase E implementation c96a219 pushed; one PR attempt failed with `Post "https://api.github.com/graphql": Forbidden`; comparison and review-ready body retained in Phase E verification. No PR created by Codex, no automatic merge.

@@ -3,6 +3,7 @@
 import asyncio
 import hmac
 import logging
+import os
 import re
 import secrets
 import shlex
@@ -64,6 +65,11 @@ class SSHTransport:
 
     def target(self, host, port, transport):
         try:
+            if policy := os.environ.get("CONSOLE_NETWORK_POLICY_FILE"):
+                from app.console_deployment import denies_target
+
+                if denies_target(policy, host, port):
+                    raise ValueError()
             validate_ipv4(host, bmc=transport == "bmc", sensitive=self.sensitive)
             if type(port) is not int or not 1 <= port <= 65535 or transport == "bmc" and port != 22:
                 raise ValueError()

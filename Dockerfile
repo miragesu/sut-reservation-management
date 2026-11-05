@@ -5,11 +5,16 @@ COPY backend/requirements.txt /app/requirements.txt
 RUN --mount=type=secret,id=build_ca \
     set -eu; \
     if [ -f /run/secrets/build_ca ]; then export PIP_CERT=/run/secrets/build_ca; fi; \
-    pip install --require-hashes -r requirements.txt \
+    if [ -f /run/secrets/build_ca ]; then export SSL_CERT_FILE=/run/secrets/build_ca; fi; \
+    apt-get update && apt-get install -y --no-install-recommends iptables \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --require-hashes -r requirements.txt \
     && groupadd --gid 10001 sut \
     && useradd --uid 10001 --gid sut --no-create-home sut \
     && groupadd --gid 10002 sut-broker \
     && useradd --uid 10002 --gid sut-broker --groups sut --no-create-home sut-broker \
+    && groupadd --gid 10003 sut-network \
+    && useradd --uid 10003 --gid sut-network --no-create-home sut-network \
     && mkdir -p /app/data && chown sut:sut /app/data
 COPY backend/ /app/
 COPY scripts/entrypoint.sh /app/entrypoint.sh

@@ -237,6 +237,9 @@ main() {
     [[ "$(stat -c %u "$INSTALL_DIR")" == "$EUID" && "$(stat -c %a "$INSTALL_DIR")" == 700 ]] || fail 'Deployment directory must be operator-owned with mode 0700.' 
     exec 9>"$INSTALL_DIR/.setup.lock"
     flock -n 9 || fail 'Another installer is running in this directory.'
+    # Console custody/namespace/DB upgrades require the reviewed paired-image runbook.
+    # Never silently reconcile only Web or omit the independent Broker override.
+    [[ ! -e "$INSTALL_DIR/compose.console.yaml" && ! -e "$INSTALL_DIR/console.env" ]] || fail 'Console deployment detected; use the Console paired-image backup/upgrade runbook. No changes made.'
     preflight
     local existing=false
     if [[ -f "$INSTALL_DIR/.env" ]]; then

@@ -1,8 +1,15 @@
 # SUT Reservation & Queue Management System
 
-Day 1–Day 3 implementation for a Taiwan-only internal coordination application: Python 3.12, FastAPI, synchronous SQLAlchemy 2, Alembic, SQLite, Jinja2 and locally served Bootstrap 5.3.8. Recorded status is advisory; the application never controls hardware, SSH, BMC or power.
+Day 1–Day 3 implementation for a Taiwan-only internal coordination application: Python 3.12, FastAPI, synchronous SQLAlchemy 2, Alembic, SQLite, Jinja2 and locally served Bootstrap 5.3.8. Reservation, Claim and Queue status coordinate use without enforcing physical access. The separately gated Remote Console provides authorized SSH and permits operations allowed by the remote account.
 
 Implemented: local accounts/RBAC, inventory/lifecycle management, atomic Claim/Release and Usage History, FIFO notification/manual Claim, reservations/check-in/no-show, background deadlines, Dashboard action modals, notification bell/desktop opt-in, Calendar and profile self-service. Full production acceptance still requires the actual LAN/owner gates; see [actual evidence](docs/implementation-status.md).
+
+Console deployment is **OFF by default**. Its separate image-only overlay, Broker
+custody, egress and explicit HTTP/WS risk approval are documented in the
+[Console operator runbook](docs/console001/operator-runbook.md). The ordinary
+installer does not activate Console and refuses to update an existing Console
+stack without the paired upgrade procedure. Actual C3/C4/C5 production acceptance
+and a separately authorized release remain open.
 
 ## Administrator Quick Start — Linux Server
 

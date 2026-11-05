@@ -280,3 +280,15 @@ read -r answer
 """,
         "yes\n",
     )
+
+
+@pytest.mark.parametrize("marker", ["compose.console.yaml", "console.env"])
+def test_console_deployment_requires_paired_upgrade(tmp_path, marker):
+    tmp_path.chmod(0o700)
+    (tmp_path / marker).touch()
+    secret = "synthetic-persistent-secret-unchanged"
+    (tmp_path / ".env").write_text(secret)
+    result = bash(tmp_path, "preflight() { echo SHOULD_NOT_RUN; }; main --upgrade 1.0.1", success=False)
+    assert "paired-image" in result.stderr
+    assert "SHOULD_NOT_RUN" not in result.stdout
+    assert (tmp_path / ".env").read_text() == secret

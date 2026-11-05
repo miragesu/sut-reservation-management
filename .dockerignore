@@ -29,3 +29,8 @@ console-secrets/
 *.key
 
 node_modules/
+
+# Private Console operator metadata/custody must never enter Git or image layers.
+console.env
+console-policy.json
+console-deployment/
