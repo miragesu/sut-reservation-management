@@ -1,3 +1,27 @@
+# Current review scope — CONSOLE-001 RC preparation
+
+Based on merged A–E main69b4496, branch `release/console001-rc-preparation`.
+**GO for readiness review only; NO-GO for RC publication or live pilot.**
+[Readiness and83-decision crosswalk](console001/rc-readiness.md),
+[operator acceptance](console001/production-acceptance-checklist.md),
+[pilot](console001/pilot-plan.md), [blocking gates](console001/release-go-no-go.md).
+
+Proposed v1.1.0-rc.1 is not created/published. Read-only remote tag/registry HEAD
+observations show1.0.2 latest official tag and latest manifest; stable and proposed
+RC absent. Current main is unreleased Console integration. Defaults remain OFF /
+claim_only / insecure HTTP false, coordination available without Broker/keys.
+
+Current verification:358 pytest, lint/format/shell/module/actionlint/pip, three legacy
+browsers, seven Console deployment groups, source Docker, image-only Compose and
+installer lifecycle PASS. First Console Chromium run failed participant counting;
+unchanged repeat passed34 checks. **R1 remains an unresolved validation blocker**,
+with a documented diagnostic/corrective plan. Passing repeat does not erase failure.
+No product/test assertion/deployment/release configuration changed. No public image
+pull/publication, company access, production DB write, insecure-mode activation or
+merge. C3/C4/C5, hosted CI, release authorization and operator pilot remain pending.
+
+Historical milestone results below are retained, not current all-green acceptance.
+
 # Current review scope — CONSOLE-001 Phase E
 
 Deployment integration and isolated pre-release acceptance are implemented on latest

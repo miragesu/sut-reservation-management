@@ -419,3 +419,15 @@ Phase B is not started. C3 research is integrated; Phase A completion is defined
 - [ ] Real BMC/physical UART, production backup/restore/load, reviewed TLS/WSS end-to-end and separately authorized release/activation. No image publication or next phase.
 
 - [x] Phase E implementation c96a219 pushed; one PR attempt failed with `Post "https://api.github.com/graphql": Forbidden`; comparison and review-ready body retained in Phase E verification. No PR created by Codex, no automatic merge.
+
+
+## CONSOLE-001 RC readiness preparation — review only
+
+- [x] Latest merged A–E main69b4496; branch release/console001-rc-preparation. Preserve owner Q1–Q83/C1/C2, runtime/UI/DB/deployment/release files unchanged.
+- [x] Review all83 decisions in [current crosswalk](docs/console001/rc-readiness.md), historical conflicts/assumptions and actual source/test evidence; no83-case production PASS claim.
+- [x] Inventory remote Git v1.0.0/1/2 and anonymous registry manifests; propose v1.1.0-rc.1, presently absent. latest equals1.0.2, stable absent. No tag/image/alias mutation.
+- [x] Verify false/claim_only/insecure HTTP false defaults and coordination without Broker/custody; run358 pytest, three legacy browsers, actual SSH/browser/deployment/Docker/image-only/installer checks and record exact outcomes.
+- [x] Record first Console browser participant-count failure and unchanged34-check rerun PASS; **R1 remains OPEN**, not silently marked fixed or all-green.
+- [x] Prepare detailed unchecked [operator acceptance](docs/console001/production-acceptance-checklist.md), one-Client/one-test-SUT [pilot](docs/console001/pilot-plan.md), and [GO/NO-GO](docs/console001/release-go-no-go.md).
+- [ ] Resolve/disposition R1 with reviewed root-cause/regression evidence; exact-source hosted CI and independent PR review.
+- [ ] Separately authorized RC tag/publish/public digest validation, C3/C4/C5 actual site approvals and pilot; no activation/merge/expansion follows from this review.
