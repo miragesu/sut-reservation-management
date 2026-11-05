@@ -1,6 +1,6 @@
 # CONSOLE-001 Phase A design review
 
-Status: **PHASE A DESIGN DOCUMENTATION COMPLETE / NO IMPLEMENTATION**. See [Phase A closure](phase-a-closure.md) for outstanding engineering and production gates.
+Status: **PHASE A DESIGN COMPLETE / PHASE B MOCK-ONLY FOUNDATIONS IMPLEMENTED; NO TERMINAL**. See [Phase A closure](phase-a-closure.md) for outstanding engineering and production gates.
 Base: `1536ea7b72dc32e8e0f11c8df3f0c7896e04691a` (latest fetched main).
 The complete [owner baseline](../CONSOLE_001_REQUIREMENTS.md) is authoritative:
 Q1–Q83, topology, three Compose policies, and explicit intranet HTTP/WS exception.
@@ -50,3 +50,14 @@ disconnect/reconnect. The research-only harness is separate from application cod
 it does not implement the Console feature, approve production C3, or authorize B.
 The original Phase A Markdown-only/no-SSH statements describe its design delivery,
 not this separately requested disposable experiment. C1/C2 remain scope-resolved.
+
+## Phase B backend foundation
+
+The separate owner instruction authorizes the [mock-only foundation implementation](phase-b-implementation.md).
+[Verification](phase-b-verification.md) distinguishes passing schema/crypto/metadata
+and legacy regressions from unavailable live verification/terminal paths. Client
+onboarding/credential/host trust requests fail closed until Phase C; no production
+success path or test-validator switch is exposed. A1–A15 remain provisional as
+recorded there. All earlier “planned/not implemented” statements describe Phase A
+proposals unless the Phase B report explicitly records their implemented subset.
+Phase C, production pilot, release and merge remain separately gated.

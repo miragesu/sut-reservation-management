@@ -312,3 +312,34 @@ was touched.
 
 The owner requested completing the Phase A design milestone. [Closure decision](console001/phase-a-closure.md) records the scope and independent C3/C4/C5 production gates; engineering assumptions A1–A15 remain provisional. C3 PR #14 is integrated. This does not authorize Phase B, real SSH, changing any Client, publishing a Console Docker image or production rollout. Full application and browser regression gates were not rerun for this
 research-only change.
+
+
+## CONSOLE-001 Phase B — mock-only backend foundation (2026-11-05)
+
+Implemented on `feature/console001-phase-b` from main80b8033. See
+[implementation/provisional choices](console001/phase-b-implementation.md) and
+[actual verification](console001/phase-b-verification.md).
+
+- Additive migration console001_b01:13 new tables, constrained mappings/history,
+  credentials/trust, grants, quota/tickets/confirmations and pending revocation outbox.
+  Fresh/populated upgrade preserves every existing row; no inventory BMC import.
+  Integrity/FKs, compatible pre-upgrade backup recovery and nonempty downgrade refusal pass.
+- Strict OFF defaults; Admin metadata and RD independent settings APIs, three-policy
+  authorization, maintenance grants and internal race-safe10-session reservations.
+  Envelope AES-GCM uses an independent private keyring outside the SQLite directory;
+  saved secrets cannot be revealed. Real verification-dependent operations503 with
+  no fake production success; no SSH/Broker/WS/terminal implementation exists.
+- **304 pytest PASS** (87 new Console cases +217 existing), Ruff PASS, three existing
+  Chromium runners PASS, local source Docker/5088→80/non-root/persistence/deadline/
+  recovery smoke PASS, final image-only low-mode Compose smoke PASS, and disposable
+  installer fresh/rerun/backup-upgrade preservation PASS. One existing Starlette/httpx
+  deprecation warning remains; no dependency upgrades besides cryptography46.0.7.
+
+Only local images were built/run; no registry publication, production `/data`/SQLite,
+Console Client, BMC, SSH key or deployment was changed. New Compose flags/key mounts,
+actual network authentication/trust, live session fencing/delivery, Browser Console,
+C3/C4/C5 pilot and Phase C remain unimplemented/unverified and separately gated.
+Current Compose stays feature-off; installer tests use simulated preflight/registry
+transport and temporary host directories. Hosted post-push CI/new-branch Remote Build
+and production LAN acceptance are not inferred from local results. Phase A's Q1–Q83
+and owner C1/C2 ledger is unchanged; A1–A15 remain explicitly provisional.

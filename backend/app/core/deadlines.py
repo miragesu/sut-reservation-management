@@ -13,15 +13,18 @@ from app.services.coordination import reconcile_all
 logger = logging.getLogger("sut.deadlines")
 
 
-def process_deadlines(engine, clock=utcnow):
+def process_deadlines(engine, clock=utcnow, settings=None):
     with unit_of_work(engine, write=True) as db:
         reconcile_all(db, clock())
+        from app.services.console.foundation import cleanup
+
+        cleanup(db, clock(), settings=settings)
 
 
 async def run_deadlines(app, stopped):
     while not stopped.is_set():
         try:
-            await asyncio.to_thread(process_deadlines, app.state.engine, app.state.clock)
+            await asyncio.to_thread(process_deadlines, app.state.engine, app.state.clock, app.state.settings)
             app.state.deadline_last_success = app.state.clock()
         except Exception:
             # No request payloads, SQL parameters or credentials in logs. The next

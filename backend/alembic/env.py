@@ -3,7 +3,7 @@ import os
 from alembic import context
 
 from app.core.database import Base, make_engine
-from app.models import domain  # noqa: F401
+from app.models import console, domain  # noqa: F401
 
 config = context.config
 url = os.environ.get("DATABASE_URL") or config.get_main_option("sqlalchemy.url")

@@ -31,6 +31,10 @@ def lab_delete(db, actor, identity):
     lab = get_or_404(db, Lab, identity)
     if db.scalar(select(SUT.id).where(SUT.lab_id == identity).limit(1)):
         raise HTTPException(409, "Lab contains SUTs (including archived); preserve their history")
+    from app.models.console import ConsoleClient
+
+    if db.scalar(select(ConsoleClient.id).where(ConsoleClient.lab_id == identity).limit(1)):
+        raise HTTPException(409, "Lab contains retained Console Clients")
     db.delete(lab)
     audit(db, actor, "lab_deleted", lab_id=identity, name=lab.name)
 
@@ -94,6 +98,10 @@ def archive(db, actor, identity, *, restore=False):
         sut.archived_at = clock_now(db)
         sut.archived_by_user_id = actor.id
     audit(db, actor, "sut_restored" if restore else "sut_archived", sut_id=identity)
+    db.flush()
+    from app.services.console.foundation import cleanup
+
+    cleanup(db, clock_now(db))
 
 
 def operational(db, actor, identity, data, *, now=None):
@@ -145,9 +153,14 @@ def operational(db, actor, identity, data, *, now=None):
                 user_id=user_id,
                 sut_id=identity,
                 event_key=event,
-                message=f"{sut.name}：設備狀態已變更為{ {'normal':'正常','maintenance':'維護中','out_of_service':'停用'}[data.state] }，既有使用、排隊與預約紀錄均保留。",
+                message=f"{sut.name}：設備狀態已變更為{ {'normal': '正常', 'maintenance': '維護中', 'out_of_service': '停用'}[data.state] }，既有使用、排隊與預約紀錄均保留。",
             )
         )
+
+    if data.state == "normal":
+        from app.services.console.foundation import settle_grants
+
+        settle_grants(db, now)
 
 
 def natural(value):

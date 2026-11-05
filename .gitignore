@@ -25,3 +25,9 @@ test-results/
 # Installer-managed private configuration, audit snapshots and image lock.
 sut-deployment/
 .records-before.json
+
+# Independent Console encryption keys must stay outside the repository/DB backup.
+console-secrets/
+*console*keyring*.json
+*.pem
+*.key

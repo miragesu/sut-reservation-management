@@ -6,10 +6,10 @@
 ## Phase 0 — Decision gate
 The independent CONSOLE-001 feature is tracked in the [Phase A package](docs/console001/README.md); it does not change historical MVP checkmarks below.
 
-- [ ] CONSOLE-001 Phase A design approved by owner (documentation completion is not approval).
-- [ ] Resolve public-target wording D1 and review foundational H2/H4/H5 assumptions.
-- [ ] Phase B foundations implemented and isolated preservation/security tests pass.
-- [ ] Phase C helper confinement, SSH/WS/revocation and mock integration gates pass; D1/H1/H8 resolved.
+- [x] CONSOLE-001 Phase A design milestone closed at owner direction; A1–A15 remain provisional (see closure and Phase B review).
+- [x] D1/C2 resolved RFC1918-only; H2/H4/H5 provisional Phase B choices documented, not owner-numbered decisions.
+- [x] Phase B mock-only foundations implemented and isolated preservation/security tests pass; pending live validation is explicit.
+- [ ] Phase C SSH/WS/revocation and mock integration gates pass; old helper confinement superseded by approved interactive shell.
 - [ ] Phase D terminal/admin UX and Chromium matrix pass.
 - [ ] Phase E hardening, operator HTTP acknowledgement, recovery and separately authorized production pilot accepted.
 
@@ -345,7 +345,7 @@ Delivery and precise verification evidence: docs/implementation-status.md, DEP-0
 - [x] Identify legacy MVP conflicts and initial gates C1–C5. Owner later resolved C2 as RFC1918 private-only and C1 by explicitly allowing fixed Client account shell access after tmux Detach; C3 Client socket/account topology, C4 HTTP exposure and C5 host-key OOB review remain pilot gates.
 - [x] Original Phase A static documentation checks reported PASS:83 decision rows, baseline immutability,66 links,2 JSON examples and Markdown-only diff. Later approved C1/C2 owner amendments intentionally changed baseline; follow-up GitHub document review preserved Q1–Q83. Full original checker not rerun for those amendments.
 - [x] Phase A documentation/scope amendment reviewed and **closed as design milestone** at owner direction (2026-11-05). Detailed A1–A15 engineering assumptions remain provisional pending implementation reviews. See [closure](docs/console001/phase-a-closure.md).
-- [ ] Phase B mock-only foundations authorized and implemented with tests.
+- [x] Phase B mock-only foundations explicitly authorized and implemented/tested; live validation/terminal remains unavailable by design.
 - [ ] C3/C4/C5 live topology and residual-risk gates resolved; C1/C2 now owner scope-resolved but require implementation/behavior tests. Phase C connector/WS and revocation tests not started.
 - [ ] Phase D terminal UI/Chromium acceptance and Phase E deployment/recovery/rollout approval.
 
@@ -367,3 +367,18 @@ connectivity or image publication. See docs/console001/verification.md.
 
 No application behavior, production resources, deployment or images changed;
 Phase B is not started. C3 research is integrated; Phase A completion is defined by the design closure document, not by production readiness.
+
+
+## CONSOLE-001 Phase B — mock-only backend foundation
+
+- [x] Start latest main80b8033 on feature/console001-phase-b; read complete required baseline and Phase A closure; preserve Q1–Q83 and C1/C2.
+- [x] Add13 Console tables and revision console001_b01; FK/unique/check/trigger guards, same-Lab/active-slot/history invariants, no BMC inventory import, safe nonempty downgrade refusal.
+- [x] Strict disabled defaults, independent envelope/keyring protection, no reveal or fake production validation-success path.
+- [x] Admin metadata/version control; RD independent UART/BMC settings, RFC1918/sensitive-self classification, history, impact proofs and scoped pending revocation metadata.
+- [x] Three-policy authorization, maintenance grants/expiry/extension/revocation and original24h bound; no grant notices or coordination record mutations.
+- [x] Internal10-slot quota/ticket/generation/reconnect primitives and concurrent allocation; no terminal/WS route or real SSH.
+- [x] Fresh/populated migration and compatible synthetic backup recovery, encryption/non-disclosure and concurrent metadata tests; exact counts and commands in [verification](docs/console001/phase-b-verification.md).
+- [x] Existing regression, Chromium, local source-build/image-only Compose and disposable installer lifecycle checks executed; no production/registry acceptance inferred.
+- [x] Document A1–A15 provisional choices, implemented API subset and Phase C handoff limitations in [implementation report](docs/console001/phase-b-implementation.md).
+- [ ] Owner review/merge of Phase B PR; no automatic merge.
+- [ ] Real Client verification/trust/broker/SSH/WS/fencing, Console UI and production C3/C4/C5 gates (later phases, not Phase B completion claims).

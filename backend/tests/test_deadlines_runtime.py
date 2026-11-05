@@ -60,11 +60,11 @@ def test_no_show_background_and_retry_after_failed_iteration(arena, application,
     real = deadlines.process_deadlines
     calls = []
 
-    def transient(engine, clock):
+    def transient(engine, clock, settings=None):
         calls.append(1)
         if len(calls) == 1:
             raise RuntimeError("SYNTHETIC-PRIVATE-DETAIL")
-        return real(engine, clock)
+        return real(engine, clock, settings)
 
     monkeypatch.setattr(deadlines, "process_deadlines", transient)
     try:

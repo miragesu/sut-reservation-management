@@ -26,6 +26,22 @@ logger = logging.getLogger("sut.requests")
 
 def create_app(settings=None):
     settings = settings or Settings()
+    if settings.console_enabled:
+        from app.services.console.crypto import EnvelopeCipher, SecretUnavailable
+
+        if not settings.console_keyring_file:
+            raise SecretUnavailable()
+        from sqlalchemy.engine import make_url
+
+        database_file = make_url(settings.database_url).database
+        if database_file and Path(settings.console_keyring_file).resolve().is_relative_to(
+            Path(database_file).resolve().parent
+        ):
+            raise SecretUnavailable()
+        # Validate separate key custody; no credential decrypt/provisioning occurs here.
+        EnvelopeCipher.from_file(
+            settings.console_keyring_file, login_secret=settings.secret_key.get_secret_value().encode()
+        )
 
     @asynccontextmanager
     async def lifespan(app):
@@ -34,7 +50,7 @@ def create_app(settings=None):
         try:
             if settings.deadline_processor_enabled:
                 # Catch up before accepting traffic; a failed initial run is visible.
-                await asyncio.to_thread(process_deadlines, app.state.engine, app.state.clock)
+                await asyncio.to_thread(process_deadlines, app.state.engine, app.state.clock, settings)
                 task = asyncio.create_task(run_deadlines(app, stopped))
             yield
         finally:
@@ -138,6 +154,9 @@ def create_app(settings=None):
     from app.routers.web.routes import router as web
 
     app.include_router(api)
+    from app.routers.api.console import router as console_api
+
+    app.include_router(console_api)
     app.include_router(web)
     from app.routers.api.coordination import router as coordination_api
 
