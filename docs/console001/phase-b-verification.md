@@ -123,3 +123,20 @@ HTTP/WS risk requires explicit operator acknowledgement and LAN controls. C5 nee
 independently verified fingerprints and operational risk signoff. A1–A15 choices
 remain provisional as enumerated in the implementation report. Phase C needs an
 explicit separate instruction after review, not automatic continuation from this PR.
+
+## GitHub delivery
+
+Implementation commit `f5b274ec808de2d6cd35beae672006d1fba1af8c` was pushed to
+`feature/console001-phase-b` and its remote ref verified. PR creation targeting
+main was attempted and failed with the exact error:
+
+```text
+Post "https://api.github.com/graphql": Forbidden
+```
+
+No PR was created by Codex, no merge or Phase C start occurred. The pushed branch,
+[reviewable PR description](phase-b-pr.md) and
+[comparison/manual creation link](https://github.com/miragesu/sut-reservation-management/compare/main...feature%2Fconsole001-phase-b?expand=1)
+are retained. Hosted post-push CI remains unverified; local passing checks above
+are not represented as a hosted run result. The delivery-only follow-up changes
+Markdown, not the tested application or image contents.

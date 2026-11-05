@@ -382,3 +382,5 @@ Phase B is not started. C3 research is integrated; Phase A completion is defined
 - [x] Document A1–A15 provisional choices, implemented API subset and Phase C handoff limitations in [implementation report](docs/console001/phase-b-implementation.md).
 - [ ] Owner review/merge of Phase B PR; no automatic merge.
 - [ ] Real Client verification/trust/broker/SSH/WS/fencing, Console UI and production C3/C4/C5 gates (later phases, not Phase B completion claims).
+- [x] Phase B implementation f5b274e pushed and remote ref verified; reviewable PR body retained in docs/console001/phase-b-pr.md.
+- [ ] Phase B PR created: Codex attempt failed with `Post "https://api.github.com/graphql": Forbidden`; manual comparison link retained, no merge performed.
