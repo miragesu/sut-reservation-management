@@ -1,5 +1,7 @@
 # CONSOLE-001 RC readiness review
 
+> **Post-review update (2026-11-05, after PR #21):** R1 code-level blocker is RESOLVED by independently reviewed [PR #21](https://github.com/miragesu/sut-reservation-management/pull/21), merged as `4efd996aab8dd454e6b2a4494fd73149b64949bd`. Its exact-head hosted [Application checks #42010195632](https://github.com/miragesu/sut-reservation-management/actions/runs/42010195632) passed, after documented pre-fix 5.09s event-loop stall and post-fix 5 independent 34-checkpoint Chromium runs. [Issue #20](https://github.com/miragesu/sut-reservation-management/issues/20) is closed. The original first-run failure remains faithfully documented below as *historical pre-fix evidence*, not an unresolved current root cause. This RC-readiness document was written against earlier main and is not itself the release-source approval. **RC tag/image publication and live pilot remain NO-GO** pending exact final source/release validation and separate owner/operator approvals; C3/C4/C5 real-world gates remain OPEN. No RC version was tagged or published.
+
 Review date2026-11-05 (Asia/Taipei). Base main
 `69b44960c0deaab007a43eaa4afd061804a430d6` (merged Phase A–E and PR18 backup-path
 follow-up), branch `release/console001-rc-preparation`. **Documentation/readiness
