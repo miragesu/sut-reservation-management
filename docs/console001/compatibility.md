@@ -31,12 +31,12 @@ not actually added/enabled.
 | ID | Conflict / missing proof | Required resolution and blocking scope |
 | --- | --- | --- |
 | C1 | Existing tmux attachment and native controls/shared writes vs requirement to prevent Client shell pivot, cross-SUT session control or create/kill tmux; usual writable tmux socket/prefix can do those things. Existing daemon-owned tmux/minicom must not be modified. | Prove a constrained account/helper and supported tmux client isolation satisfy both, using an operator-supplied mock/representative topology. Do not assume a nonexistent flag or filter terminal commands as a security boundary. If impossible, owner/security must approve a specific scope change or topology; **blocks UART live connector/pilot**, not mock-only B. |
-| C2 | Q5 permits any syntactically valid BMC IPv4 without Lab allowlist, except sensitive non-BMC destinations; baseline§5 additionally says 'deny public/self-sensitive targets'. It is unclear whether all public unicast must be denied. | Review explicit interpretation: (a) public unicast denied as deployment policy without a per-Lab CIDR list, or (b) only sensitive/non-BMC targets denied, with the phrase referring to public gateway exposure and residual address risk accepted. Never silently choose either. Special/self/metadata denial is undisputed; disputed classes are not enabled pending resolution. **Blocks live address-policy acceptance in C/E**. |
+| C2 — **RESOLVED BY OWNER 2026-11-05** | Initial Q5 wording allowed any syntactically valid IPv4 without Lab CIDR list; the owner now explicitly chooses **RFC1918 private IPv4 only, no Lab-specific CIDR allowlist**. | Enforce 10/8, 172.16/12, 192.168/16 and still deny sensitive self/host/metadata/control-plane targets within private ranges. Reject all non-RFC1918/public BMC endpoints. Update security, contracts and acceptance tests. **C2 interpretation closed; implementation and network-pilot tests still pending.** |
 | C3 | Fixed Client identity spanning many UART sessions requires attachment permission to existing tmux owner/socket. Helper installation and socket ACL/remote principal isolation are not specified. | Operator provides reviewed Client ownership/version/SSH forced-command/ACL contract without creating or killing sessions or modifying tmux/minicom settings. Verify no shell/forwarding or unrestricted socket path. Separate authorized infrastructure work, no production probe in A. **Blocks live UART testing/pilot**. |
 | C4 | HTTP/WS is owner-approved yet exposes reusable Client provisioning credential, BMC password, cookie and console data | No technical contradiction can make plaintext confidential. Operator acknowledgement, bind/firewall/egress and credential sensitivity review required for deployment. Do not reclassify HTTP as safe or require unapproved corporate DNS/certificate. **Blocks production enablement**, not offline design. |
 | C5 | RD can replace a shared Client host key and affect other users; OOB fingerprint source is unspecified | Document independent trusted fingerprint distribution and authorized RD training/incident path. Malicious trusted RD can still poison trust; audit is detection, not prevention. Owner/security must accept residual risk. **Blocks trust pilot acceptance**. |
 
-No new owner answer is invented for C1–C5. These are review items in this PR, not
+Only C2 has a new explicit owner clarification; no new owner answer is invented for C1/C3/C4/C5. These are review items in this PR, not
 an invitation to rewrite the83 decisions or make real network connections.
 
 ## Engineering assumptions (proposed, not confirmed business policy)
@@ -67,7 +67,7 @@ preserved for explicit review rather than silently promoted to owner policy:
 | Prior item | Consolidated treatment |
 | --- | --- |
 | H1 helper confinement / no-start-server | C1/C3 retain and strengthen the proof gate. No control-mode adapter is assumed implemented or compliant by merely naming it. |
-| D1 public-target ambiguity | C2 retains both destination-class versus public-gateway-exposure interpretations. No live enablement pending resolution. |
+| D1 public-target ambiguity | **Resolved** by 2026-11-05 owner decision: private RFC1918 only, no per-Lab CIDR allowlist. Historical alternatives are recorded here, not active implementation options. |
 | H2 disabled Client retains binding's unique slot | **A14:** alternative to this package's proposed inactive slot while Client disabled. Q21 says disabled bindings free active slots; whether that includes Client disable must be explicitly settled before B schema/trigger semantics. Keep mappings/history in both cases, no silent stealing or revival. |
 | H3 unconfirmed early-revoke UX | A1 retains proposed confirmation only; Q84 is not owner-confirmed. |
 | H4 tmux max128 vs proposed64 | A2 retains both as compatibility choices; grammar/safe exact encoding needs review before validator/schema is frozen. No remote renaming. |
@@ -87,7 +87,7 @@ links remain valid entry points to the consolidated documents.
 Ready to review additive schema/services contracts and mock-only security invariants.
 Before starting B: approve this scope amendment, choose crypto/library/schema details
 (A2/A3/A4/A8/A14), confirm no hidden current-head migration conflict, and commit fixture
-plans. C1/C2/C3/C5 are tracked blockers before live connector/trust rollout; they do
+plans. C1/C3/C5 are tracked blockers before live connector/trust rollout; C2 is resolved but remains unimplemented and untested, and they do
 not justify missing foundational tests or declaring production-ready. Phase A
 review is not owner acceptance of assumptions merely because they are documented.
 No instruction here authorizes a pilot, Docker release, real SSH or secret rotation.
