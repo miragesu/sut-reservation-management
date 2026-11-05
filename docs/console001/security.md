@@ -193,7 +193,7 @@ recorded reading them; this consolidation does not claim new external validation
 of a particular library/version or remote helper:
 
 - [AsyncSSH API](https://asyncssh.readthedocs.io/en/latest/api.html): verify key-check/userauth ordering and denied forwarding/subsystems.
-- [tmux manual](https://man.openbsd.org/tmux): prove exact existing target, no-start-server and isolation on the supported version; ordinary attach is not confinement.
+- [tmux manual](https://man.openbsd.org/tmux): verify exact existing target, no unrequested tmux-server/session creation, ordinary attach and Detach-to-shell behavior on the supported version; unrestricted native tmux commands are now an explicit owner-approved capability.
 - [cryptography AEAD API](https://cryptography.io/en/stable/hazmat/primitives/aead/): nonce/AAD correctness and migration of envelopes.
 - [xterm.js security guide](https://xtermjs.org/docs/guides/security/): hostile output, addons, clipboard and renderer boundaries.
 
