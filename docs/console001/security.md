@@ -18,7 +18,7 @@ classifier. A compromised host/root defeats local process separation and key fil
 | --- | --- | --- |
 | HTTP/WS interception/injection | Explicit operator opt-in, LAN bind/firewall, warning; no URL/log/storage secrets. Still plaintext credentials/cookies/commands and replaceable JS; SSH downstream does not protect this hop. | E HTTP risk signoff |
 | Cross-site WS hijack | Exact normalized Origin allowlist, active server session, POST-CSRF-issued one-use ticket, first-frame redemption, no wildcard/null Origin. SameSite alone is insufficient. | C/D forged-origin/replay tests |
-| RD chooses SSH service rather than BMC | Strict IPv4/port, special/self-target denial, broker egress firewall, pinned key and OOB identity; no Lab CIDR allowlist. Any reachable permitted SSH host can still be misrepresented as BMC. Public-address ambiguity is C2, not silently decided. | C2 + E egress approval |
+| RD chooses SSH service rather than BMC | RFC1918-only direct BMC IPv4, strict port 22, special/self-target denial, broker egress firewall, pinned key and OOB identity; no Lab-specific CIDR allowlist. Any reachable permitted private SSH host can still be misrepresented as BMC. C2 owner interpretation is resolved, but implementation/egress evidence remains outstanding. | C/E egress approval |
 | RD poisons Client host trust | Deliberate OOB comparison, old/new SHA256 fingerprint and impact warning, CAS/versioned audit and scoped live revocation. RD can authorize an attacker's key if dishonest/mistaken; no cryptographic OOB guarantee. | C trust tests / owner residual-risk review |
 | tmux prefix/socket/shell escape | Restricted SSH account/helper and dedicated socket ACL; fixed command builder, no generic Client shell/forwarding. Normal writable tmux attach alone does NOT prove confinement. | C1 attach-only sandbox proof |
 | Stale link writes after remap/revoke | Durable epochs/outbox, precommit barrier, per-input policy/epoch check and short broker lease. Never claim already-delivered bytes can be recalled. | C deterministic race/crash tests |
@@ -120,7 +120,7 @@ revoked on successful trust change, or separate explicit incident response.
 
 ## Target validation and egress
 
-No per-Lab CIDR inventory/allowlist is introduced (Q5). Validate syntax on Save,
+No per-Lab CIDR inventory/allowlist is introduced (Q5, C2 owner clarification 2026-11-05). **Require RFC1918 private IPv4** (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) for direct BMC targets; reject public/non-RFC1918 unicast even if routable. Validate syntax and class on Save,
 network safety both on Save and immediately before every socket, and peer address
 after connect. No hostname/DNS/rebinding path, proxy command, redirect or alternate
 host fallback. Direct BMC22 only; admin Client port1..65535 only. SSH-agent, X11,
@@ -139,10 +139,7 @@ An exclusion list for self/metadata is not a Lab subnet allowlist. Apply host/br
 network policy too, excluding host services even when a Docker route/NAT aliases
 them. A proxy web app cannot securely infer that every remaining IPv4 SSH server is
 really a BMC. Without a Lab allowlist the residual pivot/scanning risk is explicit.
-Requirements §5 says 'deny public' while Q5 says any valid BMC IPv4; **C2 must be
-resolved before live network enablement**. Save can retain a syntactically valid
-endpoint; disputed address classes have no connect permission until reviewed.
-Do not quietly implement RFC1918-only or permit all public targets as 'confirmed'.
+**C2 resolved 2026-11-05 by explicit owner direction:** BMC IPv4 must be RFC1918 private, without a Lab-specific CIDR allowlist. Public/non-RFC1918 BMC addresses must be rejected on Save and on Connect. This is a specific amendment to Q5, not an inference from earlier ambiguous text. Continue to reject sensitive/self/metadata and other unsafe targets even if they fall inside RFC1918. C2 address-policy acceptance still requires implementation/security test evidence before live enablement.
 
 ## tmux and remote privilege limits
 
