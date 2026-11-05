@@ -76,6 +76,10 @@ are rerun for the merged package. Automatic hosted baseline application CI, if
 triggered by branch pushes, is not evidence of unimplemented Console behavior and
 is not reported passing here.
 
+## Owner UART shell scope revision verification (2026-11-05)
+
+Owner explicitly selected **A: accept the fixed Console Client SSH account's full interactive Linux shell permissions** after detaching from the automatically attached existing tmux session. This is a new revision outside Q1–Q83, not Q84. Phase A compatibility/security/architecture/acceptance/README and the requirements addendum are updated together. C1 strict tmux escape confinement is no longer a requirement; C3 environment account/socket and privileges still require representative validation. This review makes no claim that SSH shell startup, tmux Detach-to-shell or revocation semantics are implemented or tested against real hosts.
+
 ## Owner C2 clarification verification (2026-11-05)
 
 Owner selected **A: direct BMC SSH targets must be RFC1918 private IPv4; no Lab CIDR allowlist**. This explicitly narrows original Q5's unrestricted valid IPv4 phrasing. On the PR branch, the owner baseline Q5, baseline security/acceptance bullets, compatibility C2/D1 register, security target validation, Q5/X6 acceptance, and design README were updated together. This amendment is not a new Q84 decision.
