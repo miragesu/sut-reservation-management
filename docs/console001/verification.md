@@ -42,7 +42,7 @@ feature completion, owner design approval or production readiness.
 ## Review findings
 
 [Compatibility register](compatibility.md) names legacy no-SSH/no-WS vs newly
-approved scope, and unresolved C1/C3/C4/C5 (tmux confinement/topology, OOB key-trust process, plaintext transport acceptance). **C2 public IPv4 wording resolved by explicit 2026-11-05 owner clarification**, not yet tested in executable code. Assumptions A1–A15 remain
+approved scope, and historically unresolved C1/C3/C4/C5 before later amendments. **C1 was subsequently scope-resolved by owner approval of an interactive Client shell; C3/C4/C5 remain open pilot gates. C2 public IPv4 wording resolved by explicit 2026-11-05 owner clarification**, not yet tested in executable code. Assumptions A1–A15 remain
 proposals, including unconfirmed Q84 UX. Phase B mock-only foundations may begin
 only after design/scope review; live connector/pilot gates remain blocked.
 
