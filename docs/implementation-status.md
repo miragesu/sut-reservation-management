@@ -306,5 +306,9 @@ replay. A committed harness and sanitized JSONL make that subset reproducible.
 Production C3 topology/privilege approval, C4/C5 and all real Gateway/browser/Broker/
 credential/revocation acceptance remain open. No runtime implementation or Phase B
 started; no production host, SQLite, credentials, deployment or Docker publication
-was touched. Full application and browser regression gates were not rerun for this
+was touched.
+
+## CONSOLE-001 Phase A closure (2026-11-05)
+
+The owner requested completing the Phase A design milestone. [Closure decision](console001/phase-a-closure.md) records the scope and independent C3/C4/C5 production gates; engineering assumptions A1–A15 remain provisional. C3 PR #14 is integrated. This does not authorize Phase B, real SSH, changing any Client, publishing a Console Docker image or production rollout. Full application and browser regression gates were not rerun for this
 research-only change.
