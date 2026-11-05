@@ -1,10 +1,10 @@
 # CONSOLE-001 Phase A design review
 
-Status: **PROPOSED / OWNER REVIEW REQUIRED / NO IMPLEMENTATION**.
+Status: **PHASE A DESIGN DOCUMENTATION COMPLETE / NO IMPLEMENTATION**. See [Phase A closure](phase-a-closure.md) for outstanding engineering and production gates.
 Base: `1536ea7b72dc32e8e0f11c8df3f0c7896e04691a` (latest fetched main).
 The complete [owner baseline](../CONSOLE_001_REQUIREMENTS.md) is authoritative:
 Q1–Q83, topology, three Compose policies, and explicit intranet HTTP/WS exception.
-This package does not replace or amend that ledger. Proposed engineering choices
+This package follows that ledger, including the two later owner-approved C1/C2 revisions. Proposed engineering choices
 and unresolved conflicts are marked separately; none is a new owner decision.
 
 | Document | Review purpose |
@@ -16,6 +16,8 @@ and unresolved conflicts are marked separately; none is a new owner decision.
 | [Acceptance and milestones](acceptance.md) | Q1–Q83 traceability, fixtures, Phases B–E and rollout gates |
 | [Compatibility and review register](compatibility.md) | Explicit old/new scope conflicts, internal ambiguities and assumptions |
 | [Phase A verification](verification.md) | Checks actually run, review status and delivery evidence |
+| [Phase A closure](phase-a-closure.md) | Completed scope, deferred risks and Phase B handoff boundaries |
+| [C3 disposable evidence](c3-interactive-tmux-validation.md) | 30 mock cases twice; same-owner SSH/tmux feasibility with prerequisites |
 
 Read these together. All endpoints, tables, dependencies, flags and numerical
 resource budgets below are **planned**, not present runtime behavior. No Python,
